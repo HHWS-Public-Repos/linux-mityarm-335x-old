@@ -42,10 +42,11 @@
 
 #include <plat/irqs.h>
 #include <plat/board.h>
-#include <plat/common.h>
 #include <plat/usb.h>
 #include <plat/mmc.h>
+#include <plat/nand.h>
 
+#include "common.h"
 #include "board-flash.h"
 #include "cpuidle33xx.h"
 #include "mux.h"
@@ -203,11 +204,51 @@ static struct mtd_partition mityarm335x_nand_partitions[] = {
 	},
 };
 
+// TODO board-am335x has identical struct
+static struct gpmc_timings am335x_nand_timings = {
+
+	.sync_clk = 0,
+
+	.cs_on = 0,
+	.cs_rd_off = 44,
+	.cs_wr_off = 44,
+
+	.adv_on = 6,
+	.adv_rd_off = 34,
+	.adv_wr_off = 44,
+
+	.we_off = 40,
+	.oe_off = 54,
+
+	.access = 64,
+	.rd_cycle = 82,
+	.wr_cycle = 82,
+
+	.wr_access = 40,
+	.wr_data_mux_bus = 0,
+};
+
 static void mityarm335x_nand_init(void)
 {
+	struct omap_nand_platform_data *pdata;
+	struct gpmc_devices_info gpmc_device[2] = {
+		{ NULL, 0 },
+		{ NULL, 0 },
+	};
+
 	setup_pin_mux(nand_pin_mux);
-	board_nand_init(mityarm335x_nand_partitions,
-		ARRAY_SIZE(mityarm335x_nand_partitions), 0, 0);
+	pdata = omap_nand_init(mityarm335x_nand_partitions,
+		ARRAY_SIZE(mityarm335x_nand_partitions), 0, 0,
+		&am335x_nand_timings);
+	if (!pdata)
+		return;
+	pdata->ecc_opt =OMAP_ECC_BCH8_CODE_HW;
+	pdata->elm_used = true;
+	gpmc_device[0].pdata = pdata;
+	gpmc_device[0].flag = GPMC_DEVICE_NAND;
+
+	omap_init_gpmc(gpmc_device, sizeof(gpmc_device));
+	omap_init_elm();
 }
 
 /* SPI flash information */
@@ -505,8 +546,8 @@ MACHINE_START(MITYARM335X, "mityarm335x")
 	/* Maintainer: Critical Link, LLC */
 	.atag_offset	= 0x100,
 	.map_io		= mityarm335x_map_io,
-	.init_irq	= ti816x_init_irq,
-	.init_early	= am335x_init_early,
+	.init_irq	= ti81xx_init_irq,
+	.init_early	= am33xx_init_early,
 	.timer		= &omap3_am33xx_timer,
 	.init_machine	= mityarm335x_init,
 MACHINE_END

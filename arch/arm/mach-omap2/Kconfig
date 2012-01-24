@@ -347,6 +347,27 @@ config MACH_MITYARM335X
 	depends on SOC_OMAPAM33XX
 	default y
 
+choice	
+	prompt "Select baseboard"
+	depends on MACH_MITYARM335X
+	help
+	  Select the baseboard that the SOM is using to enable the peripherals
+	  specific to the configuration.
+
+config	BASEBOARD_MITYARM335X_NONE
+	bool	"No baseboard"
+	help
+	  Select this option if developing a new baseboard and do not want any
+	  additional peripherals configured.
+
+config	BASEBOARD_MITYARM335X_DEVKIT
+	bool	"MityARM-335x Development Kit"
+	help
+	  Select this option for the Critical Link MityARM-335x Development Kit
+	  baseboard.
+
+endchoice
+
 config MACH_OMAP_4430SDP
 	bool "OMAP 4430 SDP board"
 	default y

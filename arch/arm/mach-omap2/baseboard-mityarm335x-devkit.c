@@ -7,9 +7,14 @@
 #include <linux/init.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/usb/musb.h>
+#include <linux/dma-mapping.h>
+
 #include <video/da8xx-fb.h>
 #include <plat/lcdc.h> /* uhhggg... */
 #include <plat/mmc.h>
+#include <plat/usb.h>
+#include <plat/omap_device.h>
 
 #include "mux.h"
 #include "hsmmc.h"
@@ -94,6 +99,11 @@ static struct pinmux_config can_pin_mux[] = {
 	{NULL, 0}
 };
 
+static struct pinmux_config usb_pin_mux[] = {
+	{"usb0_drvvbus.usb0_drvvbus",	AM33XX_PIN_OUTPUT},
+	{NULL, 0}
+};
+
 static struct omap2_hsmmc_info mmc_info[] __initdata = {
 	{
 		.mmc		= 1,
@@ -113,8 +123,71 @@ static __init void baseboard_setup_can(void)
 	am33xx_d_can_init(1);
 }
 
+static struct omap_musb_board_data board_data = {
+	.interface_type	= MUSB_INTERFACE_ULPI,
+	.instances	= 2,
+};
+
+static struct musb_hdrc_config musb_config = {
+	.fifo_mode	= 4,
+	.multipoint	= 1,
+	.dyn_fifo	= 1,
+	.num_eps	= 16,
+	.ram_bits	= 12,
+};
+
+static struct musb_hdrc_platform_data musb_plat[] = {
+	{
+		.config		= &musb_config,
+		.clock		= "ick",
+		.board_data	= &board_data,
+		.power		= 500 / 2,
+		.mode		= MUSB_OTG,
+		.extvbus	= 1,
+	},
+	{
+		.config		= &musb_config,
+		.clock		= "ick",
+		.board_data	= &board_data,
+		.power		= 500 / 2,
+		.mode		= MUSB_HOST,
+		.extvbus	= 1,
+	},
+};
+
+static u64 musb_dmamask = DMA_BIT_MASK(32);
+
 static __init void baseboard_setup_usb(void)
 {
+	struct omap_hwmod               *oh;
+	struct platform_device          *pdev;
+	struct device                   *dev;
+
+	setup_pin_mux(usb_pin_mux);
+
+	/*
+	 * TODO - there is usb_musb_init() routine in usb-musb.c, but it
+	 * doesn't allow full configuration of the MODE for each of the
+	 * ports, and there is some other chicanery in there for other
+	 * platforms that is a bit scary....
+	 */
+	oh = omap_hwmod_lookup("usb_otg_hs");
+	if (WARN(!oh, "%s: could not find omap_hwmod for usb_otg_hs\n",
+		__func__))
+		return;
+
+	pdev = omap_device_build("ti81xx-usbss", -1, oh, &musb_plat,
+		sizeof(musb_plat), NULL, 0, false);
+	if (IS_ERR(pdev)) {
+		pr_err("Could not build omap_device for ti81xx-usbss\n");
+		return;
+	}
+
+	dev = &pdev->dev;
+	get_device(dev);
+	dev->dma_mask = &musb_dmamask;
+	dev->coherent_dma_mask = musb_dmamask;
+	put_device(dev);
 }
 
 static __init void baseboard_setup_mmc(void)

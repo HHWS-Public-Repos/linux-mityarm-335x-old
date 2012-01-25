@@ -24,4 +24,7 @@ extern int __init am33xx_register_ehrpwm(int id,
 		struct pwmss_platform_data *pdata);
 extern int __init omap_init_elm(void);
 
+void am33xx_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1);
+void am33xx_cpsw_init(unsigned int gigen);
+
 #endif

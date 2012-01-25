@@ -40,6 +40,5 @@
 #define PROFILE_ALL		0xFF
 
 void am33xx_evmid_fillup(unsigned int evmid);
-void am33xx_d_can_init(unsigned int instance);
 
 #endif

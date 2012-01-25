@@ -13,6 +13,7 @@
 #define __ARCH_ARM_MACH_OMAP_DEVICES_H
 
 struct isp_platform_data;
+struct snd_platform_data;
 
 int omap3_init_camera(struct isp_platform_data *pdata);
 
@@ -26,5 +27,6 @@ extern int __init omap_init_elm(void);
 
 void am33xx_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1);
 void am33xx_cpsw_init(unsigned int gigen);
+void am33xx_d_can_init(unsigned int instance);
 
 #endif

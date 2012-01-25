@@ -9,12 +9,15 @@
 #include <linux/err.h>
 #include <video/da8xx-fb.h>
 #include <plat/lcdc.h> /* uhhggg... */
+#include <plat/mmc.h>
 
 #include "mux.h"
+#include "hsmmc.h"
 
 #define BASEBOARD_NAME "MityARM-335x DevKit"
 
 /* TODO - refactor all the pinmux stuff for all board files to use */
+#define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
 
 struct pinmux_config {
 	const char	*muxname;
@@ -70,6 +73,29 @@ static struct pinmux_config lcdc_pin_mux[] = {
 	{NULL, 0},
 };
 
+static struct pinmux_config mmc0_pin_mux[] = {
+	{"mmc0_dat3.mmc0_dat3", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_dat2.mmc0_dat2", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_dat1.mmc0_dat1", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_dat0.mmc0_dat0", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_clk.mmc0_clk",   AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_cmd.mmc0_cmd",   AM33XX_PIN_INPUT_PULLUP},
+	{"mii1_txen.gpio3_3",	AM33XX_PIN_INPUT_PULLUP}, /* SD Card Detect */
+	{"mii1_col.gpio3_0",	AM33XX_PIN_INPUT_PULLUP}, /* SD Write Protect */
+	{NULL, 0},
+};
+
+static struct omap2_hsmmc_info mmc_info[] __initdata = {
+	{
+		.mmc		= 1,
+		.caps		= MMC_CAP_4_BIT_DATA,
+		.gpio_cd	= GPIO_TO_PIN(3, 3),
+		.gpio_wp	= GPIO_TO_PIN(3, 0),
+		.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
+	},
+	{}
+};
+
 static __init void baseboard_setup_can(void)
 {
 }
@@ -80,6 +106,11 @@ static __init void baseboard_setup_usb(void)
 
 static __init void baseboard_setup_mmc(void)
 {
+	/* pin mux */
+	setup_pin_mux(mmc0_pin_mux);
+
+	/* configure mmc */
+	omap2_hsmmc_init(mmc_info);
 }
 
 static const struct display_panel disp_panel = {

@@ -13,6 +13,7 @@
 
 #include "mux.h"
 #include "hsmmc.h"
+#include "devices.h"
 
 #define BASEBOARD_NAME "MityARM-335x DevKit"
 
@@ -70,7 +71,7 @@ static struct pinmux_config lcdc_pin_mux[] = {
 	{"lcd_hsync.lcd_hsync",		AM33XX_PIN_OUTPUT},
 	{"lcd_pclk.lcd_pclk",		AM33XX_PIN_OUTPUT},
 	{"lcd_ac_bias_en.lcd_ac_bias_en", AM33XX_PIN_OUTPUT},
-	{NULL, 0},
+	{NULL, 0}
 };
 
 static struct pinmux_config mmc0_pin_mux[] = {
@@ -82,7 +83,15 @@ static struct pinmux_config mmc0_pin_mux[] = {
 	{"mmc0_cmd.mmc0_cmd",   AM33XX_PIN_INPUT_PULLUP},
 	{"mii1_txen.gpio3_3",	AM33XX_PIN_INPUT_PULLUP}, /* SD Card Detect */
 	{"mii1_col.gpio3_0",	AM33XX_PIN_INPUT_PULLUP}, /* SD Write Protect */
-	{NULL, 0},
+	{NULL, 0}
+};
+
+static struct pinmux_config can_pin_mux[] = {
+	{"uart1_rxd.d_can1_tx", AM33XX_PULL_ENBL},
+	{"uart1_txd.d_can1_rx", AM33XX_PIN_INPUT_PULLUP},
+	{"mii1_txd3.d_can0_tx", AM33XX_PULL_ENBL},
+	{"mii1_txd2.d_can0_rx", AM33XX_PIN_INPUT_PULLUP},
+	{NULL, 0}
 };
 
 static struct omap2_hsmmc_info mmc_info[] __initdata = {
@@ -98,6 +107,10 @@ static struct omap2_hsmmc_info mmc_info[] __initdata = {
 
 static __init void baseboard_setup_can(void)
 {
+	setup_pin_mux(can_pin_mux);
+
+	am33xx_d_can_init(0);
+	am33xx_d_can_init(1);
 }
 
 static __init void baseboard_setup_usb(void)

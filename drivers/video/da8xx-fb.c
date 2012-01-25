@@ -272,6 +272,19 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.pxl_clk = 30000000,
 		.invert_pxl_clk = 0,
 	},
+	[3] = {
+		.name = "svga_800x600",
+		.width = 800,
+		.height = 600,
+		.hfp = 56,
+		.hbp = 64, /* */
+		.hsw = 120,
+		.vfp = 37,
+		.vbp = 23,
+		.vsw = 6,
+		.pxl_clk = 40000, /* 150000000 / 6 */
+		.invert_pxl_clk = 0,
+	},
 };
 
 /* Enable the Raster Engine of the LCD Controller */

@@ -30,6 +30,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/ethtool.h>
+#include <linux/mtd/mtd.h>
 #include <linux/mfd/tps65910.h>
 
 #include <mach/hardware.h>
@@ -74,42 +75,20 @@ struct pinmux_config {
 static struct omap_board_config_kernel mityarm335x_config[] __initdata = {
 };
 
-/*
-* Factory Config held in On-Board eeprom device.
-*
-* Header Format
-*
-*  Name			Size	Contents
-*			(Bytes)
-*-------------------------------------------------------------
-*  Header		4	0xAA, 0x55, 0x33, 0xEE
-*
-*  Board Name		8	Name for board in ASCII.
-*				example "A33515BB" = "AM335X
-				Low Cost EVM board"
-*
-*  Version		4	Hardware version code for board in
-*				in ASCII. "1.0A" = rev.01.0A
-*
-*  Serial Number	12	Serial number of the board. This is a 12
-*				character string which is WWYY4P16nnnn, where
-*				WW = 2 digit week of the year of production
-*				YY = 2 digit year of production
-*				nnnn = incrementing board number
-*
-*  Configuration option	32	Codes(TBD) to show the configuration
-*				setup on this board.
-*
-*  Available		32720	Available space for other non-volatile
-*				data.
-*/
+#define FACTORY_CONFIG_MAGIC    0x012C0138
+#define FACTORY_CONFIG_VERSION  0x00010001
+
 struct factory_config {
-	u32	header;
-	u8	name[8];
-	char	version[4];
-	u8	serial[12];
-	u8	opt[32];
+	u32	magic;
+	u32	version;
+	u8	mac[6];
+	u32	reserved;
+	u32	spare;
+	u32	serialnumber;
+	char	partnum[32];
 };
+
+static struct factory_config factory_config;
 
 /* Pin mux for on board nand flash */
 static struct pinmux_config nand_pin_mux[] = {
@@ -334,11 +313,48 @@ static struct i2c_board_info __initdata mityarm335x_i2c2_boardinfo[] = {
 	},
 };
 
+static void read_factory_config(struct memory_accessor *a, void* context)
+{
+	int ret;
+	const char *partnum = NULL;
+
+	ret = a->read(a, (char *)&factory_config, 0, sizeof(factory_config));
+	if (ret != sizeof(struct factory_config)) {
+		pr_warning("MityARM-335x: Read Factory Config Failed: %d\n",
+			ret);
+		goto bad_config;
+	}
+
+	if (factory_config.magic != FACTORY_CONFIG_MAGIC) {
+		pr_warning("MityARM-335x: Factory Config Magic Wrong (%X)\n",
+			factory_config.magic);
+		goto bad_config;
+	}
+
+	if (factory_config.version != FACTORY_CONFIG_VERSION) {
+		pr_warning("MityARM-335x: Factory Config Version Wrong (%X)\n",
+			factory_config.version);
+		goto bad_config;
+	}
+
+	pr_info("MityARM-335x: Found MAC = %pM\n", factory_config.mac);
+
+	am33xx_cpsw_macidfillup(factory_config.mac, factory_config.mac);
+
+	partnum = factory_config.partnum;
+	pr_info("MityARM-335x: Part Number = %s\n", partnum);
+
+bad_config:
+
+	/* turn on the switch regardless */
+	am33xx_cpsw_init(1);
+}
+
 static struct at24_platform_data mityarm335x_fd_info = {
 	.byte_len	= 256,
 	.page_size	= 8,
 	.flags		= AT24_FLAG_READONLY | AT24_FLAG_IRUGO,
-	.setup		= NULL, /* TODO read_factory_config, */
+	.setup		= read_factory_config,
 	.context	= NULL,
 };
 

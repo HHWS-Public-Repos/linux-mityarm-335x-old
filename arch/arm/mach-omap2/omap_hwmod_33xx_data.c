@@ -1342,8 +1342,8 @@ static struct omap_hwmod am33xx_i2c2_hwmod = {
 /* I2C3 */
 static struct omap_hwmod_addr_space am33xx_i2c3_addr_space[] = {
 	{
-		.pa_start	= 0x4819C000,
-		.pa_end		= 0x4819C000 + SZ_4K - 1,
+		.pa_start	= AM33XX_I2C2_BASE,
+		.pa_end		= AM33XX_I2C2_BASE + SZ_4K - 1,
 		.flags		= ADDR_TYPE_RT
 	},
 	{ }
@@ -1367,7 +1367,7 @@ static struct omap_hwmod_dma_info i2c3_edma_reqs[] = {
 };
 
 static struct omap_hwmod_irq_info i2c3_mpu_irqs[] = {
-	{ .irq = 30 },
+	{ .irq = AM33XX_IRQ_MSHSI2COCP2 },
 	{ .irq = -1 }
 };
 

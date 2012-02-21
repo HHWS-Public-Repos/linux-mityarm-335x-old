@@ -128,9 +128,9 @@ static struct pinmux_config spi1_pin_mux[] = {
  */
 static struct pinmux_config i2c1_pin_mux[] = {
 	{"mii1_crs.i2c1_sda",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
-				AM33XX_INPUT_EN},
+				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{"mii1_rxerr.i2c1_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
-				AM33XX_INPUT_EN},
+				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{NULL, 0},
 };
 
@@ -140,9 +140,9 @@ static struct pinmux_config i2c1_pin_mux[] = {
  */
 static struct pinmux_config i2c2_pin_mux[] = {
 	{"uart1_ctsn.i2c2_sda",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
-				AM33XX_INPUT_EN},
-	{"uart2_rtsn.i2c2_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
-				AM33XX_INPUT_EN},
+				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
+	{"uart1_rtsn.i2c2_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
+				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{NULL, 0},
 };
 
@@ -409,10 +409,10 @@ static struct i2c_board_info __initdata mityarm335x_i2c1_boardinfo[] = {
 static void __init mityarm335x_i2c_init(void)
 {
 	setup_pin_mux(i2c2_pin_mux);
-	omap_register_i2c_bus(2, 100, mityarm335x_i2c2_boardinfo,
+	omap_register_i2c_bus(3, 100, mityarm335x_i2c2_boardinfo,
 				ARRAY_SIZE(mityarm335x_i2c2_boardinfo));
 	setup_pin_mux(i2c1_pin_mux);
-	omap_register_i2c_bus(1, 100, mityarm335x_i2c1_boardinfo,
+	omap_register_i2c_bus(2, 100, mityarm335x_i2c1_boardinfo,
 				ARRAY_SIZE(mityarm335x_i2c1_boardinfo));
 }
 

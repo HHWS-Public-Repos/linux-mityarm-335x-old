@@ -276,13 +276,13 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.name = "svga_800x600",
 		.width = 800,
 		.height = 600,
-		.hfp = 56,
-		.hbp = 64, /* */
-		.hsw = 120,
-		.vfp = 37,
-		.vbp = 23,
-		.vsw = 6,
-		.pxl_clk = 40000, /* 150000000 / 6 */
+		.hfp = 15,
+		.hbp = 15,
+		.hsw = 15,
+		.vfp = 3,
+		.vbp = 3,
+		.vsw = 2,
+		.pxl_clk = 30000000,
 		.invert_pxl_clk = 0,
 	},
 };

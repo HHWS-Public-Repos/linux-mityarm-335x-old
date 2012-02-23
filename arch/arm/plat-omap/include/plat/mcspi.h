@@ -18,6 +18,9 @@ struct omap2_mcspi_dev_attr {
 
 struct omap2_mcspi_device_config {
 	unsigned turbo_mode:1;
+
+	/* Set to 1 to make D0 MOSI and D1 MISO */
+	unsigned d0_is_mosi:1;
 };
 
 #endif

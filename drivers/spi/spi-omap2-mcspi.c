@@ -940,6 +940,18 @@ static void omap2_mcspi_work(struct work_struct *work)
 					chconf |= OMAP2_MCSPI_CHCONF_TURBO;
 			}
 
+			if (cd && cd->d0_is_mosi) {
+				/* D0 MOSI, D1 MISO */
+				chconf &= ~OMAP2_MCSPI_CHCONF_DPE0;
+				chconf |= OMAP2_MCSPI_CHCONF_IS |
+					  OMAP2_MCSPI_CHCONF_DPE1;
+			} else {
+				/* D1 MOSI, D0 MISO */
+				chconf &= ~(OMAP2_MCSPI_CHCONF_IS |
+					    OMAP2_MCSPI_CHCONF_DPE1);
+				chconf |= OMAP2_MCSPI_CHCONF_DPE0;
+			}
+
 			mcspi_write_chconf0(spi, chconf);
 
 			if (t->len) {

@@ -45,6 +45,7 @@
 #include <plat/usb.h>
 #include <plat/mmc.h>
 #include <plat/nand.h>
+#include <plat/mcspi.h>
 
 #include "common.h"
 #include "board-flash.h"
@@ -113,12 +114,12 @@ static struct pinmux_config nand_pin_mux[] = {
 
 /* Module pin mux for SPI fash */
 static struct pinmux_config spi1_pin_mux[] = {
-	{"ecap0_in_pwm0_out.spi1_sclk",	AM33XX_PULL_ENBL | AM33XX_INPUT_EN},
+	{"ecap0_in_pwm0_out.spi1_sclk",	AM33XX_PULL_ENBL | AM33XX_INPUT_EN },
 	{"mcasp0_fsx.spi1_d0",		AM33XX_PULL_ENBL | AM33XX_PULL_UP |
-					AM33XX_INPUT_EN},
-	{"mcasp0_axr0.spi1_d1",		AM33XX_PULL_ENBL | AM33XX_INPUT_EN},
+					AM33XX_INPUT_EN },
+	{"mcasp0_axr0.spi1_d1",		AM33XX_PULL_ENBL | AM33XX_INPUT_EN },
 	{"mcasp0_ahclkr.spi1_cs0",	AM33XX_PULL_ENBL | AM33XX_PULL_UP |
-					AM33XX_INPUT_EN},
+					AM33XX_INPUT_EN },
 	{NULL, 0},
 };
 
@@ -251,43 +252,25 @@ static void mityarm335x_nand_init(void)
 	omap_init_elm();
 }
 
-/* SPI flash information */
+/* SPI flash information (reserved for user applications) */
 static struct mtd_partition mityarm335x_spi_partitions[] = {
-	/* All the partition sizes are listed in terms of erase size */
 	{
-		.name       = "U-Boot-min",
+		.name       = "NOR User Defined",
 		.offset     = 0,
-		.size       = SZ_128K,
-		.mask_flags = MTD_WRITEABLE,    /* force read-only */
-	},
-	{
-		.name       = "U-Boot",
-		.offset     = MTDPART_OFS_APPEND,
-		.size       = 2 * SZ_128K,
-		.mask_flags = MTD_WRITEABLE,    /* force read-only */
-	},
-	{
-		.name       = "U-Boot Env",
-		.offset     = MTDPART_OFS_APPEND,
-		.size       = 2 * SZ_4K,
-	},
-	{
-		.name       = "Kernel",
-		.offset     = MTDPART_OFS_APPEND,
-		.size       = 28 * SZ_128K,
-	},
-	{
-		.name       = "File System",
-		.offset     = MTDPART_OFS_APPEND,
-		.size       = MTDPART_SIZ_FULL,     /* size ~= 1.1 MiB */
+		.size       = MTDPART_SIZ_FULL,
 	}
 };
 
 static const struct flash_platform_data mityarm335x_spi_flash = {
-	.type      = "m25p64",
 	.name      = "spi_flash",
 	.parts     = mityarm335x_spi_partitions,
 	.nr_parts  = ARRAY_SIZE(mityarm335x_spi_partitions),
+	.type      = "m25p64-nonjedec",
+};
+
+static const struct omap2_mcspi_device_config spi1_ctlr_data = {
+	.turbo_mode = 0,
+	.d0_is_mosi = 1,
 };
 
 /*
@@ -295,12 +278,14 @@ static const struct flash_platform_data mityarm335x_spi_flash = {
  */
 static struct spi_board_info mityarm335x_spi1_slave_info[] = {
 	{
-		.modalias      = "m25p80",
-		.platform_data = &mityarm335x_spi_flash,
-		.irq           = -1,
-		.max_speed_hz  = 12000000,
-		.bus_num       = 2,
-		.chip_select   = 0,
+		.modalias		= "m25p80",
+		.platform_data		= &mityarm335x_spi_flash,
+		.controller_data	= (void*)&spi1_ctlr_data,
+		.irq			= -1,
+		.max_speed_hz		= 30000000,
+		.bus_num		= 2,
+		.chip_select		= 0,
+		.mode			= SPI_MODE_3,
 	},
 };
 

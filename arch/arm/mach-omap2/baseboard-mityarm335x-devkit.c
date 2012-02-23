@@ -285,15 +285,17 @@ static __init int baseboard_init(void)
 
 	baseboard_setup_enet();
 
-	baseboard_setup_audio();
-
 	baseboard_setup_mmc();
+
+#if 0   /* MAW - BROKEN */
+	baseboard_setup_usb();
+#endif
 
 	baseboard_setup_dvi();
 
-	baseboard_setup_usb();
-
 	baseboard_setup_can();
+
+	baseboard_setup_audio();
 
 	return 0;
 }

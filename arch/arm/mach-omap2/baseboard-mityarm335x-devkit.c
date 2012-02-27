@@ -99,6 +99,16 @@ static struct pinmux_config can_pin_mux[] = {
 	{NULL, 0}
 };
 
+static struct pinmux_config expansion_pin_mux[] = {
+	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP}, /* Exp0 RX */
+	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL}, 	   /* Exp0 TX */
+	{"usb1_drvvbus.gpio3_13", AM33XX_PULL_ENBL}, 	   /* Exp0 TX Enable */
+	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP},  /* Exp1 RX */
+	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL},	   /* Exp1 TX */
+	{"mcasp0_aclkx.gpio4_14", AM33XX_PULL_ENBL}, 	   /* Exp1 TX Enable */
+	{NULL, 0}
+};
+
 static struct pinmux_config usb_pin_mux[] = {
 	{"usb0_drvvbus.usb0_drvvbus",	AM33XX_PIN_OUTPUT},
 	{NULL, 0}
@@ -114,6 +124,11 @@ static struct omap2_hsmmc_info mmc_info[] __initdata = {
 	},
 	{}
 };
+
+static __init void baseboard_setup_expansion(void)
+{
+	setup_pin_mux(expansion_pin_mux);
+}
 
 static __init void baseboard_setup_can(void)
 {
@@ -290,6 +305,8 @@ static __init int baseboard_init(void)
 #if 0   /* MAW - BROKEN */
 	baseboard_setup_usb();
 #endif
+
+	baseboard_setup_expansion();
 
 	baseboard_setup_dvi();
 

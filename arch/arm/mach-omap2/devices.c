@@ -195,7 +195,8 @@ int __init am33xx_register_tsc(struct tsc_data *pdata)
 }
 
 #if defined(CONFIG_SND_AM335X_SOC_EVM) || \
-				defined(CONFIG_SND_AM335X_SOC_EVM_MODULE)
+	defined(CONFIG_SND_AM335X_SOC_EVM_MODULE) || \
+	defined(CONFIG_SND_MITYARM335X_SOC_DEVKIT)
 int __init am335x_register_mcasp(struct snd_platform_data *pdata, int ctrl_nr)
 {
 	int l;
@@ -212,6 +213,7 @@ int __init am335x_register_mcasp(struct snd_platform_data *pdata, int ctrl_nr)
 		return -ENODEV;
 	}
 
+	pr_info("Registering mcasp[%d]\n", ctrl_nr);
 	pdev = omap_device_build(dev_name, ctrl_nr, oh, pdata,
 			sizeof(struct snd_platform_data), NULL, 0, 0);
 	WARN(IS_ERR(pdev), "Can't build omap_device for %s:%s.\n",
@@ -226,7 +228,9 @@ int __init am335x_register_mcasp(struct snd_platform_data *pdata, int ctrl_nr)
 }
 #endif
 
-#if (defined(CONFIG_SND_AM33XX_SOC) || (defined(CONFIG_SND_AM33XX_SOC_MODULE)))
+#if	defined(CONFIG_SND_AM335X_SOC) || \
+	defined(CONFIG_SND_AM335X_SOC_SOC_MODULE) || \
+	defined(CONFIG_SND_MITYARM335X_SOC_DEVKIT)
 struct platform_device am33xx_pcm_device = {
 	.name		= "davinci-pcm-audio",
 	.id		= -1,
@@ -507,6 +511,7 @@ static int omap_mcspi_init(struct omap_hwmod *oh, void *unused)
 	}
 
 	spi_num++;
+	pr_info("Registering mcspi %d [%d]\n", spi_num, pdata->num_cs);
 	pdev = omap_device_build(name, spi_num, oh, pdata,
 				sizeof(*pdata),	NULL, 0, 0);
 	WARN(IS_ERR(pdev), "Can't build omap_device for %s:%s\n",

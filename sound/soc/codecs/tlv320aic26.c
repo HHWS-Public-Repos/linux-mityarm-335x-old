@@ -49,7 +49,9 @@ static unsigned int aic26_reg_read(struct snd_soc_codec *codec,
 	struct aic26 *aic26 = snd_soc_codec_get_drvdata(codec);
 	u16 *cache = codec->reg_cache;
 	u16 cmd, value;
-	u8 buffer[2];
+	u8 buffer[4];
+	struct spi_message message;
+	struct spi_transfer x;
 	int rc;
 
 	if (reg >= AIC26_NUM_REGS) {
@@ -57,17 +59,29 @@ static unsigned int aic26_reg_read(struct snd_soc_codec *codec,
 		return 0;
 	}
 
+
 	/* Do SPI transfer; first 16bits are command; remaining is
 	 * register contents */
+	memset(buffer, 0, 4);
 	cmd = AIC26_READ_COMMAND_WORD(reg);
 	buffer[0] = (cmd >> 8) & 0xff;
 	buffer[1] = cmd & 0xff;
+#if 0
 	rc = spi_write_then_read(aic26->spi, buffer, 2, buffer, 2);
 	if (rc) {
 		dev_err(&aic26->spi->dev, "AIC26 reg read error\n");
 		return -EIO;
 	}
 	value = (buffer[0] << 8) | buffer[1];
+#else
+	spi_message_init(&message);
+	x.len = 4;
+	x.tx_buf = buffer;
+	x.rx_buf = buffer;
+	spi_message_add_tail(&x, &message);
+	rc = spi_sync(aic26->spi, &message);
+	value = (buffer[2] << 8) | buffer[3];
+#endif
 
 	/* Update the cache before returning with the value */
 	cache[reg] = value;
@@ -78,6 +92,7 @@ static unsigned int aic26_reg_read_cache(struct snd_soc_codec *codec,
 					 unsigned int reg)
 {
 	u16 *cache = codec->reg_cache;
+	struct aic26 *aic26 = snd_soc_codec_get_drvdata(codec);
 
 	if (reg >= AIC26_NUM_REGS) {
 		WARN_ON_ONCE(1);
@@ -155,8 +170,10 @@ static int aic26_hw_params(struct snd_pcm_substream *substream,
 	switch (params_format(params)) {
 	case SNDRV_PCM_FORMAT_S8:     wlen = AIC26_WLEN_16; break;
 	case SNDRV_PCM_FORMAT_S16_BE: wlen = AIC26_WLEN_16; break;
+	case SNDRV_PCM_FORMAT_S16_LE: wlen = AIC26_WLEN_16; break;
 	case SNDRV_PCM_FORMAT_S24_BE: wlen = AIC26_WLEN_24; break;
 	case SNDRV_PCM_FORMAT_S32_BE: wlen = AIC26_WLEN_32; break;
+	case SNDRV_PCM_FORMAT_S32_LE: wlen = AIC26_WLEN_32; break;
 	default:
 		dev_dbg(&aic26->spi->dev, "bad format\n"); return -EINVAL;
 	}
@@ -206,14 +223,16 @@ static int aic26_mute(struct snd_soc_dai *dai, int mute)
 	struct aic26 *aic26 = snd_soc_codec_get_drvdata(codec);
 	u16 reg = aic26_reg_read_cache(codec, AIC26_REG_DAC_GAIN);
 
-	dev_dbg(&aic26->spi->dev, "aic26_mute(dai=%p, mute=%i)\n",
-		dai, mute);
+	dev_dbg(&aic26->spi->dev, "aic26_mute(dai=%p, mute=%i, 0x%X)\n",
+		dai, mute, reg);
 
 	if (mute)
 		reg |= 0x8080;
 	else
 		reg &= ~0x8080;
 	aic26_reg_write(codec, AIC26_REG_DAC_GAIN, reg);
+	dev_dbg(&aic26->spi->dev, "aic26_mute(dai=%p, mute=%i, 0x%X)\n",
+		dai, mute, reg);
 
 	return 0;
 }
@@ -273,7 +292,8 @@ static int aic26_set_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 			 SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 |\
 			 SNDRV_PCM_RATE_48000)
 #define AIC26_FORMATS	(SNDRV_PCM_FMTBIT_S8     | SNDRV_PCM_FMTBIT_S16_BE |\
-			 SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S32_BE)
+			 SNDRV_PCM_FMTBIT_S24_BE | SNDRV_PCM_FMTBIT_S32_BE |\
+			 SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S32_LE)
 
 static struct snd_soc_dai_ops aic26_dai_ops = {
 	.hw_params	= aic26_hw_params,
@@ -427,9 +447,10 @@ static int aic26_spi_probe(struct spi_device *spi)
 
 	ret = snd_soc_register_codec(&spi->dev,
 			&aic26_soc_codec_dev, &aic26_dai, 1);
-	if (ret < 0)
+	if (ret < 0) {
 		kfree(aic26);
-	return ret;
+		return ret;
+	}
 
 	dev_dbg(&spi->dev, "SPI device initialized\n");
 	return 0;

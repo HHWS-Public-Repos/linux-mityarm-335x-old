@@ -9,12 +9,17 @@
 #include <linux/err.h>
 #include <linux/usb/musb.h>
 #include <linux/dma-mapping.h>
+#include <linux/spi/spi.h>
 
 #include <video/da8xx-fb.h>
 #include <plat/lcdc.h> /* uhhggg... */
 #include <plat/mmc.h>
 #include <plat/usb.h>
 #include <plat/omap_device.h>
+#include <plat/mcspi.h>
+#include <plat/i2c.h>
+
+#include <asm/hardware/asp.h>
 
 #include "mux.h"
 #include "hsmmc.h"
@@ -102,15 +107,14 @@ static struct pinmux_config can_pin_mux[] = {
 static struct pinmux_config expansion_pin_mux[] = {
 	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP}, /* Exp0 RX */
 	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL}, 	   /* Exp0 TX */
-	{"usb1_drvvbus.gpio3_13", AM33XX_PULL_ENBL}, 	   /* Exp0 TX Enable */
 	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP},  /* Exp1 RX */
 	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL},	   /* Exp1 TX */
-	{"mcasp0_aclkx.gpio4_14", AM33XX_PULL_ENBL}, 	   /* Exp1 TX Enable */
 	{NULL, 0}
 };
 
 static struct pinmux_config usb_pin_mux[] = {
 	{"usb0_drvvbus.usb0_drvvbus",	AM33XX_PIN_OUTPUT},
+	{"usb1_drvvbus.usb1_drvvbus",	AM33XX_PIN_OUTPUT},
 	{NULL, 0}
 };
 
@@ -140,69 +144,15 @@ static __init void baseboard_setup_can(void)
 
 static struct omap_musb_board_data board_data = {
 	.interface_type	= MUSB_INTERFACE_ULPI,
-	.instances	= 2,
+	.mode           = MUSB_OTG,
+	.power		= 500,
+	.instances	= 1,
 };
-
-static struct musb_hdrc_config musb_config = {
-	.fifo_mode	= 4,
-	.multipoint	= 1,
-	.dyn_fifo	= 1,
-	.num_eps	= 16,
-	.ram_bits	= 12,
-};
-
-static struct musb_hdrc_platform_data musb_plat[] = {
-	{
-		.config		= &musb_config,
-		.clock		= "ick",
-		.board_data	= &board_data,
-		.power		= 500 / 2,
-		.mode		= MUSB_OTG,
-		.extvbus	= 1,
-	},
-	{
-		.config		= &musb_config,
-		.clock		= "ick",
-		.board_data	= &board_data,
-		.power		= 500 / 2,
-		.mode		= MUSB_HOST,
-		.extvbus	= 1,
-	},
-};
-
-static u64 musb_dmamask = DMA_BIT_MASK(32);
 
 static __init void baseboard_setup_usb(void)
 {
-	struct omap_hwmod               *oh;
-	struct platform_device          *pdev;
-	struct device                   *dev;
-
 	setup_pin_mux(usb_pin_mux);
-
-	/*
-	 * TODO - there is usb_musb_init() routine in usb-musb.c, but it
-	 * doesn't allow full configuration of the MODE for each of the
-	 * ports, and there is some other chicanery in there for other
-	 * platforms that is a bit scary....
-	 */
-	oh = omap_hwmod_lookup("usb_otg_hs");
-	if (WARN(!oh, "%s: could not find omap_hwmod for usb_otg_hs\n",
-		__func__))
-		return;
-
-	pdev = omap_device_build("ti81xx-usbss", -1, oh, &musb_plat,
-		sizeof(musb_plat), NULL, 0, false);
-	if (IS_ERR(pdev)) {
-		pr_err("Could not build omap_device for ti81xx-usbss\n");
-		return;
-	}
-
-	dev = &pdev->dev;
-	get_device(dev);
-	dev->dma_mask = &musb_dmamask;
-	dev->coherent_dma_mask = musb_dmamask;
-	put_device(dev);
+	usb_musb_init(&board_data);
 }
 
 static __init void baseboard_setup_mmc(void)
@@ -281,8 +231,87 @@ out:
 	clk_put(disp_pll);
 }
 
+/* Module pin mux for mcasp1 */
+static struct pinmux_config mcasp1_pin_mux[] = {
+	{"mcasp0_aclkr.mcasp1_aclkx", AM33XX_PIN_INPUT_PULLDOWN},
+	{"mcasp0_fsr.mcasp1_fsx", AM33XX_PIN_INPUT_PULLDOWN},
+	{"mcasp0_axr1.mcasp1_axr0", AM33XX_PIN_OUTPUT},
+	{"mcasp0_ahclkx.mcasp1_axr1", AM33XX_PIN_INPUT_PULLDOWN},
+	{"mii1_rxd0.mcasp1_ahclkr", AM33XX_PIN_INPUT_PULLDOWN},
+	{"mii1_refclk.mcasp1_ahclkx", AM33XX_PIN_INPUT_PULLDOWN},
+	{NULL, 0},
+};
+
+static struct pinmux_config spi0_pin_mux[] = {
+	{"spi0_cs0.spi0_cs0", AM33XX_PIN_OUTPUT_PULLUP},
+	{"spi0_cs1.spi0_cs1", AM33XX_PIN_OUTPUT_PULLUP},
+	{"spi0_sclk.spi0_sclk", AM33XX_PIN_OUTPUT_PULLUP},
+	{"spi0_d0.spi0_d0", AM33XX_PIN_OUTPUT},
+	{"spi0_d1.spi0_d1", AM33XX_PIN_INPUT_PULLUP},
+	{NULL, 0},
+};
+
+static u8 am335x_iis_serializer_direction[] = {
+	TX_MODE,	RX_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,	INACTIVE_MODE,
+};
+
+static struct snd_platform_data baseboard_snd_data = {
+	.tx_dma_offset	= 0x46400000,	/* McASP1 */
+	.rx_dma_offset	= 0x46400000,
+	.op_mode	= DAVINCI_MCASP_IIS_MODE,
+	.num_serializer	= ARRAY_SIZE(am335x_iis_serializer_direction),
+	.tdm_slots	= 2,
+	.serial_dir	= am335x_iis_serializer_direction,
+	.asp_chan_q	= EVENTQ_2,
+	.version	= MCASP_VERSION_3,
+	.txnumevt	= 1,
+	.rxnumevt	= 1,
+};
+
+static const struct omap2_mcspi_device_config spi0_ctlr_data = {
+	.turbo_mode = 0,
+	.single_channel = 0,
+	.d0_is_mosi = 1,
+};
+
+static struct spi_board_info baseboard_spi0_slave_info[] = {
+	{
+		.modalias	= "tlv320aic26-codec",
+		.controller_data = &spi0_ctlr_data,
+		.irq		= -1,
+		.max_speed_hz	= 2000000,
+		.bus_num	= 1,
+		.chip_select	= 1,
+		.mode		= SPI_MODE_1,
+	},
+	/* TODO -- add touchscreen connector options */
+};
+
 static __init void baseboard_setup_audio(void)
 {
+	pr_info("Configuring audio...\n");
+	setup_pin_mux(mcasp1_pin_mux);
+	setup_pin_mux(spi0_pin_mux);
+	am335x_register_mcasp1(&baseboard_snd_data);
+	spi_register_board_info(baseboard_spi0_slave_info,
+			ARRAY_SIZE(baseboard_spi0_slave_info));
+}
+
+static struct pinmux_config i2c0_pin_mux[] = {
+	{"i2c0_sda.i2c0_sda",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
+				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
+	{"i2c0_scl.i2c0_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
+				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
+	{NULL, 0},
+};
+
+static void __init baseboard_i2c0_init(void)
+{
+	setup_pin_mux(i2c0_pin_mux);
+	omap_register_i2c_bus(1, 100, NULL, 0);
 }
 
 static __init void baseboard_setup_enet(void)
@@ -302,9 +331,7 @@ static __init int baseboard_init(void)
 
 	baseboard_setup_mmc();
 
-#if 0   /* MAW - BROKEN */
 	baseboard_setup_usb();
-#endif
 
 	baseboard_setup_expansion();
 
@@ -313,6 +340,8 @@ static __init int baseboard_init(void)
 	baseboard_setup_can();
 
 	baseboard_setup_audio();
+
+	baseboard_i2c0_init();
 
 	return 0;
 }

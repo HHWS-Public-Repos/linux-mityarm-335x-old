@@ -56,18 +56,6 @@
 /* Convert GPIO signal to GPIO pin number */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
 
-#ifdef CONFIG_OMAP_MUX
-static struct omap_board_mux board_mux[] __initdata = {
-	AM33XX_MUX(I2C0_SDA, OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_SLOW |
-			AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT),
-	AM33XX_MUX(I2C0_SCL, OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_SLOW |
-			AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT),
-	{ .reg_offset = OMAP_MUX_TERMINATOR },
-};
-#else
-#define	board_mux	NULL
-#endif
-
 /* module pin mux structure */
 struct pinmux_config {
 	const char *string_name; /* signal name format */
@@ -504,7 +492,7 @@ static void __init am33xx_cpuidle_init(void)
 static void __init mityarm335x_init(void)
 {
 	am33xx_cpuidle_init();
-	am33xx_mux_init(board_mux);
+	am33xx_mux_init(NULL);
 	omap_serial_init();
 	am335x_rtc_init();
 	mityarm335x_i2c_init();

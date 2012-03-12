@@ -548,6 +548,7 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 		u32 bpp, u32 raster_order)
 {
 	u32 reg;
+	u32 width_for_printk = width;
 
 	/* Set the Panel Width */
 	/* Pixels per line = (PPL + 1)*16 */
@@ -618,7 +619,7 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
 	default:
 		return -EINVAL;
 	}
-
+	printk(KERN_INFO "DA8XX FB: %d x %d %d bpp\n", width_for_printk, height, bpp);
 	return 0;
 }
 
@@ -726,11 +727,12 @@ static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
 
 }
 
-static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+static int lcd_init(struct da8xx_fb_par *par, struct lcd_ctrl_config *cfg,
 		struct da8xx_panel *panel)
 {
 	u32 bpp;
 	int ret = 0;
+	char *opt, *options = NULL;
 
 	lcd_reset(par);
 
@@ -766,13 +768,32 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
 			(WVGA != cfg->p_disp_panel->panel_type))
 		return -EINVAL;
 
-	if (cfg->bpp <= cfg->p_disp_panel->max_bpp &&
-	    cfg->bpp >= cfg->p_disp_panel->min_bpp)
-		bpp = cfg->bpp;
-	else
+	/* TJI Add bpp from command line */
+	bpp = cfg->bpp;
+#ifndef MODULE
+	ret = fb_get_options("da8xx", &options);
+	if (0 == ret) {
+		if (options && *options) {
+			printk(KERN_INFO "DA8XX FB - options = %s\n", options);
+			while ((opt = strsep(&options, ",")) != NULL) {
+				if (opt && !strncmp(opt, "bpp=", 4))
+					bpp = simple_strtoul(opt + 4, NULL, 0);
+			}
+		} else {
+			printk(KERN_INFO "DA8XX FB - no options passed\n");
+		}
+	} else {
+		printk(KERN_ERR "DA8XX FB - fb_get_options rv=%d\n", ret);
+	}
+#endif /* MODULE */
+
+	if ((bpp > cfg->p_disp_panel->max_bpp) ||
+		(bpp < cfg->p_disp_panel->min_bpp))
 		bpp = cfg->p_disp_panel->max_bpp;
+
 	if (bpp == 12)
 		bpp = 16;
+	cfg->bpp = bpp;
 	ret = lcd_cfg_frame_buffer(par, (unsigned int)panel->width,
 				(unsigned int)panel->height, bpp,
 				cfg->raster_order);

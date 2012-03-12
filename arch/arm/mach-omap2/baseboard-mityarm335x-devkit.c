@@ -273,7 +273,6 @@ static struct snd_platform_data baseboard_snd_data = {
 
 static const struct omap2_mcspi_device_config spi0_ctlr_data = {
 	.turbo_mode = 0,
-	.single_channel = 0,
 	.d0_is_mosi = 1,
 };
 
@@ -295,7 +294,7 @@ static __init void baseboard_setup_audio(void)
 	pr_info("Configuring audio...\n");
 	setup_pin_mux(mcasp1_pin_mux);
 	setup_pin_mux(spi0_pin_mux);
-	am335x_register_mcasp1(&baseboard_snd_data);
+	am335x_register_mcasp(&baseboard_snd_data, 1);
 	spi_register_board_info(baseboard_spi0_slave_info,
 			ARRAY_SIZE(baseboard_spi0_slave_info));
 }

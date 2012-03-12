@@ -165,10 +165,10 @@ static __init void baseboard_setup_mmc(void)
 }
 
 static const struct display_panel disp_panel = {
-	WVGA,
-	16,
-	16,
-	COLOR_ACTIVE,
+	WVGA,		/* panel_type */
+	32,		/* max_bpp */
+	16,		/* min_bpp */
+	COLOR_ACTIVE,	/* panel_shade */
 };
 
 static struct lcd_ctrl_config dvi_cfg = {

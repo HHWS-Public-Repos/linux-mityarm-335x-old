@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 MontaVista Software Inc.
+  Copyright (C) 2008-2009 MontaVista Software Inc.
  * Copyright (C) 2008-2009 Texas Instruments Inc
  *
  * Based on the LCD driver for TI Avalanche processors written by
@@ -273,7 +273,7 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.invert_pxl_clk = 0,
 	},
 	[3] = {
-		.name = "svga_800x600",
+		.name = "800x600",
 		.width = 800,
 		.height = 600,
 		.hfp = 15,
@@ -283,6 +283,19 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.vbp = 3,
 		.vsw = 2,
 		.pxl_clk = 30000000,
+		.invert_pxl_clk = 0,
+	},
+	[4] = {
+		.name = "1280x768",
+		.width = 1280,
+		.height = 768,
+		.hfp = 48,
+		.hbp = 80,
+		.hsw = 32,
+		.vfp = 3,
+		.vbp = 12,
+		.vsw = 7,
+		.pxl_clk = 68250000,
 		.invert_pxl_clk = 0,
 	},
 };
@@ -732,7 +745,6 @@ static int lcd_init(struct da8xx_fb_par *par, struct lcd_ctrl_config *cfg,
 {
 	u32 bpp;
 	int ret = 0;
-	char *opt, *options = NULL;
 
 	lcd_reset(par);
 
@@ -768,25 +780,7 @@ static int lcd_init(struct da8xx_fb_par *par, struct lcd_ctrl_config *cfg,
 			(WVGA != cfg->p_disp_panel->panel_type))
 		return -EINVAL;
 
-	/* TJI Add bpp from command line */
 	bpp = cfg->bpp;
-#ifndef MODULE
-	ret = fb_get_options("da8xx", &options);
-	if (0 == ret) {
-		if (options && *options) {
-			printk(KERN_INFO "DA8XX FB - options = %s\n", options);
-			while ((opt = strsep(&options, ",")) != NULL) {
-				if (opt && !strncmp(opt, "bpp=", 4))
-					bpp = simple_strtoul(opt + 4, NULL, 0);
-			}
-		} else {
-			printk(KERN_INFO "DA8XX FB - no options passed\n");
-		}
-	} else {
-		printk(KERN_ERR "DA8XX FB - fb_get_options rv=%d\n", ret);
-	}
-#endif /* MODULE */
-
 	if ((bpp > cfg->p_disp_panel->max_bpp) ||
 		(bpp < cfg->p_disp_panel->min_bpp))
 		bpp = cfg->p_disp_panel->max_bpp;
@@ -1269,6 +1263,31 @@ static int __devinit fb_probe(struct platform_device *device)
 	struct da8xx_fb_par *par;
 	resource_size_t len;
 	int ret, i;
+	char *opt, *options = NULL;
+	char mode[64] = "";
+	int bpp = 0;
+
+	/* TJI Add bpp from command line */
+#ifndef MODULE
+	ret = fb_get_options("da8xx", &options);
+	if (0 == ret) {
+		if (options && *options) {
+			printk(KERN_INFO "DA8XX FB - options = %s\n", options);
+			while ((opt = strsep(&options, ",")) != NULL) {
+				if (opt && !strncmp(opt, "bpp=", 4))
+					bpp = simple_strtoul(opt + 4, NULL, 0);
+				else if (opt && !strncmp(opt, "mode=", 4)) {
+					strncpy(mode,opt + 5, sizeof(mode)-1);
+					mode[sizeof(mode)-1] = '\0';
+				}
+			}
+		} else {
+			printk(KERN_INFO "DA8XX FB - no options passed\n");
+		}
+	} else {
+		printk(KERN_ERR "DA8XX FB - fb_get_options rv=%d\n", ret);
+	}
+#endif /* MODULE */
 
 	if (fb_pdata == NULL) {
 		dev_err(&device->dev, "Can not get platform data\n");
@@ -1323,10 +1342,15 @@ static int __devinit fb_probe(struct platform_device *device)
 		break;
 	}
 
+        if ('\0' == mode[0]){
+		strncpy(mode,fb_pdata->type, sizeof(mode)-1);
+		mode[sizeof(mode)-1] = '\0';
+	}
+
 	for (i = 0, lcdc_info = known_lcd_panels;
 		i < ARRAY_SIZE(known_lcd_panels);
 		i++, lcdc_info++) {
-		if (strcmp(fb_pdata->type, lcdc_info->name) == 0)
+		if (strcmp(mode, lcdc_info->name) == 0)
 			break;
 	}
 
@@ -1347,6 +1371,11 @@ static int __devinit fb_probe(struct platform_device *device)
 		ret = -ENOMEM;
 		goto err_pm_runtime_disable;
 	}
+
+
+
+	if(0 != bpp)
+		lcd_cfg->bpp = bpp;
 
 	par = da8xx_fb_info->par;
 	par->dev = &device->dev;

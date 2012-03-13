@@ -7,6 +7,7 @@
 #include <linux/init.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/phy.h>
 #include <linux/usb/musb.h>
 #include <linux/dma-mapping.h>
 #include <linux/spi/spi.h>
@@ -26,6 +27,12 @@
 #include "devices.h"
 
 #define BASEBOARD_NAME "MityARM-335x DevKit"
+/* Vitesse 8601 register defs we need... */
+#define VSC8601_PHY_ID   (0x00070420)
+#define VSC8601_PHY_MASK (0xFFFFFFFC)
+#define MII_EXTPAGE		 (0x1F)
+#define RGMII_SKEW		 (0x1C)
+
 
 /* TODO - refactor all the pinmux stuff for all board files to use */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
@@ -34,6 +41,7 @@ struct pinmux_config {
 	const char	*muxname;
 	int		val;
 };
+
 
 #define setup_pin_mux(pin_mux) \
 { \
@@ -105,10 +113,10 @@ static struct pinmux_config can_pin_mux[] = {
 };
 
 static struct pinmux_config expansion_pin_mux[] = {
-	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP}, /* Exp0 RX */
-	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL}, 	   /* Exp0 TX */
-	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP},  /* Exp1 RX */
-	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL},	   /* Exp1 TX */
+	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP},/* Exp0 RX */
+	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL},		/* Exp0 TX */
+	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP},/* Exp1 RX */
+	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL},		/* Exp1 TX */
 	{NULL, 0}
 };
 
@@ -271,7 +279,7 @@ static struct snd_platform_data baseboard_snd_data = {
 	.rxnumevt	= 1,
 };
 
-static const struct omap2_mcspi_device_config spi0_ctlr_data = {
+static struct omap2_mcspi_device_config spi0_ctlr_data = {
 	.turbo_mode = 0,
 	.d0_is_mosi = 1,
 };
@@ -313,6 +321,41 @@ static void __init baseboard_i2c0_init(void)
 	omap_register_i2c_bus(1, 100, NULL, 0);
 }
 
+/* fixup for the Vitesse 8601 PHY on the MityARM335x dev kit.
+ * We need to adjust the recv clock skew to recenter the data eye.
+ */
+static int am335x_vsc8601_phy_fixup(struct phy_device *phydev)
+{
+	unsigned int val;
+
+	pr_info("am335x_vsc8601_phy_fixup %x here addr = %d\n",
+			phydev->phy_id, phydev->addr);
+
+	/* skew control is in extended register set */
+	if (phy_write(phydev,  MII_EXTPAGE, 1) < 0) {
+		pr_err("Error enabling extended PHY regs\n");
+		return 1;
+	}
+	/* read the skew */
+	val = phy_read(phydev, RGMII_SKEW);
+	if (val < 0) {
+		pr_err("Error reading RGMII skew reg\n");
+		return val;
+	}
+	val &= 0x0FFF; /* clear skew values */
+	val |= 0x3000; /* 0 Tx skew, 2.0ns Rx skew */
+	if (phy_write(phydev, RGMII_SKEW, val) < 0) {
+		pr_err("failed to write RGMII_SKEW\n");
+		return 1;
+	}
+	/* disable the extended page access */
+	if (phy_write(phydev, MII_EXTPAGE, 0) < 0) {
+		pr_err("Error disabling extended PHY regs\n");
+		return 1;
+	}
+	return 0;
+}
+
 static __init void baseboard_setup_enet(void)
 {
 	/* pinmux */
@@ -320,6 +363,12 @@ static __init void baseboard_setup_enet(void)
 
 	/* network configuration done in SOM code */
 	/* PHY address setup? */
+	/* Register PHY fixup to adjust rx clock skew */
+	pr_info ("MityARM 335X devkit setup enet registering phy ID %x\n",
+			VSC8601_PHY_ID);
+	phy_register_fixup_for_uid(VSC8601_PHY_ID,
+				VSC8601_PHY_MASK,
+				am335x_vsc8601_phy_fixup);
 }
 
 static __init int baseboard_init(void)

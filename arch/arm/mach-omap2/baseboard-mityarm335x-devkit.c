@@ -200,7 +200,7 @@ static struct lcd_ctrl_config dvi_cfg = {
 struct da8xx_lcdc_platform_data dvi_pdata = {
 	.manu_name		= "VESA",
 	.controller_data	= &dvi_cfg,
-	.type			= "svga_800x600",
+	.type			= "800x600",
 };
 
 static __init void baseboard_setup_dvi(void)

@@ -364,8 +364,6 @@ static __init void baseboard_setup_enet(void)
 	/* network configuration done in SOM code */
 	/* PHY address setup? */
 	/* Register PHY fixup to adjust rx clock skew */
-	pr_info ("MityARM 335X devkit setup enet registering phy ID %x\n",
-			VSC8601_PHY_ID);
 	phy_register_fixup_for_uid(VSC8601_PHY_ID,
 				VSC8601_PHY_MASK,
 				am335x_vsc8601_phy_fixup);

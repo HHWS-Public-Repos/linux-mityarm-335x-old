@@ -366,6 +366,12 @@ config	BASEBOARD_MITYARM335X_DEVKIT
 	  Select this option for the Critical Link MityARM-335x Development Kit
 	  baseboard.
 
+config BASEBOARD_MITYARM335X_TESTFIXTURE
+	bool	"MityARM-335x Test Fixture"
+	help
+	  Select this option for the Critical Link MityARM-335x Test Fixture
+	  baseboard
+
 endchoice
 
 config MACH_OMAP_4430SDP

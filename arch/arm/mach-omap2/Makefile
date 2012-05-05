@@ -221,6 +221,7 @@ obj-$(CONFIG_MACH_OMAP3_PANDORA)	+= board-omap3pandora.o
 obj-$(CONFIG_MACH_OMAP_3430SDP)		+= board-3430sdp.o
 obj-$(CONFIG_MACH_MITYARM335X)		+= board-mityarm335x.o
 obj-$(CONFIG_BASEBOARD_MITYARM335X_DEVKIT)	+= baseboard-mityarm335x-devkit.o
+obj-$(CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE)	+= baseboard-mityarm335x-testfixture.o
 obj-$(CONFIG_MACH_NOKIA_N8X0)		+= board-n8x0.o
 obj-$(CONFIG_MACH_NOKIA_RM680)		+= board-rm680.o \
 					   sdram-nokia.o

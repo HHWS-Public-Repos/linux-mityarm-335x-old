@@ -418,6 +418,14 @@ config TOUCHSCREEN_TI_TSCADC
 	  To compile this driver as a module, choose M here: the
 	  module will be called ti_tscadc.
 
+config TOUCHSCREEN_TI_ADC
+	tristate "AM335x ADC Interface"
+	help
+	  Say Y here if you want access to AM335x analog inputs via sysfs.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called ti_adc.
+
 config TOUCHSCREEN_ATMEL_TSADCC
 	tristate "Atmel Touchscreen Interface"
 	depends on ARCH_AT91SAM9RL || ARCH_AT91SAM9G45

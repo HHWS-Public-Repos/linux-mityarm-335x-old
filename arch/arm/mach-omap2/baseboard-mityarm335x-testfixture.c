@@ -88,6 +88,9 @@ static struct pinmux_config sig_setA_loopback_pin_mux[] = {
 	{"gpmc_csn2.gpio1_31",			AM33XX_PIN_INPUT},
 	{"gpmc_csn1.gpio1_30",			AM33XX_PIN_INPUT},
 
+	/* gpmc_a0 muxed to gpio1_16 as output for USB_ID_CTL */
+	{"gpmc_a0.gpio1_16",			AM33XX_PIN_OUTPUT},
+
 	/**
 	 * We want to test the USB using these signals - these should not
 	 * be GPIO's
@@ -103,7 +106,6 @@ static struct pinmux_config sig_setA_loopback_pin_mux[] = {
 static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 	/* Outputs */
 	{"rmii1_refclk.gpio0_29",		AM33XX_PIN_OUTPUT},
-	{"mmc0_cmd.gpio2_31",			AM33XX_PIN_OUTPUT},
 	{"mmc0_dat0.gpio2_29",			AM33XX_PIN_OUTPUT},
 	{"mmc0_dat2.gpio2_27",			AM33XX_PIN_OUTPUT},
 	{"uart0_ctsn.gpio1_8",			AM33XX_PIN_OUTPUT},
@@ -123,6 +125,8 @@ static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 
 	/* Inputs */
 	{"uart1_rxd.gpio0_14",			AM33XX_PIN_INPUT},
+	/* mmc0_cmd changed to input for board rework */
+	{"mmc0_cmd.gpio2_31",			AM33XX_PIN_INPUT},
 	{"mmc0_clk.gpio2_30",			AM33XX_PIN_INPUT},
 	{"mmc0_dat1.gpio2_28",			AM33XX_PIN_INPUT},
 	{"mmc0_dat3.gpio2_26",			AM33XX_PIN_INPUT},
@@ -135,11 +139,12 @@ static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 	{"gpmc_ben1.gpio1_28",			AM33XX_PIN_INPUT},
 	{"gpmc_a3.gpio1_19",			AM33XX_PIN_INPUT},
 	{"gpmc_a5.gpio1_21",			AM33XX_PIN_INPUT},
-	{"gpmc_a1.gpio1_23",			AM33XX_PIN_INPUT},
+	{"gpmc_a7.gpio1_23",			AM33XX_PIN_INPUT},
 	{"gpmc_a9.gpio1_25",			AM33XX_PIN_INPUT},
 	{"gpmc_a11.gpio1_27",			AM33XX_PIN_INPUT},
 	{"mcasp0_aclkr.gpio3_18",		AM33XX_PIN_INPUT},
 	{"mcasp0_ahclkx.gpio3_21",		AM33XX_PIN_INPUT},
+	{"mcasp0_axr1.gpio3_20", 		AM33XX_PIN_INPUT},
 
 	{NULL, 0}
 };
@@ -199,20 +204,6 @@ static struct pinmux_config spi_pin_mux[] = {
 	/* SPI1 - This is mostly specified within board-mityarm335x.c */
 
 	{"xdma_event_intr0.spi1_cs1",		AM33XX_PULL_DISA},
-
-	{NULL, 0}
-};
-
-/* Analog Interface */
-static struct pinmux_config analog_pin_mux[] = {
-	{"ain0.ain0",				AM33XX_PIN_OUTPUT},
-	{"ain1.ain1",				AM33XX_PIN_OUTPUT},
-	{"ain2.ain2",				AM33XX_PIN_OUTPUT},
-	{"ain3.ain3",				AM33XX_PIN_OUTPUT},
-	{"vrefn.vrefn",				AM33XX_PIN_OUTPUT},
-	{"vrefp.vrefp",				AM33XX_PIN_OUTPUT},
-
-	/* No mux33xx.c spec for ain4-7 */
 
 	{NULL, 0}
 };
@@ -304,6 +295,57 @@ static struct spi_board_info mityarm335x_spi1_slave_info[] = {
 	},
 };
 
+/* ADC; analog inputs */
+
+/*
+ * Pin mux for analog inputs; the driver is a modified version
+ * of the touch screen...
+ */
+static struct pinmux_config adc_pin_mux[] = {
+	{"ain0.ain0",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"ain1.ain1",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"ain2.ain2",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"ain3.ain3",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"ain4.ain4",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"ain5.ain5",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"ain6.ain6",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"ain7.ain7",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"vrefp.vrefp",         OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{"vrefn.vrefn",         OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
+	{NULL, 0},
+};
+
+static struct resource adc_resources[]  = {
+	[0] = {
+		.start  = AM33XX_TSC_BASE,
+		.end    = AM33XX_TSC_BASE + SZ_8K - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start  = AM33XX_IRQ_ADC_GEN,
+		.end    = AM33XX_IRQ_ADC_GEN,
+		.flags  = IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device adc_device = {
+	.name   = "ain",
+	.id     = -1,
+	.dev    = {},
+	.num_resources  = ARRAY_SIZE(adc_resources),
+	.resource       = adc_resources,
+};
+
+static void adc_init(void)
+{
+	int err;
+
+	setup_pin_mux(adc_pin_mux);
+	err = platform_device_register(&adc_device);
+	if (err)
+		pr_err("failed to register adc device\n");
+}
+
 static void mityarm335x_loopback_test_init(void)
 {
 	/* Establish loopback GPIO test sets */
@@ -351,14 +393,16 @@ static void mityarm335x_test_usb(void)
 static void mityarm335x_test_analog(void)
 {
 	/* Set up analog pins */
-	setup_pin_mux(analog_pin_mux);
+	adc_init();
 }
 
 /* Call test setup methods for the entire baseboard */
 static __init void baseboard_setup(void)
 {
 	mityarm335x_loopback_test_init();
+#if 0
 	mityarm335x_test_nand_init();
+#endif
 	mityarm335x_test_nor_init();
 	mityarm335x_test_communications();
 	mityarm335x_test_usb();

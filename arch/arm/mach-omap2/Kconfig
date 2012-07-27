@@ -374,6 +374,16 @@ config BASEBOARD_MITYARM335X_TESTFIXTURE
 
 endchoice
 
+config FB_MITYARM_DEVKIT_LCD
+	bool "Configure drivers for MityARM-AM335X devkit LCD adapter"
+	depends on (FB_DA8XX && BASEBOARD_MITYARM335X_DEVKIT)
+	select BACKLIGHT_TPS6116X
+	help
+	  Select this option to configure and instantiate the touchscreen and
+	  backlight controllers for the LCD interface board for the Critical
+	  Link MityARM-335X dev kit. This also sets the default video mode
+	  to 1024x768.
+
 config MACH_OMAP_4430SDP
 	bool "OMAP 4430 SDP board"
 	default y
@@ -412,7 +422,7 @@ config OMAP3_SDRC_AC_TIMING
 	  If you know that none of your system initiators will attempt to
 	  access SDRAM during CORE DVFS, select Y here.  This should boost
 	  SDRAM performance at lower CORE OPPs.  There are relatively few
-	  users who will wish to say yes at this point - almost everyone will
+	  users who will wish to say yes at this point - almost everyone will.
 	  wish to say no.  Selecting yes without understanding what is
 	  going on could result in system crashes;
 

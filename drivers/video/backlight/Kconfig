@@ -350,6 +350,13 @@ config BACKLIGHT_TLC59108
 	  If you have an LCD Panel with backlight control via TLC59108,
 	  say Y to enable its LCD control driver.
 
+config BACKLIGHT_TPS6116X
+	tristate "TPS6116X LCD Backlight"
+	depends on GENERIC_GPIO
+	help
+	  This driver controls the LCD backlight level for EasyScale capable
+	  SSP connected backlight controllers.
+
 endif # BACKLIGHT_CLASS_DEVICE
 
 endif # BACKLIGHT_LCD_SUPPORT

@@ -298,6 +298,19 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.pxl_clk = 68250000,
 		.invert_pxl_clk = 0,
 	},
+	[5] = {
+		.name = "1024x768",
+		.width = 1024,
+		.height = 768,
+		.hfp = 24,
+		.hbp = 160,
+		.hsw = 136,
+		.vfp = 3,
+		.vbp = 29,
+		.vsw = 6,
+		.pxl_clk = 65000000,
+		.invert_pxl_clk = 0,
+	},
 };
 
 /* Enable the Raster Engine of the LCD Controller */
@@ -1264,7 +1277,11 @@ static int __devinit fb_probe(struct platform_device *device)
 	resource_size_t len;
 	int ret, i;
 	char *opt, *options = NULL;
+#ifdef CONFIG_FB_MITYARM_DEVKIT_LCD
+	char mode[64] = "1024x768";
+#else
 	char mode[64] = "";
+#endif // CONFIG_FB_MITYARM_DEVKIT_LCD
 	int bpp = 0;
 
 	/* TJI Add bpp from command line */

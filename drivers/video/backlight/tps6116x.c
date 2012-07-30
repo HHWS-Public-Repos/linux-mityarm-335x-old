@@ -256,11 +256,12 @@ static int __devinit tps6116x_probe(struct platform_device *pdev)
 		goto fail2;
 	}
 
-	memset(&props, 0, sizeof(props));
+	memset(&props, 0, sizeof(struct backlight_properties));
 	props.max_brightness = TPS6116X_MAX_INTENSITY;
 	props.brightness     = TPS6116X_DEFAULT_INTENSITY;
 	props.type			 = BACKLIGHT_RAW;
-
+	props.power			 = FB_BLANK_UNBLANK;
+	
 	hw->bl = backlight_device_register("tps6116x", hw->dev, hw,
 					   &tps6116x_backlight_ops, &props);
 	if (IS_ERR(hw->bl)) {
@@ -268,7 +269,9 @@ static int __devinit tps6116x_probe(struct platform_device *pdev)
 		dev_err(dev, "backlight registration failed\n");
 		goto fail3;
 	}
-
+	platform_set_drvdata(pdev, hw->bl);
+	update_status(hw->bl);
+	
 	dev_info(dev, "registered backlight controller\n");
 	return 0;
 

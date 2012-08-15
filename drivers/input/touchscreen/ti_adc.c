@@ -25,7 +25,8 @@
 #include <linux/delay.h>
 #include <linux/device.h>
 
-static ssize_t do_adc_sample(struct device *, struct device_attribute *, char *);
+static ssize_t do_adc_sample(struct device *, struct device_attribute *,
+	char *);
 static DEVICE_ATTR(ain1, S_IRUGO, do_adc_sample, NULL);
 static DEVICE_ATTR(ain2, S_IRUGO, do_adc_sample, NULL);
 static DEVICE_ATTR(ain3, S_IRUGO, do_adc_sample, NULL);
@@ -139,7 +140,7 @@ static void adc_step_config(struct adc *ts_dev, int channel)
 	 * sample channel 1 (SEL_INP mux bits = 0)
 	 */
 	stepconfig = TSCADC_STEPCONFIG_MODE_SWONESHOT
-			| TSCADC_STEPCONFIG_2SAMPLES_AVG 
+			| TSCADC_STEPCONFIG_2SAMPLES_AVG
 			| ((channel) << 19);
 
 	delay = TSCADC_STEPCONFIG_SAMPLEDLY | TSCADC_STEPCONFIG_OPENDLY;
@@ -152,7 +153,8 @@ static void adc_step_config(struct adc *ts_dev, int channel)
 	adc_writel(ts_dev, TSCADC_REG_SE, TSCADC_STPENB_STEPENB_GENERAL);
 }
 
-static ssize_t do_adc_sample(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t do_adc_sample(struct device *dev,
+	struct device_attribute *attr, char *buf)
 {
 	struct adc *ts_dev;
 	int channel_num, output;
@@ -166,13 +168,13 @@ static ssize_t do_adc_sample(struct device *dev, struct device_attribute *attr, 
 	ts_dev = dev_get_drvdata(dev);
 
 	if (strncmp(attr->attr.name, "ain", 3)) {
-		printk("Invalid ain num\n");
+		printk(KERN_INFO "Invalid ain num\n");
 		return -EINVAL;
 	}
 
 	channel_num = attr->attr.name[3] - 0x30;
 	if (channel_num > 7 || channel_num < 0) {
-		printk("Invalid channel_num=%d\n", channel_num);
+		printk(KERN_INFO "Invalid channel_num=%d\n", channel_num);
 		return -EINVAL;
 	}
 
@@ -185,14 +187,11 @@ static ssize_t do_adc_sample(struct device *dev, struct device_attribute *attr, 
 		poll_limit_ctr++;
 	} while (!fifo0count && (poll_limit_ctr < poll_limit));
 
-	while ((poll_limit_ctr < poll_limit) && (fifo0count--)) {
+	while ((poll_limit_ctr < poll_limit) && (fifo0count--))
 		read_sample = adc_readl(ts_dev, TSCADC_REG_FIFO0) & 0xfff;
-		// printk("polling sample: %d: %x\n", fifo0count, read_sample);
-	}
-	
-	if(poll_limit_ctr > poll_limit) {
-		printk("Poll limit hit; could not read ADC value.\n");
-	}
+
+	if (poll_limit_ctr > poll_limit)
+		printk(KERN_INFO "Poll limit hit; could not read ADC value.\n");
 
 	output = sprintf(buf, "%d\n", read_sample);
 
@@ -211,8 +210,8 @@ static int __devinit adc_probe(struct platform_device *pdev)
 	struct resource *res;
 	struct clk *clk;
 
-	printk("dev addr = %p\n", &pdev->dev);
-	printk("pdev addr = %p\n", pdev);
+	printk(KERN_INFO "dev addr = %p\n", &pdev->dev);
+	printk(KERN_INFO "pdev addr = %p\n", pdev);
 
 	err = device_create_file(&pdev->dev, &dev_attr_ain1);
 	err |= device_create_file(&pdev->dev, &dev_attr_ain2);
@@ -223,7 +222,7 @@ static int __devinit adc_probe(struct platform_device *pdev)
 	err |= device_create_file(&pdev->dev, &dev_attr_ain7);
 	err |= device_create_file(&pdev->dev, &dev_attr_ain0);
 
-	if(err) {
+	if (err) {
 		dev_err(&pdev->dev, "couldn't create sysfs entries.\n");
 		return err;
 	}

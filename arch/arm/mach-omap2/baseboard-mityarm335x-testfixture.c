@@ -21,6 +21,9 @@
 #include <plat/omap_device.h>
 #include <plat/mcspi.h>
 #include <plat/i2c.h>
+#include <plat/nand.h>
+#include <plat/board.h>
+#include <plat/gpmc.h>
 
 #include <asm/hardware/asp.h>
 
@@ -87,17 +90,8 @@ static struct pinmux_config sig_setA_loopback_pin_mux[] = {
 	{"gpmc_ad15.gpio1_15",			AM33XX_PIN_INPUT},
 	{"gpmc_csn2.gpio1_31",			AM33XX_PIN_INPUT},
 	{"gpmc_csn1.gpio1_30",			AM33XX_PIN_INPUT},
-
-	/* gpmc_a0 muxed to gpio1_16 as output for USB_ID_CTL */
-	{"gpmc_a0.gpio1_16",			AM33XX_PIN_OUTPUT},
-
-	/**
-	 * We want to test the USB using these signals - these should not
-	 * be GPIO's
-	 */
-
-	/* {"usb1_drvvbus.gpio3_13",		AM33XX_PIN_INPUT}, */
-	/* {"usb0_drvvbus.gpio0_18",		AM33XX_PIN_INPUT}, */
+	{"uart0_ctsn.gpio1_8",			AM33XX_PIN_INPUT},
+	{"uart0_rtsn.gpio1_9",			AM33XX_PIN_INPUT},
 
 	{NULL, 0}
 };
@@ -106,9 +100,6 @@ static struct pinmux_config sig_setA_loopback_pin_mux[] = {
 static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 	/* Outputs */
 	{"rmii1_refclk.gpio0_29",		AM33XX_PIN_OUTPUT},
-	{"mmc0_dat0.gpio2_29",			AM33XX_PIN_OUTPUT},
-	{"mmc0_dat2.gpio2_27",			AM33XX_PIN_OUTPUT},
-	{"uart0_ctsn.gpio1_8",			AM33XX_PIN_OUTPUT},
 	{"uart1_txd.gpio0_15",			AM33XX_PIN_OUTPUT},
 	{"i2c0_scl.gpio3_6",			AM33XX_PIN_OUTPUT},
 	{"spi0_d1.gpio0_4",			AM33XX_PIN_OUTPUT},
@@ -125,17 +116,10 @@ static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 
 	/* Inputs */
 	{"uart1_rxd.gpio0_14",			AM33XX_PIN_INPUT},
-	/* mmc0_cmd changed to input for board rework */
-	{"mmc0_cmd.gpio2_31",			AM33XX_PIN_INPUT},
-	{"mmc0_clk.gpio2_30",			AM33XX_PIN_INPUT},
-	{"mmc0_dat1.gpio2_28",			AM33XX_PIN_INPUT},
-	{"mmc0_dat3.gpio2_26",			AM33XX_PIN_INPUT},
-	{"uart0_rtsn.gpio1_9",			AM33XX_PIN_INPUT},
 	{"i2c0_sda.gpio3_5",			AM33XX_PIN_INPUT},
 	{"spi0_d0.gpio0_3",			AM33XX_PIN_INPUT},
 	{"spi0_sclk.gpio0_2",			AM33XX_PIN_INPUT},
 	{"spi0_cs0.gpio0_5",			AM33XX_PIN_INPUT},
-	/* {"xdma_event_intr0.gpio0_19",	AM33XX_PIN_INPUT}, */
 	{"gpmc_ben1.gpio1_28",			AM33XX_PIN_INPUT},
 	{"gpmc_a3.gpio1_19",			AM33XX_PIN_INPUT},
 	{"gpmc_a5.gpio1_21",			AM33XX_PIN_INPUT},
@@ -144,7 +128,31 @@ static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 	{"gpmc_a11.gpio1_27",			AM33XX_PIN_INPUT},
 	{"mcasp0_aclkr.gpio3_18",		AM33XX_PIN_INPUT},
 	{"mcasp0_ahclkx.gpio3_21",		AM33XX_PIN_INPUT},
-	{"mcasp0_axr1.gpio3_20", 		AM33XX_PIN_INPUT},
+	{"mcasp0_axr1.gpio3_20",		AM33XX_PIN_INPUT},
+
+	/* Others: */
+	/* gpmc_a0 is output to control the USB_ID pins */
+	{"gpmc_a0.gpio1_16",			AM33XX_PIN_OUTPUT},
+
+	/* MMC pins may not be GPIO after respin... */
+	/* TODO: MMC Support? Enable MMC support by removing these: */
+	{"mmc0_dat0.gpio2_29",			AM33XX_PIN_OUTPUT},
+	{"mmc0_dat2.gpio2_27",			AM33XX_PIN_OUTPUT},
+	{"mmc0_cmd.gpio2_31",			AM33XX_PIN_INPUT},
+	{"mmc0_clk.gpio2_30",			AM33XX_PIN_INPUT},
+	{"mmc0_dat1.gpio2_28",			AM33XX_PIN_INPUT},
+	{"mmc0_dat3.gpio2_26",			AM33XX_PIN_INPUT},
+
+	{NULL, 0}
+};
+
+static struct pinmux_config mmc_pin_mux[] = {
+	{"mmc0_dat3.mmc0_dat3", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_dat2.mmc0_dat2", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_dat1.mmc0_dat1", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_dat0.mmc0_dat0", AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_clk.mmc0_clk",   AM33XX_PIN_INPUT_PULLUP},
+	{"mmc0_cmd.mmc0_cmd",   AM33XX_PIN_INPUT_PULLUP},
 
 	{NULL, 0}
 };
@@ -184,9 +192,8 @@ static struct pinmux_config usb_pin_mux[] = {
 	 * No mux33xx.c specification for usb aside from usbdrvvbus
 	 * (within section A)
 	 */
-	{"usb1_drvvbus.usb1_drvvbus",		AM33XX_PIN_OUTPUT},
-	{"usb0_drvvbus.usb0_drvvbus",		AM33XX_PIN_OUTPUT},
-
+	{"usb0_drvvbus.usb0_drvvbus",	AM33XX_PIN_OUTPUT},
+	{"usb1_drvvbus.usb1_drvvbus",	AM33XX_PIN_OUTPUT},
 	{NULL, 0}
 };
 
@@ -295,6 +302,45 @@ static struct spi_board_info mityarm335x_spi1_slave_info[] = {
 	},
 };
 
+/* Second NAND chip... */
+static struct resource gpmc_nand_resource = {
+	.flags		= IORESOURCE_MEM,
+};
+
+static struct platform_device gpmc_nand_device = {
+	.name		= "omap2-nand",
+	.id		= 1,
+	.num_resources	= 1,
+	.resource	= &gpmc_nand_resource,
+};
+
+static struct gpmc_timings am335x_nand_timings = {
+
+	.sync_clk = 0,
+
+	.cs_on = 0,
+	.cs_rd_off = 44,
+	.cs_wr_off = 44,
+
+	.adv_on = 6,
+	.adv_rd_off = 34,
+	.adv_wr_off = 44,
+
+	.we_off = 40,
+	.oe_off = 54,
+
+	.access = 64,
+	.rd_cycle = 82,
+	.wr_cycle = 82,
+
+	.wr_access = 40,
+	.wr_data_mux_bus = 0,
+};
+
+static struct omap_nand_platform_data board_nand_data = {
+	.gpmc_t		= &am335x_nand_timings,
+};
+
 /* ADC; analog inputs */
 
 /*
@@ -336,6 +382,23 @@ static struct platform_device adc_device = {
 	.resource       = adc_resources,
 };
 
+static struct omap2_hsmmc_info mmc_info[] __initdata = {
+	{
+		.mmc		= 1,
+		.caps		= MMC_CAP_4_BIT_DATA,
+		.gpio_cd	= -EINVAL,
+		.gpio_wp	= -EINVAL,
+		.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
+	},
+	{}
+};
+
+static void mmc_init(void)
+{
+	setup_pin_mux(mmc_pin_mux);
+	omap2_hsmmc_init(mmc_info);
+}
+
 static void adc_init(void)
 {
 	int err;
@@ -353,12 +416,115 @@ static void mityarm335x_loopback_test_init(void)
 	setup_pin_mux(sig_setB_loopback_pin_mux);
 }
 
+static int omap2_nand_gpmc_retime(
+	struct omap_nand_platform_data *gpmc_nand_data)
+{
+	struct gpmc_timings t;
+	int err;
+
+	if (!gpmc_nand_data->gpmc_t)
+		return 0;
+
+	memset(&t, 0, sizeof(t));
+	t.sync_clk = gpmc_nand_data->gpmc_t->sync_clk;
+	t.cs_on = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_on);
+	t.adv_on = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->adv_on);
+
+	/* Read */
+	t.adv_rd_off = gpmc_round_ns_to_ticks(
+				gpmc_nand_data->gpmc_t->adv_rd_off);
+	t.oe_on  = t.adv_on;
+	t.access = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->access);
+	t.oe_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->oe_off);
+	t.cs_rd_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_rd_off);
+	t.rd_cycle  = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->rd_cycle);
+
+	/* Write */
+	t.adv_wr_off = gpmc_round_ns_to_ticks(
+				gpmc_nand_data->gpmc_t->adv_wr_off);
+	t.we_on  = t.oe_on;
+	if (cpu_is_omap34xx()) {
+		t.wr_data_mux_bus =	gpmc_round_ns_to_ticks(
+				gpmc_nand_data->gpmc_t->wr_data_mux_bus);
+		t.wr_access = gpmc_round_ns_to_ticks(
+				gpmc_nand_data->gpmc_t->wr_access);
+	}
+	t.we_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->we_off);
+	t.cs_wr_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_wr_off);
+	t.wr_cycle  = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->wr_cycle);
+
+	/* Configure GPMC */
+	if (gpmc_nand_data->devsize == NAND_BUSWIDTH_16)
+		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_DEV_SIZE, 1);
+	else
+		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_DEV_SIZE, 0);
+	gpmc_cs_configure(gpmc_nand_data->cs,
+			GPMC_CONFIG_DEV_TYPE, GPMC_DEVICETYPE_NAND);
+	err = gpmc_cs_set_timings(gpmc_nand_data->cs, &t);
+	if (err)
+		return err;
+
+	return 0;
+}
+
 static void mityarm335x_test_nand_init(void)
 {
+	struct omap_nand_platform_data *gpmc_nand_data;
+	int cs = 3;
+	int err = 0;
+	struct device *dev;
+
 	/* Establish NAND flash on chip select 3 */
 	setup_pin_mux(nand_pin_mux);
-	board_nand_init(mityarm335x_test_nand_partitions,
-			ARRAY_SIZE(mityarm335x_test_nand_partitions), 3, 0);
+
+	board_nand_data.cs		= cs;
+	board_nand_data.parts		= mityarm335x_test_nand_partitions;
+	board_nand_data.nr_parts	=
+		ARRAY_SIZE(mityarm335x_test_nand_partitions);
+	board_nand_data.devsize		= 0;
+
+	board_nand_data.ecc_opt = OMAP_ECC_HAMMING_CODE_DEFAULT;
+	board_nand_data.gpmc_irq = OMAP_GPMC_IRQ_BASE + cs;
+
+	board_nand_data.ecc_opt		= OMAP_ECC_BCH8_CODE_HW;
+	board_nand_data.xfer_type	= NAND_OMAP_PREFETCH_POLLED;
+
+	gpmc_nand_data = &board_nand_data;
+	err = 0;
+	dev = &gpmc_nand_device.dev;
+
+	gpmc_nand_device.dev.platform_data = gpmc_nand_data;
+
+	err = gpmc_cs_request(gpmc_nand_data->cs, NAND_IO_SIZE,
+				&gpmc_nand_data->phys_base);
+	if (err < 0) {
+		dev_err(dev, "Cannot request GPMC CS\n");
+		return;
+	}
+
+	 /* Set timings in GPMC */
+	err = omap2_nand_gpmc_retime(gpmc_nand_data);
+	if (err < 0) {
+		dev_err(dev, "Unable to set gpmc timings: %d\n", err);
+		return;
+	}
+
+	/* Enable RD PIN Monitoring Reg */
+	if (gpmc_nand_data->dev_ready)
+		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_RDY_BSY, 1);
+
+	err = platform_device_register(&gpmc_nand_device);
+	if (err < 0) {
+		dev_err(dev, "Unable to register NAND device\n");
+		goto out_free_cs;
+	}
+
+	return;
+
+out_free_cs:
+	gpmc_cs_free(gpmc_nand_data->cs);
+
+	return;
 }
 
 static void mityarm335x_test_nor_init(void)
@@ -396,17 +562,25 @@ static void mityarm335x_test_analog(void)
 	adc_init();
 }
 
+static void mityarm335x_test_mmc(void)
+{
+	/* Set up MMC pins */
+	mmc_init();
+}
+
 /* Call test setup methods for the entire baseboard */
 static __init void baseboard_setup(void)
 {
 	mityarm335x_loopback_test_init();
-#if 0
 	mityarm335x_test_nand_init();
-#endif
 	mityarm335x_test_nor_init();
 	mityarm335x_test_communications();
 	mityarm335x_test_usb();
 	mityarm335x_test_analog();
+/* TODO: MMC Support? Enable MMC support here: */
+#if 0
+	mityarm335x_test_mmc();
+#endif
 }
 
 static __init int baseboard_init(void)

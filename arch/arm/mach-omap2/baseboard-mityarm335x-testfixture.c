@@ -138,7 +138,7 @@ static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 	/* TODO: MMC Support? Enable MMC support by removing these: */
 	{"mmc0_dat0.gpio2_29",			AM33XX_PIN_OUTPUT},
 	{"mmc0_dat2.gpio2_27",			AM33XX_PIN_OUTPUT},
-	{"mmc0_cmd.gpio2_31",			AM33XX_PIN_INPUT},
+	{"mmc0_cmd.gpio2_31",			AM33XX_PIN_OUTPUT},
 	{"mmc0_clk.gpio2_30",			AM33XX_PIN_INPUT},
 	{"mmc0_dat1.gpio2_28",			AM33XX_PIN_INPUT},
 	{"mmc0_dat3.gpio2_26",			AM33XX_PIN_INPUT},

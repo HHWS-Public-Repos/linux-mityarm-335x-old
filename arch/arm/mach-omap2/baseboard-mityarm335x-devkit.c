@@ -12,7 +12,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/spi/spi.h>
 #include <linux/spi/ads7846.h>
-
+#include <linux/delay.h>
 #include <linux/gpio.h>
 
 /* TSc controller */
@@ -26,6 +26,11 @@
 #include <plat/omap_device.h>
 #include <plat/mcspi.h>
 #include <plat/i2c.h>
+
+#include <linux/wl12xx.h>
+#include <linux/regulator/fixed.h>
+#include <linux/regulator/machine.h>
+#include <linux/mmc/host.h>
 
 #include <asm/hardware/asp.h>
 
@@ -131,6 +136,28 @@ static struct pinmux_config mmc0_pin_mux[] = {
 	{NULL, 0}
 };
 
+/**
+ * Expansion connector pins for SDIO
+ * Pin	WifiJ1		DevJ700		335X PIN/Function
+ * 1	SDIO_D3		GPMC_AD15	GPMC_AD15/MMC2_DAT3
+ * 3	SDIO_D2		GPMC_AD14	GPMC_AD14/MMC2_DAT2
+ * 5	SDIO_D1		GPMC_AD13	GPMC_AD13/MMC2_DAT1
+ * 7	SDIO_D0		GPMC_AD12	GPMC_AD12/MMC2_DAT0
+ * 9	RESET		GPMC_AD11	GPMC_AD11/GPIO2_27
+ * 22	SDIO_CMD	GPMC_CS3_N	GPMC_CSN3/MMC2_CMD
+ * 30	SDIO_CLK	GPMC_CLK	GPMC_CLK/MMC2_CLK
+ */
+static struct pinmux_config mmc2_pin_mux[] = {
+	{"gpmc_ad15.mmc2_dat3", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_ad14.mmc2_dat2", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_ad13.mmc2_dat1", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_ad12.mmc2_dat0", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_clk.mmc2_clk",   AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_csn3.mmc2_cmd",   AM33XX_PIN_INPUT_PULLUP},
+	{NULL, 0}
+};
+
+
 static struct pinmux_config can_pin_mux[] = {
 	{"uart1_rxd.d_can1_tx", AM33XX_PULL_ENBL},
 	{"uart1_txd.d_can1_rx", AM33XX_PIN_INPUT_PULLUP},
@@ -200,6 +227,21 @@ static struct pinmux_config tsc_pin_mux[] = {
 	{NULL, 0},
 };
 
+static struct pinmux_config wl12xx_pin_mux[] = {
+	{"gpmc_ad10.gpio0_26",  AM33XX_PIN_INPUT}, /* WL WL IRQ */
+	{"gpmc_ad11.gpio0_27",  AM33XX_PIN_INPUT}, /* WL SPI I/O RST */
+	{"gpmc_csn1.gpio1_30",  AM33XX_PIN_INPUT_PULLUP}, /* WL IRQ */
+	{"gpmc_csn2.gpio1_31",  AM33XX_PIN_OUTPUT}, /* BT RST ?*/
+	{NULL, 0},
+ };
+
+#define AM335XEVM_WLAN_IRQ_GPIO		GPIO_TO_PIN(0, 26)
+
+struct wl12xx_platform_data am335x_wlan_data = {
+	.irq = OMAP_GPIO_IRQ(AM335XEVM_WLAN_IRQ_GPIO),
+	.board_ref_clock = WL12XX_REFCLOCK_38_XTAL, /* 38.4Mhz */
+};
+
 static struct omap2_hsmmc_info mmc_info[] __initdata = {
 	{
 		.mmc		= 1,
@@ -208,8 +250,19 @@ static struct omap2_hsmmc_info mmc_info[] __initdata = {
 		.gpio_wp	= GPIO_TO_PIN(3, 0),
 		.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
 	},
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
 	{} /* Terminator */
 	};
+
+static __init void baseboard_setup_expansion(void)
+{
+	setup_pin_mux(expansion_pin_mux);
+}
 
 static __init void baseboard_setup_can(void)
 {
@@ -535,15 +588,123 @@ static __init void baseboard_setup_enet(void)
 }
 
 
+
+
+
+static void mmc2_wl12xx_init(void)
+{
+	setup_pin_mux(mmc2_pin_mux);
+
+	mmc_info[1].mmc = 3;
+	mmc_info[1].name = "wl1271";
+	mmc_info[1].caps = MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD
+				| MMC_PM_KEEP_POWER;
+	mmc_info[1].nonremovable = true;
+	mmc_info[1].gpio_cd = -EINVAL;
+	mmc_info[1].gpio_wp = -EINVAL;
+	mmc_info[1].ocr_mask = MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+
+	/* mmc will be initialized when mmc0_init is called */
+	return;
+}
+
+static void wl12xx_uart_init(void)
+{
+	/*setup_pin_mux(uart1_wl12xx_pin_mux); */
+}
+
+static void wl12xx_bluetooth_enable(void)
+{
+#if 0
+	int status = gpio_request(am335x_wlan_data.bt_enable_gpio,
+		"bt_en\n");
+	if (status < 0)
+		pr_err("Failed to request gpio for bt_enable");
+
+	pr_info("Configure Bluetooth Enable pin...\n");
+	gpio_direction_output(am335x_wlan_data.bt_enable_gpio, 0);
+#else
+	pr_info("Bluetooth not Enabled!\n");
+#endif
+}
+
+static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
+{
+#if 1	 /* TJI - 5/24/12 WL enable not connected yet.. always on */
+	if (on) {
+		gpio_set_value(am335x_wlan_data.wlan_enable_gpio, 1);
+		mdelay(70);
+	}
+	else
+		gpio_set_value(am335x_wlan_data.wlan_enable_gpio, 0);
+#endif
+	return 0;
+}
+
+static void baseboard_setup_wlan(void)
+{
+
+	struct device *dev;
+	struct omap_mmc_platform_data *pdata;
+	int ret;
+
+
+	/* Register WLAN and BT enable pins based on the evm board revision */
+	am335x_wlan_data.wlan_enable_gpio =  GPIO_TO_PIN(3,4); /*-EINVAL; /* GPIO_TO_PIN(1, 16); */
+	am335x_wlan_data.bt_enable_gpio =  -EINVAL; /* GPIO_TO_PIN(3, 21); */
+
+    pr_info("WLAN GPIO Info.. IRQ = %3d WL_EN = %3d BT_EN = %3d\n",
+			am335x_wlan_data.irq,
+			am335x_wlan_data.wlan_enable_gpio,
+			am335x_wlan_data.bt_enable_gpio);
+    
+	wl12xx_bluetooth_enable();
+
+	if (wl12xx_set_platform_data(&am335x_wlan_data))
+		pr_err("error setting wl12xx data\n");
+
+	dev = mmc_info[1].dev;
+	if (!dev) {
+		pr_err("wl12xx mmc device initialization failed\n");
+		goto out;
+	}
+
+	pdata = dev->platform_data;
+	if (!pdata) {
+		pr_err("Platfrom data of wl12xx device not set\n");
+		goto out;
+	}
+#if 1
+	ret = gpio_request_one(am335x_wlan_data.wlan_enable_gpio,
+		GPIOF_OUT_INIT_LOW, "wlan_en");
+	if (ret) {
+		pr_err("Error requesting wlan enable gpio: %d\n", ret);
+		goto out;
+	}
+#endif
+	setup_pin_mux(wl12xx_pin_mux);
+
+	pdata->slots[0].set_power = wl12xx_set_power;
+	pr_info("baseboard_setup_wlan: finished\n");
+out:
+	return;
+
+}
+
+
 static __init int baseboard_init(void)
 {
 	pr_info("%s [%s]...\n", __func__, BASEBOARD_NAME);
 
 	baseboard_setup_enet();
 
+	mmc2_wl12xx_init();
+
 	baseboard_setup_mmc();
 
 	baseboard_setup_usb();
+
+	baseboard_setup_expansion();
 
 	baseboard_setup_dvi();
 
@@ -552,6 +713,8 @@ static __init int baseboard_init(void)
 	baseboard_setup_spi0_devices();
 
 	baseboard_i2c0_init();
+
+	baseboard_setup_wlan();
 
 	return 0;
 }

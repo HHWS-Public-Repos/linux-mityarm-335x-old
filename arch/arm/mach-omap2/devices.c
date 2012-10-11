@@ -1201,12 +1201,21 @@ static struct cpsw_slave_data am33xx_cpsw_slaves[] = {
 	{
 		.slave_reg_ofs  = 0x208,
 		.sliver_reg_ofs = 0xd80,
+#ifdef CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE
+		.phy_id		= "0:01",
+#else
 		.phy_id		= "0:00",
+#endif
+
 	},
 	{
 		.slave_reg_ofs  = 0x308,
 		.sliver_reg_ofs = 0xdc0,
+#ifdef CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE
+		.phy_id		= "0:00",
+#else
 		.phy_id		= "0:01",
+#endif
 	},
 };
 
@@ -1221,7 +1230,7 @@ static struct cpsw_platform_data am33xx_cpsw_pdata = {
 	.host_port_reg_ofs      = 0x108,
 	.hw_stats_reg_ofs       = 0x900,
 	.bd_ram_ofs		= 0x2000,
-	.bd_ram_size		= SZ_8K,
+	.bd_ram_size		= SZ_16K,
 	.rx_descs               = 64,
 	.mac_control            = BIT(5), /* MIIEN */
 	.gigabit_en		= 1,

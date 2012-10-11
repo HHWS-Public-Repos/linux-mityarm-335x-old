@@ -33,6 +33,10 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mfd/tps65910.h>
 
+#include <linux/seq_file.h>
+#include <linux/debugfs.h>
+#include <linux/uaccess.h>
+
 #include <mach/hardware.h>
 
 #include <asm/mach-types.h>
@@ -64,6 +68,9 @@ struct pinmux_config {
 
 static struct omap_board_config_kernel mityarm335x_config[] __initdata = {
 };
+
+#define EEPROM_MAC_ADDRESS_OFFSET	60 /* 4+8+4+12+32 */
+#define EEPROM_NO_OF_MAC_ADDR		3
 
 #define FACTORY_CONFIG_MAGIC    0x012C0138
 #define FACTORY_CONFIG_VERSION  0x00010001
@@ -351,17 +358,11 @@ static void read_factory_config(struct memory_accessor *a, void* context)
 		goto bad_config;
 	}
 
-	pr_info("MityARM-335x: Found MAC = %pM\n", factory_config.mac);
-
-	am33xx_cpsw_macidfillup(factory_config.mac, factory_config.mac);
-
 	partnum = factory_config.partnum;
 	pr_info("MityARM-335x: Part Number = %s\n", partnum);
 
 bad_config:
-
-	/* turn on the switch regardless */
-	am33xx_cpsw_init(1);
+	return;
 }
 
 static struct at24_platform_data mityarm335x_fd_info = {
@@ -488,6 +489,67 @@ static void __init am33xx_cpuidle_init(void)
 		pr_warning("AM33XX cpuidle registration failed\n");
 
 }
+static int mityarm335x_dbg_som_show(struct seq_file *s, void *unused)
+{
+	const char *partnum = NULL;
+	if (factory_config.magic != FACTORY_CONFIG_MAGIC) {
+		pr_err("MityARM-335x: Factory Config Magic Wrong (%X)\n",
+			factory_config.magic);
+		return -EFAULT;
+	}
+
+	if (factory_config.version != FACTORY_CONFIG_VERSION) {
+		pr_err("MityARM-335x: Factory Config Version Wrong (%X)\n",
+			factory_config.version);
+		return -EFAULT;
+	}
+
+	partnum = factory_config.partnum;
+	seq_printf(s, "MityARM-335x: Part Number = %s\n", partnum);
+	seq_printf(s, "            : Serial Num  = %d\n", factory_config.serialnumber);
+	seq_printf(s, "            : Found MAC = %pM\n", factory_config.mac);
+
+	return 0;
+}
+
+static ssize_t mityarm335x_dbg_som_write(struct file *file,
+					 const char __user *user_buf,
+					 size_t count, loff_t *ppos)
+{
+	return 0;
+}
+static int mityarm335x_dbg_som_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, mityarm335x_dbg_som_show, inode->i_private);
+}
+
+static const struct file_operations mityarm335x_dbg_som_fops = {
+	.open		= mityarm335x_dbg_som_open,
+	.read		= seq_read,
+	.write		= mityarm335x_dbg_som_write,
+	.llseek		= seq_lseek,
+	.release	= single_release,
+};
+
+/* NOT static, so baseboard can see it... */
+struct dentry *mityarm335x_dbg_dir=NULL;
+
+static void __init mityarm335x_dbg_init(void)
+{
+	static struct dentry *mityarm335x_dbg_board_dir;
+
+	mityarm335x_dbg_dir = debugfs_create_dir("mityarm335x", NULL);
+	if (!mityarm335x_dbg_dir)
+		return;
+	mityarm335x_dbg_board_dir = debugfs_create_dir("module", mityarm335x_dbg_dir);
+	if (!mityarm335x_dbg_board_dir)
+		return;
+
+	(void)debugfs_create_file("config", S_IRUGO,
+				  mityarm335x_dbg_board_dir, NULL,
+				  &mityarm335x_dbg_som_fops);
+
+}
 
 static void __init mityarm335x_init(void)
 {
@@ -495,6 +557,7 @@ static void __init mityarm335x_init(void)
 	am33xx_mux_init(NULL);
 	omap_serial_init();
 	am335x_rtc_init();
+	am33xx_cpsw_init(1); /* 1 == enable gigabit */
 	mityarm335x_i2c_init();
 	omap_sdrc_init(NULL, NULL);
 	spi1_init();
@@ -507,6 +570,9 @@ static void __init mityarm335x_init(void)
 	/* Create an alias for gfx/sgx clock */
 	if (clk_add_alias("sgx_ck", NULL, "gfx_fclk", NULL))
 		pr_err("failed to create an alias: gfx_fclk --> sgx_ck\n");
+
+	mityarm335x_dbg_init();
+
 }
 
 static void __init mityarm335x_map_io(void)

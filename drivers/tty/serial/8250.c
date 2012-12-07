@@ -38,6 +38,8 @@
 #include <linux/nmi.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>
+#include <linux/gpio.h>
+#include <linux/uaccess.h>
 
 #include <asm/io.h>
 #include <asm/irq.h>
@@ -153,6 +155,8 @@ struct uart_8250_port {
 	unsigned char		lsr_saved_flags;
 #define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
 	unsigned char		msr_saved_flags;
+
+	struct serial_rs485	rs485;
 };
 
 struct irq_info {
@@ -1302,8 +1306,16 @@ static void autoconfig_irq(struct uart_8250_port *up)
 	up->port.irq = (irq > 0) ? irq : 0;
 }
 
+static void wait_for_xmitr(struct uart_8250_port *up, int bits);
+
 static inline void __stop_tx(struct uart_8250_port *p)
 {
+	int val;
+	if (p->rs485.flags & SER_RS485_ENABLED) {
+		wait_for_xmitr(p, BOTH_EMPTY);
+		val = (p->rs485.flags & SER_RS485_RTS_AFTER_SEND) ? 1 : 0;
+		gpio_set_value(p->rs485.gpio_pin, val);
+	}
 	if (p->ier & UART_IER_THRI) {
 		p->ier &= ~UART_IER_THRI;
 		serial_out(p, UART_IER, p->ier);
@@ -1330,10 +1342,15 @@ static void transmit_chars(struct uart_8250_port *up);
 
 static void serial8250_start_tx(struct uart_port *port)
 {
+	int val;
 	struct uart_8250_port *up =
 		container_of(port, struct uart_8250_port, port);
 
 	if (!(up->ier & UART_IER_THRI)) {
+		if (up->rs485.flags & SER_RS485_ENABLED) {
+			val = (up->rs485.flags & SER_RS485_RTS_ON_SEND) ? 1 : 0;
+			gpio_set_value(up->rs485.gpio_pin, val);
+		}
 		up->ier |= UART_IER_THRI;
 		serial_out(up, UART_IER, up->ier);
 
@@ -2212,6 +2229,7 @@ static void serial8250_shutdown(struct uart_port *port)
 	struct uart_8250_port *up =
 		container_of(port, struct uart_8250_port, port);
 	unsigned long flags;
+	int val;
 
 	/*
 	 * Disable interrupts from this port
@@ -2226,6 +2244,12 @@ static void serial8250_shutdown(struct uart_port *port)
 		up->port.mctrl |= TIOCM_OUT1;
 	} else
 		up->port.mctrl &= ~TIOCM_OUT2;
+
+	/* if in RS485 mode, make sure we disable the driver */
+	if (up->rs485.flags & SER_RS485_ENABLED) {
+		val = (up->rs485.flags & SER_RS485_RTS_AFTER_SEND) ? 1 : 0;
+		gpio_set_value(up->rs485.gpio_pin, val);
+	}
 
 	serial8250_set_mctrl(&up->port, up->port.mctrl);
 	spin_unlock_irqrestore(&up->port.lock, flags);
@@ -2698,6 +2722,88 @@ serial8250_type(struct uart_port *port)
 	return uart_config[type].name;
 }
 
+static int
+serial8250_config_rs485(struct uart_port *port, struct serial_rs485 *rs485conf)
+{
+	int r = 0;
+	int val;
+	struct uart_8250_port *p = (struct uart_8250_port *)port;
+
+	spin_lock(&port->lock);
+
+	/* TODO - disable transmitter ? */
+
+	if (rs485conf->flags & SER_RS485_ENABLED) {
+		val = (p->rs485.flags & SER_RS485_RTS_AFTER_SEND) ? 1 : 0;
+		/* if using GPIO, request the resource and set it up */
+		if (rs485conf->flags & SER_RS485_USE_GPIO) {
+			/* get gpio resources if not already set */
+			if (!(p->rs485.flags & SER_RS485_USE_GPIO) ||
+				(p->rs485.gpio_pin != rs485conf->gpio_pin)) {
+
+				r = gpio_request(rs485conf->gpio_pin,
+						"RS485 TXE");
+				if (r) {
+					dev_warn(port->dev,
+						"Could not request GPIO %d : %d\n",
+							rs485conf->gpio_pin, r);
+					r = -EFAULT;
+					goto exit_bail;
+
+				}
+
+				r = gpio_direction_output(rs485conf->gpio_pin, val);
+				if (r) {
+					dev_warn(port->dev,
+						"Could not drive GPIO %d : %d\n",
+							rs485conf->gpio_pin, r);
+					r = -EFAULT;
+					goto exit_bail;
+				}
+
+				/* free up old pin */
+				if (p->rs485.flags & SER_RS485_USE_GPIO)
+					gpio_free(p->rs485.gpio_pin);
+			}
+		} else { /* RTS pin requested */
+			dev_warn(port->dev, "Must use GPIO for RS485 Support\n");
+			goto exit_bail;
+		}
+	}
+	p->rs485 = *rs485conf;
+
+exit_bail:
+	spin_unlock(&port->lock);
+	return r;
+
+}
+
+static int
+serial8250_ioctl(struct uart_port *port, unsigned int cmd, unsigned long arg)
+{
+	struct serial_rs485 rs485conf;
+	switch (cmd) {
+	case TIOCSRS485:
+		if (copy_from_user(&rs485conf, (struct serial_rs485 *)arg,
+				sizeof(rs485conf)))
+			return -EFAULT;
+		serial8250_config_rs485(port, &rs485conf);
+		break;
+
+	case TIOCGRS485:
+		if (copy_to_user((struct serial_rs485 *)arg,
+				&((struct uart_8250_port *)port)->rs485,
+				sizeof(rs485conf)))
+			return -EFAULT;
+		break;
+
+	default:
+		return -ENOIOCTLCMD;
+	}
+
+	return 0;
+}
+
 static struct uart_ops serial8250_pops = {
 	.tx_empty	= serial8250_tx_empty,
 	.set_mctrl	= serial8250_set_mctrl,
@@ -2717,6 +2823,7 @@ static struct uart_ops serial8250_pops = {
 	.request_port	= serial8250_request_port,
 	.config_port	= serial8250_config_port,
 	.verify_port	= serial8250_verify_port,
+	.ioctl		= serial8250_ioctl,
 #ifdef CONFIG_CONSOLE_POLL
 	.poll_get_char = serial8250_get_poll_char,
 	.poll_put_char = serial8250_put_poll_char,

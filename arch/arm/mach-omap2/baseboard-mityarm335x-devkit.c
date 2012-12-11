@@ -170,7 +170,9 @@ static struct pinmux_config expansion_pin_mux[] = {
 	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP},/* Exp0 RX */
 	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL},		/* Exp0 TX */
 	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP},/* Exp1 RX */
-	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL},		/* Exp1 TX */
+	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL},		/* Exp1 TX */	
+	{"mii1_rxd1.gpio2_20", AM33XX_PULL_ENBL}, /* Exp1 TX EN */
+	{"mii1_txclk.gpio3_9", AM33XX_PULL_ENBL}, /* Exp0 TX EN */
 	{NULL, 0}
 };
 
@@ -650,8 +652,8 @@ static void baseboard_setup_wlan(void)
 
 
 	/* Register WLAN and BT enable pins based on the evm board revision */
-	am335x_wlan_data.wlan_enable_gpio =  GPIO_TO_PIN(3,4); /*-EINVAL; /* GPIO_TO_PIN(1, 16); */
-	am335x_wlan_data.bt_enable_gpio =  -EINVAL; /* GPIO_TO_PIN(3, 21); */
+	am335x_wlan_data.wlan_enable_gpio =  GPIO_TO_PIN(3,4); 
+	am335x_wlan_data.bt_enable_gpio =  -EINVAL; 
 
     pr_info("WLAN GPIO Info.. IRQ = %3d WL_EN = %3d BT_EN = %3d\n",
 			am335x_wlan_data.irq,
@@ -704,7 +706,6 @@ static __init int baseboard_init(void)
 
 	baseboard_setup_usb();
 
-	baseboard_setup_expansion();
 
 	baseboard_setup_dvi();
 
@@ -715,6 +716,8 @@ static __init int baseboard_init(void)
 	baseboard_i2c0_init();
 
 	baseboard_setup_wlan();
+
+	baseboard_setup_expansion();
 
 	return 0;
 }

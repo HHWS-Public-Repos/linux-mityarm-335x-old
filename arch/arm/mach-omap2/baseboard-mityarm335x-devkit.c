@@ -55,7 +55,7 @@
 
 #if defined(CONFIG_TOUCHSCREEN_ADS7846) || \
 	defined(CONFIG_TOUCHSCREEN_ADS7846_MODULE)
-#define TS_USE_SPI 0 /*1*/
+#define TS_USE_SPI 0 /*1 -- currently not supported*/
 #else
 #define TS_USE_SPI 0
 #endif
@@ -182,12 +182,14 @@ static struct pinmux_config usb_pin_mux[] = {
 	{NULL, 0}
 };
 
+#if (TS_USE_SPI)
 static struct pinmux_config ts_pin_mux[] = {
 	/* SPI0 CS0 taken care of by SPI pinmux setup */
 	{"xdma_event_intr1.gpio0_20",	AM33XX_PIN_INPUT}, /* Pen down */
 	{"xdma_event_intr0.gpio0_19",	AM33XX_PIN_INPUT}, /* 7843 busy (not used)*/
 	{NULL, 0}
 };
+#endif
 
 /* Module pin mux for mcasp1 */
 static struct pinmux_config mcasp1_pin_mux[] = {
@@ -412,7 +414,6 @@ static __init void baseboard_setup_ts(void)
 static __init void baseboard_setup_dvi(void)
 {
 	struct clk *disp_pll;
-	int err = 0;
 
 	/* pinmux */
 	setup_pin_mux(lcdc_pin_mux);
@@ -442,8 +443,7 @@ static __init void baseboard_setup_dvi(void)
 			__func__);
 
 #ifdef CONFIG_BACKLIGHT_TPS6116X
-	err = platform_device_register(&tps6116x_device);
-	if (err)
+	if (platform_device_register(&tps6116x_device))
 		pr_err("failed to register backlight device\n");
 
 #else
@@ -608,11 +608,6 @@ static void mmc2_wl12xx_init(void)
 
 	/* mmc will be initialized when mmc0_init is called */
 	return;
-}
-
-static void wl12xx_uart_init(void)
-{
-	/*setup_pin_mux(uart1_wl12xx_pin_mux); */
 }
 
 static void wl12xx_bluetooth_enable(void)

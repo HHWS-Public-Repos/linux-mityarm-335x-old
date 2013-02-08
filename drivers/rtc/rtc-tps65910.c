@@ -297,6 +297,16 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 	if (!tps_rtc)
 		return -ENOMEM;
 
+	/* Make sure the RTC on the PMIC is not powered down
+	 * also, enable the external clock input (TODO -
+	 * this is valid for platforms having an external
+	 * crystal, this should be controlled by platform data)
+	 */
+	ret = tps65910->read(tps65910, TPS65910_DEVCTRL, 1, &tmp);
+	tmp &= ~DEVCTRL_RTC_PWDN_MASK;
+	tmp &= ~DEVCTRL_CK32K_CTRL_MASK;
+	ret = tps65910->write(tps65910, TPS65910_DEVCTRL, 1, &tmp);
+
 	/* Clear pending interrupts */
 #if 0
 	ret = regmap_read(tps65910->regmap, TPS65910_RTC_STATUS, &rtc_reg);

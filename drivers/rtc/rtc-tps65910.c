@@ -346,7 +346,7 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 
 		tps_rtc->irq += TPS65910_IRQ_RTC_ALARM;
 		ret = devm_request_threaded_irq(&pdev->dev, tps_rtc->irq, NULL,
-			tps65910_rtc_interrupt, IRQF_TRIGGER_LOW,
+			tps65910_rtc_interrupt, IRQF_TRIGGER_LOW | IRQF_EARLY_RESUME,
 			"rtc-tps65910", &pdev->dev);
 		if (ret < 0) {
 			dev_err(&pdev->dev, "IRQ is not free.\n");

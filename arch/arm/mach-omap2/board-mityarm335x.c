@@ -453,6 +453,27 @@ static int am335x_rtc_init(void)
 	return  platform_device_register(&am335x_rtc_device);
 }
 
+/* Enable clkout2 */
+static struct pinmux_config clkout2_pin_mux[] = {
+	{"xdma_event_intr1.clkout2", OMAP_MUX_MODE3 | AM33XX_PIN_OUTPUT},
+	{NULL, 0},
+};
+
+static void __init clkout2_enable(void)
+{
+	struct clk *ck_32;
+
+	ck_32 = clk_get(NULL, "clkout2_ck");
+	if (IS_ERR(ck_32)) {
+		pr_err("Cannot clk_get ck_32\n");
+		return;
+	}
+
+	clk_enable(ck_32);
+
+	setup_pin_mux(clkout2_pin_mux);
+}
+
 extern void __iomem * __init am33xx_get_mem_ctlr(void);
 
 static struct resource am33xx_cpuidle_resources[] = {
@@ -557,6 +578,7 @@ static void __init mityarm335x_init(void)
 	am33xx_mux_init(NULL);
 	omap_serial_init();
 	am335x_rtc_init();
+	clkout2_enable();
 	am33xx_cpsw_init(1); /* 1 == enable gigabit */
 	mityarm335x_i2c_init();
 	omap_sdrc_init(NULL, NULL);
@@ -587,6 +609,7 @@ MACHINE_START(MITYARM335X, "mityarm335x")
 	.map_io		= mityarm335x_map_io,
 	.init_irq	= ti81xx_init_irq,
 	.init_early	= am33xx_init_early,
+	.handle_irq	= omap3_intc_handle_irq,
 	.timer		= &omap3_am33xx_timer,
 	.init_machine	= mityarm335x_init,
 MACHINE_END

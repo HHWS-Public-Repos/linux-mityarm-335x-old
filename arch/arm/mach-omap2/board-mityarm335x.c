@@ -587,8 +587,8 @@ static void __init mityarm335x_init(void)
 	omap_board_config = mityarm335x_config;
 	omap_board_config_size = ARRAY_SIZE(mityarm335x_config);
 	/* Create an alias for icss clock */
-	if (clk_add_alias("pruss", NULL, "icss_uart_gclk", NULL))
-		pr_err("failed to create an alias: icss_uart_gclk --> pruss\n");
+	if (clk_add_alias("pruss", NULL, "pruss_uart_gclk", NULL))
+		pr_err("failed to create an alias: pruss_uart_gclk --> pruss\n");
 	/* Create an alias for gfx/sgx clock */
 	if (clk_add_alias("sgx_ck", NULL, "gfx_fclk", NULL))
 		pr_err("failed to create an alias: gfx_fclk --> sgx_ck\n");

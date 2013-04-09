@@ -200,7 +200,7 @@ static struct mtd_partition mityarm335x_nand_partitions[] = {
 	},
 };
 
-// TODO board-am335x has identical struct
+/* TODO board-am335x has identical struct */
 static struct gpmc_timings am335x_nand_timings = {
 
 	.sync_clk = 0,
@@ -238,7 +238,7 @@ static void mityarm335x_nand_init(void)
 		&am335x_nand_timings);
 	if (!pdata)
 		return;
-	pdata->ecc_opt =OMAP_ECC_BCH8_CODE_HW;
+	pdata->ecc_opt = OMAP_ECC_BCH8_CODE_HW;
 	pdata->elm_used = true;
 	gpmc_device[0].pdata = pdata;
 	gpmc_device[0].flag = GPMC_DEVICE_NAND;
@@ -275,7 +275,7 @@ static struct spi_board_info mityarm335x_spi1_slave_info[] = {
 	{
 		.modalias		= "m25p80",
 		.platform_data		= &mityarm335x_spi_flash,
-		.controller_data	= (void*)&spi1_ctlr_data,
+		.controller_data	= (void *)&spi1_ctlr_data,
 		.irq			= -1,
 		.max_speed_hz		= 30000000,
 		.bus_num		= 2,
@@ -474,7 +474,18 @@ static void __init clkout2_enable(void)
 	setup_pin_mux(clkout2_pin_mux);
 }
 
-extern void __iomem * __init am33xx_get_mem_ctlr(void);
+static void __iomem *am33xx_emif_base;
+
+static void __iomem * __init am33xx_get_mem_ctlr(void)
+{
+
+	am33xx_emif_base = ioremap(AM33XX_EMIF0_BASE, SZ_32K);
+
+	if (!am33xx_emif_base)
+		pr_warning("%s: Unable to map DDR2 controller",	__func__);
+
+	return am33xx_emif_base;
+}
 
 static struct resource am33xx_cpuidle_resources[] = {
 	{
@@ -526,9 +537,12 @@ static int mityarm335x_dbg_som_show(struct seq_file *s, void *unused)
 	}
 
 	partnum = factory_config.partnum;
-	seq_printf(s, "MityARM-335x: Part Number = %s\n", partnum);
-	seq_printf(s, "            : Serial Num  = %d\n", factory_config.serialnumber);
-	seq_printf(s, "            : Found MAC = %pM\n", factory_config.mac);
+	seq_printf(s, "MityARM-335x: Part Number = %s\n"
+		      "            : Serial Num = %d\n"
+		      "            : Found MAC = %pM\n",
+		      partnum,
+		      factory_config.serialnumber,
+		      factory_config.mac);
 
 	return 0;
 }
@@ -553,7 +567,7 @@ static const struct file_operations mityarm335x_dbg_som_fops = {
 };
 
 /* NOT static, so baseboard can see it... */
-struct dentry *mityarm335x_dbg_dir=NULL;
+struct dentry *mityarm335x_dbg_dir;
 
 static void __init mityarm335x_dbg_init(void)
 {
@@ -562,7 +576,8 @@ static void __init mityarm335x_dbg_init(void)
 	mityarm335x_dbg_dir = debugfs_create_dir("mityarm335x", NULL);
 	if (!mityarm335x_dbg_dir)
 		return;
-	mityarm335x_dbg_board_dir = debugfs_create_dir("module", mityarm335x_dbg_dir);
+	mityarm335x_dbg_board_dir = debugfs_create_dir("module",
+							mityarm335x_dbg_dir);
 	if (!mityarm335x_dbg_board_dir)
 		return;
 

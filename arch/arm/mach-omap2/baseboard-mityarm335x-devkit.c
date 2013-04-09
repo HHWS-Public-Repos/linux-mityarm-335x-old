@@ -49,8 +49,8 @@
 /* TODO - refactor all the pinmux stuff for all board files to use */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
 
-#define MITY335X_DK_GPIO_TS_IRQ_N	GPIO_TO_PIN(0,20)
-#define MITY335X_DK_GPIO_BACKLIGHT	GPIO_TO_PIN(3,14)
+#define MITY335X_DK_GPIO_TS_IRQ_N	GPIO_TO_PIN(0, 20)
+#define MITY335X_DK_GPIO_BACKLIGHT	GPIO_TO_PIN(3, 14)
 
 
 #if defined(CONFIG_TOUCHSCREEN_ADS7846) || \
@@ -167,10 +167,10 @@ static struct pinmux_config can_pin_mux[] = {
 };
 
 static struct pinmux_config expansion_pin_mux[] = {
-	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP},/* Exp0 RX */
-	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL},		/* Exp0 TX */
-	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP},/* Exp1 RX */
-	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL},		/* Exp1 TX */	
+	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP}, /* Exp0 RX */
+	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL}, /* Exp0 TX */
+	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP}, /* Exp1 RX */
+	{"mii1_rxd2.uart3_txd", AM33XX_PULL_ENBL}, /* Exp1 TX */
 	{"mii1_rxd1.gpio2_20", AM33XX_PULL_ENBL}, /* Exp1 TX EN */
 	{"mii1_txclk.gpio3_9", AM33XX_PULL_ENBL}, /* Exp0 TX EN */
 	{NULL, 0}
@@ -185,8 +185,8 @@ static struct pinmux_config usb_pin_mux[] = {
 #if (TS_USE_SPI)
 static struct pinmux_config ts_pin_mux[] = {
 	/* SPI0 CS0 taken care of by SPI pinmux setup */
-	{"xdma_event_intr1.gpio0_20",	AM33XX_PIN_INPUT}, /* Pen down */
-	{"xdma_event_intr0.gpio0_19",	AM33XX_PIN_INPUT}, /* 7843 busy (not used)*/
+	{"xdma_event_intr1.gpio0_20", AM33XX_PIN_INPUT}, /* Pen down */
+	{"xdma_event_intr0.gpio0_19", AM33XX_PIN_INPUT}, /* 7843 busy (not used)*/
 	{NULL, 0}
 };
 #endif
@@ -237,7 +237,7 @@ static struct pinmux_config wl12xx_pin_mux[] = {
 	{"gpmc_csn1.gpio1_30",  AM33XX_PIN_INPUT_PULLUP}, /* WL IRQ */
 	{"gpmc_csn2.gpio1_31",  AM33XX_PIN_OUTPUT}, /* BT RST ?*/
 	{NULL, 0},
- };
+};
 
 #define AM335XEVM_WLAN_IRQ_GPIO		GPIO_TO_PIN(0, 26)
 
@@ -334,7 +334,7 @@ static struct platform_device tps6116x_device = {
 	.name   = "tps6116x",
 	.id     = -1,
 	.dev    = {
-			.platform_data  = (void*)MITY335X_DK_GPIO_BACKLIGHT,
+	    .platform_data  = (void *)MITY335X_DK_GPIO_BACKLIGHT,
 	},
 };
 #endif /* CONFIG_BACKLIGHT_TPS6116X */
@@ -342,23 +342,23 @@ static struct platform_device tps6116x_device = {
 
 #if (TS_USE_SPI)
 static struct ads7846_platform_data ads7846_config = {
-	.model				= 7843,
-	.vref_mv			= 3300,
-	.x_max				= 0x0fff,
-	.y_max				= 0x0fff,
+	.model			= 7843,
+	.vref_mv		= 3300,
+	.x_max			= 0x0fff,
+	.y_max			= 0x0fff,
 	.x_plate_ohms		= 180,
 	.pressure_max		= 255,
-	.debounce_max		= 0, //200,
+	.debounce_max		= 0, /* 200, */
 	.debounce_tol		= 5,
 	.debounce_rep		= 10,
 	.gpio_pendown		= MITY335X_DK_GPIO_TS_IRQ_N,
 	.keep_vref_on		= 1,
-	.irq_flags			= IRQF_TRIGGER_FALLING,
+	.irq_flags		= IRQF_TRIGGER_FALLING,
 	.vref_delay_usecs	= 100,
 	.settle_delay_usecs	= 200,
 	.penirq_recheck_delay_usecs = 1000,
 	.filter_init		= 0,
-	.filter				= 0,
+	.filter			= 0,
 	.filter_cleanup		= 0,
 	.gpio_pendown		= MITY335X_DK_GPIO_TS_IRQ_N,
 };
@@ -449,18 +449,19 @@ static __init void baseboard_setup_dvi(void)
 #else
 	/* backlight */
 	/* TEMPORARY until driver is ready... just jam it on! */
-	if(0 != gpio_request(MITY335X_DK_GPIO_BACKLIGHT, "backlight control")) {
-		pr_warning("Unable to request GPIO %d\n",MITY335X_DK_GPIO_BACKLIGHT);
+	if (0 != gpio_request(MITY335X_DK_GPIO_BACKLIGHT, "backlight control")) {
+		pr_warning("Unable to request GPIO %d\n",
+				   MITY335X_DK_GPIO_BACKLIGHT);
 		goto out;
 	}
-	if(0 != gpio_direction_output(MITY335X_DK_GPIO_BACKLIGHT, 1) ){
+	if (0 != gpio_direction_output(MITY335X_DK_GPIO_BACKLIGHT, 1)) {
 		pr_warning("Unable to set backlight GPIO %d ON\n",
 				   MITY335X_DK_GPIO_BACKLIGHT);
 		goto out;
 	} else {
 		pr_info("Backlight GPIO  = %d\n", MITY335X_DK_GPIO_BACKLIGHT);
 	}
-#endif // CONFIG_BACKLIGHT_TPS6116X
+#endif /* CONFIG_BACKLIGHT_TPS6116X */
 out:
 	clk_put(disp_pll);
 }
@@ -504,13 +505,13 @@ static struct spi_board_info baseboard_spi0_slave_info[] = {
 	},
 #if (TS_USE_SPI)
 	{
-		.modalias			= "ads7846",
-		.bus_num			= MITY335X_DK_SPIBUS_TS,
-		.chip_select		= 0,
-		.max_speed_hz		= 1500000,
-		.controller_data	= &spi0_ctlr_data,
-		.irq				= OMAP_GPIO_IRQ(MITY335X_DK_GPIO_TS_IRQ_N),
-		.platform_data		= &ads7846_config,
+		.modalias	= "ads7846",
+		.bus_num	= MITY335X_DK_SPIBUS_TS,
+		.chip_select	= 0,
+		.max_speed_hz	= 1500000,
+		.controller_data = &spi0_ctlr_data,
+		.irq		= OMAP_GPIO_IRQ(MITY335X_DK_GPIO_TS_IRQ_N),
+		.platform_data	= &ads7846_config,
 	}
 #endif /* TS_USE_SPI */
 };
@@ -631,8 +632,7 @@ static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
 	if (on) {
 		gpio_set_value(am335x_wlan_data.wlan_enable_gpio, 1);
 		mdelay(70);
-	}
-	else
+	} else
 		gpio_set_value(am335x_wlan_data.wlan_enable_gpio, 0);
 #endif
 	return 0;
@@ -640,21 +640,20 @@ static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
 
 static void baseboard_setup_wlan(void)
 {
-
 	struct device *dev;
 	struct omap_mmc_platform_data *pdata;
 	int ret;
 
 
 	/* Register WLAN and BT enable pins based on the evm board revision */
-	am335x_wlan_data.wlan_enable_gpio =  GPIO_TO_PIN(3,4); 
-	am335x_wlan_data.bt_enable_gpio =  -EINVAL; 
+	am335x_wlan_data.wlan_enable_gpio = GPIO_TO_PIN(3, 4);
+	am335x_wlan_data.bt_enable_gpio = -EINVAL;
 
-    pr_info("WLAN GPIO Info.. IRQ = %3d WL_EN = %3d BT_EN = %3d\n",
+	pr_info("WLAN GPIO Info.. IRQ = %3d WL_EN = %3d BT_EN = %3d\n",
 			am335x_wlan_data.irq,
 			am335x_wlan_data.wlan_enable_gpio,
 			am335x_wlan_data.bt_enable_gpio);
-    
+
 	wl12xx_bluetooth_enable();
 
 	if (wl12xx_set_platform_data(&am335x_wlan_data))
@@ -717,4 +716,3 @@ static __init int baseboard_init(void)
 	return 0;
 }
 arch_initcall_sync(baseboard_init);
-

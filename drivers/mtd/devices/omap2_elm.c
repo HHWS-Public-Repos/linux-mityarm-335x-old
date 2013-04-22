@@ -175,20 +175,20 @@ EXPORT_SYMBOL(omap_configure_elm);
 
 /**
  * omap_elm_load_syndrome - Load ELM syndrome reg
- * @bch_type:	type of BCH ECC scheme
+ * @ecc_bytes:	number of ecc bytes to write into elm
  * @syndrome:	Syndrome polynomial
  *
  * Load the syndrome polynomial to syndrome registers
  */
-void omap_elm_load_syndrome(int bch_type, char *syndrome)
+void omap_elm_load_syndrome(unsigned int ecc_bytes, char *syndrome)
 {
 	int reg_val;
 	int i;
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < ecc_bytes; i += 4) {
 		reg_val = syndrome[0] | syndrome[1] << 8 |
 			syndrome[2] << 16 | syndrome[3] << 24;
-		elm_write_reg(ELM_SYNDROME_FRAGMENT_0 + i * 4, reg_val);
+		elm_write_reg(ELM_SYNDROME_FRAGMENT_0 + i, reg_val);
 		syndrome += 4;
 	}
 }
@@ -205,12 +205,12 @@ void omap_elm_start_processing(void)
 	elm_write_reg(ELM_SYNDROME_FRAGMENT_6, reg_val);
 }
 
-void rotate_ecc_bytes(u8 *src, u8 *dst)
+void rotate_ecc_bytes(unsigned int ecc_bytes, u8 *src, u8 *dst)
 {
 	int i;
 
-	for (i = 0; i < BCH8_ECC_OOB_BYTES; i++)
-		dst[BCH8_ECC_OOB_BYTES - 1 - i] = src[i];
+	for (i = 0; i < ecc_bytes; i++)
+		dst[ecc_bytes - 1 - i] = src[i];
 }
 
 /**
@@ -226,8 +226,25 @@ int omap_elm_decode_bch_error(int bch_type, char *ecc_calc,
 	u32 reg_val;
 	int i, err_no;
 
-	rotate_ecc_bytes(ecc_calc, ecc_data);
-	omap_elm_load_syndrome(bch_type, ecc_data);
+	/* input calculated ECC syndrome to ELM engine */
+	switch (bch_type) {
+		case OMAP_BCH16_ECC:
+			rotate_ecc_bytes(BCH16_ECC_OOB_BYTES, ecc_calc, ecc_data);
+			omap_elm_load_syndrome(BCH16_ECC_OOB_BYTES, ecc_data);
+			break;
+		case OMAP_BCH8_ECC:
+			rotate_ecc_bytes(BCH8_ECC_OOB_BYTES, ecc_calc, ecc_data);
+			omap_elm_load_syndrome(BCH8_ECC_OOB_BYTES, ecc_data);
+			break;
+		case OMAP_BCH4_ECC:
+			rotate_ecc_bytes(BCH4_ECC_OOB_BYTES, ecc_calc, ecc_data);
+			omap_elm_load_syndrome(BCH4_ECC_OOB_BYTES, ecc_data);
+			break;
+		default:
+			return -EINVAL;
+	}
+
+	/* start elm processing */
 	omap_elm_start_processing();
 	wait_for_completion(&elm_completion);
 	reg_val = elm_read_reg(ELM_LOCATION_STATUS);

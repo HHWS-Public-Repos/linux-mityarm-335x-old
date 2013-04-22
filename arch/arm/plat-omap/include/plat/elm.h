@@ -22,8 +22,12 @@ enum omap_bch_ecc {
 	OMAP_BCH16_ECC,
 };
 
-#define BCH8_ECC_BYTES			(512)
+/* Number of bytes of ECC syndrome generated */
+#define BCH16_ECC_OOB_BYTES		(26)
 #define BCH8_ECC_OOB_BYTES		(13)
+#define BCH4_ECC_OOB_BYTES		(8)
+
+#define BCH8_ECC_BYTES			(512)
 #define BCH_MAX_ECC_BYTES_PER_SECTOR	(28)
 #define BCH8_ECC_MAX	((BCH8_ECC_BYTES + BCH8_ECC_OOB_BYTES) * 8)
 

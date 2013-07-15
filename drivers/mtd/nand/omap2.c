@@ -877,12 +877,16 @@ static int omap_correct_data(struct mtd_info *mtd, u_char *dat,
 {
 	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
 							mtd);
+	struct nand_chip *chip = mtd->priv;
+	int eccsize = chip->ecc.size;
+	int eccbytes = chip->ecc.bytes;
 	int blockCnt = 0, i = 0, ret = 0;
 	int stat = 0;
-	int j, eccsize, eccflag, count;
+	int j, eccflag, count;
 	unsigned int err_loc[8];
 
 	/* Ex NAND_ECC_HW12_2048 */
+	/* TODO eccsize / 512 */
 	if ((info->nand.ecc.mode == NAND_ECC_HW) &&
 			(info->nand.ecc.size  == 2048))
 		blockCnt = 4;
@@ -927,9 +931,8 @@ static int omap_correct_data(struct mtd_info *mtd, u_char *dat,
 
 			count = 0;
 			if (eccflag == 1)
-				count  = omap_elm_decode_bch_error(0, calc_ecc,
-						err_loc);
-
+				count  = omap_elm_decode_bch_error(OMAP_BCH8_ECC,
+						calc_ecc, err_loc);
 			/* Uncorrectable error reported */
 			if (count < 0)
 				return count;
@@ -955,11 +958,70 @@ static int omap_correct_data(struct mtd_info *mtd, u_char *dat,
 			}
 
 			stat     += count;
-			calc_ecc  = calc_ecc + OMAP_BCH8_ECC_SECT_BYTES;
-			read_ecc  = read_ecc + OMAP_BCH8_ECC_SECT_BYTES;
-			dat      += BCH8_ECC_BYTES;
+			/* 14th byte of ECC_BCH8 is padded with 0x0 for */
+			/* compatibility with ROM-code */
+			calc_ecc += (eccbytes + 1);
+			read_ecc += (eccbytes + 1);
+			dat      += eccsize;
 		}
 		break;
+
+	case OMAP_ECC_BCH16_CODE_HW:
+		eccbytes = BCH16_ECC_OOB_BYTES;
+		for (i = 0; i < blockCnt; i++) {
+			eccflag = 0;
+			/* check if area is flashed */
+			for (j = 0; j < eccbytes; j++)
+				if (read_ecc[j] != 0xFF) {
+					eccflag = 1;
+					break;
+				}
+
+			/* if flashed, then check if any ecc error */
+			if (eccflag == 1) {
+				eccflag = 0;
+				for (j = 0; j < eccbytes; j++)
+					if (calc_ecc[j] != 0x00) {
+						eccflag = 1;
+						break;
+					}
+			}
+
+			/* if errors found, then find number of bit-flips */
+			count = 0;
+			if (eccflag == 1)
+				count  = omap_elm_decode_bch_error(OMAP_BCH16_ECC,
+						calc_ecc, err_loc);
+			if (count < 0)
+				return -EBADMSG;
+			/* fix correctable bit-flips */
+			for (j = 0; j < count; j++) {
+				u32 bit_pos, byte_pos;
+				bit_pos   = err_loc[j] % 8;
+				byte_pos  = (eccsize + eccbytes - 1) -
+						(err_loc[j] / 8);
+				/* bit-flip reported in main aread */
+				if (byte_pos < eccsize)
+					dat[byte_pos] ^= 1 << bit_pos;
+				/* bit-flip reported in OOB */
+				else if (byte_pos < (eccsize + eccbytes))
+					read_ecc[byte_pos - eccsize] ^=
+								1 << bit_pos;
+				/* invalid bit-flip location reported */
+				else
+					return -EBADMSG;
+			}
+
+			stat     += count;
+			calc_ecc += eccbytes;
+			read_ecc += eccbytes;
+			dat      += eccsize;
+		}
+		break;
+
+	/* ECC scheme not supported */
+	default:
+		return -EINVAL;
 	}
 	return stat;
 }
@@ -1105,8 +1167,12 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 	 * If ELM feature is used in OMAP NAND driver, then configure it
 	 */
 	if (pdata->elm_used) {
-		if (pdata->ecc_opt == OMAP_ECC_BCH8_CODE_HW)
+		if (pdata->ecc_opt == OMAP_ECC_BCH16_CODE_HW)
+			omap_configure_elm(&info->mtd, OMAP_BCH16_ECC);
+		else if (pdata->ecc_opt == OMAP_ECC_BCH8_CODE_HW)
 			omap_configure_elm(&info->mtd, OMAP_BCH8_ECC);
+		else
+			omap_configure_elm(&info->mtd, OMAP_BCH4_ECC);
 	}
 
 	if (pdata->ctrlr_suspend)
@@ -1217,6 +1283,10 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 			info->nand.ecc.bytes     = OMAP_BCH8_ECC_SECT_BYTES;
 			info->nand.ecc.size      = 512;
 			info->nand.ecc.read_page = omap_read_page_bch;
+		} else if (pdata->ecc_opt == OMAP_ECC_BCH16_CODE_HW) {
+			info->nand.ecc.bytes     = 26;
+			info->nand.ecc.size      = 512;
+			info->nand.ecc.read_page = omap_read_page_bch;
 		} else {
 			info->nand.ecc.bytes    = 3;
 			info->nand.ecc.size     = 512;
@@ -1255,12 +1325,12 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 						offset + omap_oobinfo.eccbytes;
 			omap_oobinfo.oobfree->length = info->mtd.oobsize -
 				(offset + omap_oobinfo.eccbytes);
-		} else if (pdata->ecc_opt == OMAP_ECC_BCH8_CODE_HW) {
+		} else if (pdata->ecc_opt == OMAP_ECC_BCH8_CODE_HW ||
+				pdata->ecc_opt == OMAP_ECC_BCH16_CODE_HW)  {
 			offset = BCH_ECC_POS; /* Synchronize with U-boot */
 
 			omap_oobinfo.oobfree->offset = offset +
 				omap_oobinfo.eccbytes;
-
 			omap_oobinfo.oobfree->length = info->mtd.oobsize -
 						offset - omap_oobinfo.eccbytes;
 		} else {
@@ -1288,6 +1358,8 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 		err = -ENXIO;
 		goto out_release_mem_region;
 	}
+	info->nand.options &= ~NAND_SUBPAGE_READ;
+	info->nand.options |=  NAND_NO_SUBPAGE_WRITE;
 
 	/* Fix sub page size to page size for HW ECC */
 	if (info->nand.ecc.mode == NAND_ECC_HW) {

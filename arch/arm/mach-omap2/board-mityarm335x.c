@@ -156,7 +156,7 @@ static void setup_pin_mux(struct pinmux_config *pin_mux)
 }
 
 /* NAND partition information */
-static struct mtd_partition mityarm335x_nand_partitions[] = {
+static struct mtd_partition mityarm335x_nand_partitions_2k[] = {
 /* All the partition sizes are listed in terms of NAND block size */
 	{
 		.name           = "SPL",
@@ -200,6 +200,50 @@ static struct mtd_partition mityarm335x_nand_partitions[] = {
 	},
 };
 
+static struct mtd_partition mityarm335x_nand_partitions_4k[] = {
+	/* All the partition sizes are listed in terms of NAND block size */
+	{
+		.name = "SPL",
+		.offset = 0, /* Offset = 0x0 */
+		.size = SZ_256K,
+	},
+	{
+		.name = "SPL.backup1",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x40000 */
+		.size = SZ_256K,
+	},
+	{
+		.name = "SPL.backup2",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x80000 */
+		.size = SZ_256K,
+	},
+	{
+		.name = "SPL.backup3",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0xc0000 */
+		.size = SZ_256K,
+	},
+	{
+		.name = "U-Boot",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x100000 */
+		.size = 8 * SZ_256K,
+	},
+	{
+		.name = "U-Boot Env",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x300000 */
+		.size = 1 * SZ_256K,
+	},
+	{
+		.name = "Kernel",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x340000 */
+		.size = 20 * SZ_256K,
+	},
+	{
+		.name = "File System",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x840000 */
+		.size = MTDPART_SIZ_FULL,
+	},
+};
+
 /* TODO board-am335x has identical struct */
 static struct gpmc_timings am335x_nand_timings = {
 
@@ -233,12 +277,20 @@ static void mityarm335x_nand_init(void)
 	};
 
 	setup_pin_mux(nand_pin_mux);
-	pdata = omap_nand_init(mityarm335x_nand_partitions,
-		ARRAY_SIZE(mityarm335x_nand_partitions), 0, 0,
-		&am335x_nand_timings);
+#if defined(CONFIG_NAND_MITYARM_LARGE_PAGE_SUPPORT)
+	/* if nand size >= 512MB NAND uses a 4K page size */
+	pdata = omap_nand_init(mityarm335x_nand_partitions_4k,
+			ARRAY_SIZE(mityarm335x_nand_partitions_4k), 0, 0,
+			&am335x_nand_timings);
+	pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
+#else
+	pdata = omap_nand_init(mityarm335x_nand_partitions_2k,
+			ARRAY_SIZE(mityarm335x_nand_partitions_2k), 0, 0,
+			&am335x_nand_timings);
+	pdata->ecc_opt = OMAP_ECC_BCH8_CODE_HW;
+#endif
 	if (!pdata)
 		return;
-	pdata->ecc_opt = OMAP_ECC_BCH8_CODE_HW;
 	pdata->elm_used = true;
 	gpmc_device[0].pdata = pdata;
 	gpmc_device[0].flag = GPMC_DEVICE_NAND;

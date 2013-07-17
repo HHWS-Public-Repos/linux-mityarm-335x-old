@@ -374,6 +374,13 @@ config BASEBOARD_MITYARM335X_TESTFIXTURE
 
 endchoice
 
+config NAND_MITYARM_LARGE_PAGE_SUPPORT
+	bool "Enable support for >= 512MB nand with 4kB page size"
+	depends on MACH_MITYARM335X
+	help
+	  Select this option to configure mtdparts to be 4kB page aligned and 
+	  to enable BCH-16 ECC. Note this doesn't support the smaller nands.
+
 config FB_MITYARM_DEVKIT_LCD
 	bool "Configure drivers for MityARM-AM335X devkit LCD adapter"
 	depends on (FB_DA8XX && BASEBOARD_MITYARM335X_DEVKIT)

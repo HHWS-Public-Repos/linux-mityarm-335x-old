@@ -1036,11 +1036,16 @@ int gpmc_enable_hwecc(int ecc_type, int cs, int mode,
 			(cs << 1));
 	}
 
+	/* Clear ecc and enable bits */
 	gpmc_write_reg(GPMC_ECC_CONTROL, 0x00000101);
+	/* Configure ecc size */
 	gpmc_write_reg(GPMC_ECC_SIZE_CONFIG, ecc_size_conf_val);
+	/* Config device details for ECC engine */
 	gpmc_write_reg(GPMC_ECC_CONFIG, ecc_conf_val);
 	/* enable ECC: should be last command after all configurations */
 	gpmc_write_reg(GPMC_ECC_CONFIG, ecc_conf_val | 0x1);
+	/* Clear ecc and enable bits */
+	gpmc_write_reg(GPMC_ECC_CONTROL, 0x00000101);
 
 	return 0;
 }

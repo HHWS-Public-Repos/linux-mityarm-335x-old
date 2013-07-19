@@ -883,10 +883,9 @@ static int omap_correct_data(struct mtd_info *mtd, u_char *dat,
 	int blockCnt = 0, i = 0, ret = 0;
 	int stat = 0;
 	int j, eccflag, count;
-	unsigned int err_loc[8];
+	unsigned int err_loc[16];
 
 	/* Ex NAND_ECC_HW12_2048 */
-	/* TODO eccsize / 512 */
 	if ((info->nand.ecc.mode == NAND_ECC_HW) &&
 			(info->nand.ecc.size  == 2048))
 		blockCnt = 4;
@@ -911,19 +910,19 @@ static int omap_correct_data(struct mtd_info *mtd, u_char *dat,
 		}
 		break;
 	case OMAP_ECC_BCH8_CODE_HW:
-		eccsize = BCH8_ECC_OOB_BYTES;
+		eccbytes = BCH8_ECC_OOB_BYTES;
 
 		for (i = 0; i < blockCnt; i++) {
 			eccflag = 0;
 			/* check if area is flashed */
-			for (j = 0; (j < eccsize) && (eccflag == 0); j++)
+			for (j = 0; (j < eccbytes) && (eccflag == 0); j++)
 				if (read_ecc[j] != 0xFF)
 					eccflag = 1;
 
 			if (eccflag == 1) {
 				eccflag = 0;
 				/* check if any ecc error */
-				for (j = 0; (j < eccsize) && (eccflag == 0);
+				for (j = 0; (j < eccbytes) && (eccflag == 0);
 						j++)
 					if (calc_ecc[j] != 0)
 						eccflag = 1;
@@ -1345,6 +1344,15 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 			3)Ecc layout must match with u-boot's ECC layout.
 			*/
 			offset = info->mtd.oobsize - MAX_HWECC_BYTES_OOB_64;
+		}
+
+		/* check if NAND OOBSIZE meets ECC scheme requirement */
+		if (info->mtd.oobsize < (omap_oobinfo.eccbytes +
+					BCH_ECC_POS)) {
+			pr_err("not enough OOB bytes required = %d, available=%d\n",
+					info->mtd.oobsize, omap_oobinfo.eccbytes);
+			err = -EINVAL;
+			goto out_release_mem_region;
 		}
 
 		for (i = 0; i < omap_oobinfo.eccbytes; i++)

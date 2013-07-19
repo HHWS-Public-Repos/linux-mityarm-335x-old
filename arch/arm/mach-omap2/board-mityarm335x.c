@@ -156,6 +156,7 @@ static void setup_pin_mux(struct pinmux_config *pin_mux)
 }
 
 /* NAND partition information */
+#if !defined(CONFIG_NAND_MITYARM_LARGE_PAGE_SUPPORT)
 static struct mtd_partition mityarm335x_nand_partitions_2k[] = {
 /* All the partition sizes are listed in terms of NAND block size */
 	{
@@ -199,7 +200,7 @@ static struct mtd_partition mityarm335x_nand_partitions_2k[] = {
 		.size           = MTDPART_SIZ_FULL,
 	},
 };
-
+#else
 static struct mtd_partition mityarm335x_nand_partitions_4k[] = {
 	/* All the partition sizes are listed in terms of NAND block size */
 	{
@@ -243,6 +244,7 @@ static struct mtd_partition mityarm335x_nand_partitions_4k[] = {
 		.size = MTDPART_SIZ_FULL,
 	},
 };
+#endif
 
 /* TODO board-am335x has identical struct */
 static struct gpmc_timings am335x_nand_timings = {

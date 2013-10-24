@@ -37,6 +37,7 @@
 #include "mux.h"
 #include "hsmmc.h"
 #include "devices.h"
+#include "mityarm335x.h"
 
 #define BASEBOARD_NAME "MityARM-335x DevKit"
 /* Vitesse 8601 register defs we need... */
@@ -59,6 +60,7 @@
 #else
 #define TS_USE_SPI 0
 #endif
+
 struct pinmux_config {
 	const char	*muxname;
 	int		val;
@@ -686,11 +688,15 @@ out:
 	return;
 
 }
-
+static void factory_config_callback(const struct mityarm335x_factory_config* factory_config)
+{
+	pr_info("%s: %s\n", BASEBOARD_NAME, __FUNCTION__);
+}
 
 static __init int baseboard_init(void)
 {
 	pr_info("%s [%s]...\n", __func__, BASEBOARD_NAME);
+	mityarm335x_set_config_callback(factory_config_callback);
 
 	baseboard_setup_enet();
 

@@ -29,6 +29,7 @@
 #include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/string.h>
 #include <linux/ethtool.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mfd/tps65910.h>
@@ -56,6 +57,7 @@
 #include "cpuidle33xx.h"
 #include "mux.h"
 #include "devices.h"
+#include "mityarm335x.h"
 
 /* Convert GPIO signal to GPIO pin number */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
@@ -69,23 +71,147 @@ struct pinmux_config {
 static struct omap_board_config_kernel mityarm335x_config[] __initdata = {
 };
 
-#define EEPROM_MAC_ADDRESS_OFFSET	60 /* 4+8+4+12+32 */
-#define EEPROM_NO_OF_MAC_ADDR		3
+/**
+ * ###################################################################
+ * Factory config data and methods
+ * ###################################################################
+ */
+static struct mityarm335x_factory_config factory_config;
+static void __init setup_config_peripherals(void);
+static void (*mityarm335x_config_callback)(const struct  mityarm335x_factory_config*)=NULL;
 
-#define FACTORY_CONFIG_MAGIC    0x012C0138
-#define FACTORY_CONFIG_VERSION  0x00010001
+void mityarm335x_set_config_callback(
+		void (*callback)(const struct  mityarm335x_factory_config*))
+{
+	mityarm335x_config_callback = callback;
+}
 
-struct factory_config {
-	u32	magic;
-	u32	version;
-	u8	mac[6];
-	u32	reserved;
-	u32	spare;
-	u32	serialnumber;
-	char	partnum[32];
-};
+/* Factory config block accessors */
+const struct mityarm335x_factory_config* mityarm335x_factoryconfig(void)
+{
+	return &factory_config;
+}
 
-static struct factory_config factory_config;
+bool mityarm335x_valid_magic(void)
+{
+	return factory_config.magic == FACTORY_CONFIG_MAGIC;
+}
+
+bool mityarm335x_valid_version(void)
+{
+	return (factory_config.version == CONFIG_I2C_VERSION_1_1 ||
+		factory_config.version == CONFIG_I2C_VERSION_1_2);
+}
+
+u32 mityarm335x_serial_number(void)
+{
+	return factory_config.serialnumber;
+}
+
+const char* mityarm335x_model_number(void)
+{
+	return factory_config.partnum;
+}
+
+const u8* mityarm335x_mac_addr(void)
+{
+	return factory_config.mac;
+}
+
+bool mityarm335x_has_tiwi(void)
+{
+	bool rv = false;
+	if(strlen(factory_config.partnum) > OPTION_POSITION &&
+	   (0 == strncmp(&factory_config.partnum[OPTION_POSITION],OPTION_TIWI,3)))
+		rv = true;
+	return rv;
+}
+
+size_t mityarm335x_ram_size(void)
+{
+	char size_code = factory_config.partnum[RAM_SIZE_POSITION];
+	size_t rv = 0;
+	switch (size_code) {
+		case RAM_SIZE_256MB_DDR2:
+		case RAM_SIZE_256MB_DDR3:
+			rv = 256*1024*1024;
+			break;
+		case RAM_SIZE_512MB_DDR3:
+			rv = 512*1024*1024;
+			break;
+		case RAM_SIZE_1GB_DDR3:
+			rv = 1024*1024*1024;
+			break;
+		default:
+			break;
+	}
+	return rv;
+}
+
+size_t mityarm335x_nand_size(void)
+{
+	char size_code = factory_config.partnum[NAND_SIZE_POSITION];
+	size_t rv = 0;
+	switch (size_code) {
+		case NAND_SIZE_256MB:
+			rv = 256*1024*1024;
+			break;
+		case NAND_SIZE_512MB:
+			pr_err("512MB Nand not supported\n");
+		/* FUTURE
+			rv = 512*1024*1024;
+			break;
+		*/
+		case NAND_SIZE_NONE:
+		default:
+			break;
+	}
+	return rv;
+}
+
+size_t mityarm335x_nor_size(void)
+{
+	char size_code = factory_config.partnum[NOR_SIZE_POSITION];
+	size_t rv = 0;
+	switch (size_code) {
+		case NOR_SIZE_2MB:
+			rv = 2*1024*1024;
+			break;
+		case NOR_SIZE_8MB:
+			rv = 8*1024*1024;
+			break;
+		case NOR_SIZE_16MB:
+			rv = 16*1024*1024;
+			break;
+		case NOR_SIZE_NONE:
+		default:
+			break;
+	}
+	return rv;
+}
+
+u32 mityarm335x_speed_grade(void)
+{
+	char speed_code = factory_config.partnum[SPEED_GRADE_POSITION];
+	size_t rv = 0;
+	switch (speed_code) {
+		case SPEED_GRADE_720:
+			rv = 720000000;
+			break;
+		default:
+			break;
+	}
+	return rv;
+}
+
+/* END --- Factory config block accessors */
+
+/**
+ * ###################################################################
+ *  Pin mux Settings for all on-board peripherals
+ * ###################################################################
+ */
+
 
 /* Pin mux for on board nand flash */
 static struct pinmux_config nand_pin_mux[] = {
@@ -412,19 +538,19 @@ static void read_factory_config(struct memory_accessor *a, void* context)
 	const char *partnum = NULL;
 
 	ret = a->read(a, (char *)&factory_config, 0, sizeof(factory_config));
-	if (ret != sizeof(struct factory_config)) {
+	if (ret != sizeof(struct mityarm335x_factory_config)) {
 		pr_warning("MityARM-335x: Read Factory Config Failed: %d\n",
 			ret);
 		goto bad_config;
 	}
 
-	if (factory_config.magic != FACTORY_CONFIG_MAGIC) {
+	if (!mityarm335x_valid_magic()) {
 		pr_warning("MityARM-335x: Factory Config Magic Wrong (%X)\n",
 			factory_config.magic);
 		goto bad_config;
 	}
 
-	if (factory_config.version != FACTORY_CONFIG_VERSION) {
+	if (!mityarm335x_valid_version()) {
 		pr_warning("MityARM-335x: Factory Config Version Wrong (%X)\n",
 			factory_config.version);
 		goto bad_config;
@@ -432,10 +558,11 @@ static void read_factory_config(struct memory_accessor *a, void* context)
 
 	partnum = factory_config.partnum;
 	pr_info("MityARM-335x: Part Number = %s\n", partnum);
-
+	setup_config_peripherals();
 bad_config:
 	return;
 }
+
 
 static struct at24_platform_data mityarm335x_fd_info = {
 	.byte_len	= 256,
@@ -596,13 +723,13 @@ static void __init am33xx_cpuidle_init(void)
 static int mityarm335x_dbg_som_show(struct seq_file *s, void *unused)
 {
 	const char *partnum = NULL;
-	if (factory_config.magic != FACTORY_CONFIG_MAGIC) {
+	if (!mityarm335x_valid_magic()) {
 		pr_err("MityARM-335x: Factory Config Magic Wrong (%X)\n",
 			factory_config.magic);
 		return -EFAULT;
 	}
 
-	if (factory_config.version != FACTORY_CONFIG_VERSION) {
+	if (!mityarm335x_valid_version()) {
 		pr_err("MityARM-335x: Factory Config Version Wrong (%X)\n",
 			factory_config.version);
 		return -EFAULT;
@@ -659,6 +786,37 @@ static void __init mityarm335x_dbg_init(void)
 
 }
 
+/**
+ * Set up peripherals that are dependent on things set in the factory configuration
+ * These include:
+ * NAND
+ * TIWI (WLAN) (future)
+ * SPI NOR (unimplemented)
+ */
+static void __init setup_config_peripherals(void)
+{
+	/* Don't initialize SPI1 interface unless we have NOR flash on-board
+	 * If baseboard needs SPI1 bus, it will initialize it in the config callback */
+	if(mityarm335x_config_callback) {
+		(*mityarm335x_config_callback)(&factory_config);
+	}
+	if(0 != mityarm335x_nor_size())
+		spi1_init();
+	else
+		pr_info("No SPI NOR Flash configured\n");
+
+	if(0 != mityarm335x_nand_size()) {
+		pr_info("Configuring %dMB NAND device\n", mityarm335x_nand_size()/(1024*1024));
+		mityarm335x_nand_init();
+	}
+	else
+	{
+		pr_info("No NAND device configured\n");
+	}
+
+	return;
+}
+
 static void __init mityarm335x_init(void)
 {
 	am33xx_cpuidle_init();
@@ -669,8 +827,6 @@ static void __init mityarm335x_init(void)
 	am33xx_cpsw_init(1); /* 1 == enable gigabit */
 	mityarm335x_i2c_init();
 	omap_sdrc_init(NULL, NULL);
-	spi1_init();
-	mityarm335x_nand_init();
 	omap_board_config = mityarm335x_config;
 	omap_board_config_size = ARRAY_SIZE(mityarm335x_config);
 	/* Create an alias for icss clock */

@@ -20,7 +20,7 @@
  *  PPPP-YX-NAR-HC[-OO]
  *
  *  PPPP	- Part number (3359, 3354, etc.)
- *  Y		- Speed Grade (E or G - 720 MHz)
+ *  Y		- Speed Grade (E or G - 720 MHz, H - 800MHz)
  *  X		- not used (fpga type)
  *  N		- NOR size (3 - 16 MB, 2 - 8MB)
  *  A		- NAND size (2 - 256 MB, 3 - 512 MB)
@@ -32,6 +32,7 @@
 
 #define SPEED_GRADE_POSITION	 5
 #define SPEED_GRADE_720		'G'
+#define SPEED_GRADE_800		'X'
 
 #define NOR_SIZE_POSITION	 8
 #define NOR_SIZE_NONE		'X'
@@ -48,7 +49,8 @@
 #define RAM_SIZE_256MB_DDR2	'6'
 #define RAM_SIZE_256MB_DDR3	'7'
 #define RAM_SIZE_512MB_DDR3	'8'
-#define RAM_SIZE_1GB_DDR3	'9'
+#define RAM_SIZE_512MB_DDR2	'9'
+#define RAM_SIZE_1GB_DDR3	'A'
 
 #define OPTION_POSITION         14
 #define OPTION_TIWI             "-R2"

@@ -157,11 +157,8 @@ size_t mityarm335x_nand_size(void)
 			rv = 256*1024*1024;
 			break;
 		case NAND_SIZE_512MB:
-			pr_err("512MB Nand not supported\n");
-		/* FUTURE
 			rv = 512*1024*1024;
 			break;
-		*/
 		case NAND_SIZE_NONE:
 		default:
 			break;
@@ -282,7 +279,6 @@ static void setup_pin_mux(struct pinmux_config *pin_mux)
 }
 
 /* NAND partition information */
-#if !defined(CONFIG_NAND_MITYARM_LARGE_PAGE_SUPPORT)
 static struct mtd_partition mityarm335x_nand_partitions_2k[] = {
 /* All the partition sizes are listed in terms of NAND block size */
 	{
@@ -326,7 +322,7 @@ static struct mtd_partition mityarm335x_nand_partitions_2k[] = {
 		.size           = MTDPART_SIZ_FULL,
 	},
 };
-#else
+
 static struct mtd_partition mityarm335x_nand_partitions_4k[] = {
 	/* All the partition sizes are listed in terms of NAND block size */
 	{
@@ -370,7 +366,6 @@ static struct mtd_partition mityarm335x_nand_partitions_4k[] = {
 		.size = MTDPART_SIZ_FULL,
 	},
 };
-#endif
 
 /* TODO board-am335x has identical struct */
 static struct gpmc_timings am335x_nand_timings = {
@@ -396,7 +391,7 @@ static struct gpmc_timings am335x_nand_timings = {
 	.wr_data_mux_bus = 0,
 };
 
-static void mityarm335x_nand_init(void)
+static void mityarm335x_nand_init(size_t nand_size)
 {
 	struct omap_nand_platform_data *pdata;
 	struct gpmc_devices_info gpmc_device[2] = {
@@ -405,18 +400,20 @@ static void mityarm335x_nand_init(void)
 	};
 
 	setup_pin_mux(nand_pin_mux);
-#if defined(CONFIG_NAND_MITYARM_LARGE_PAGE_SUPPORT)
 	/* if nand size >= 512MB NAND uses a 4K page size */
-	pdata = omap_nand_init(mityarm335x_nand_partitions_4k,
-			ARRAY_SIZE(mityarm335x_nand_partitions_4k), 0, 0,
-			&am335x_nand_timings);
-	pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
-#else
-	pdata = omap_nand_init(mityarm335x_nand_partitions_2k,
-			ARRAY_SIZE(mityarm335x_nand_partitions_2k), 0, 0,
-			&am335x_nand_timings);
-	pdata->ecc_opt = OMAP_ECC_BCH8_CODE_HW;
-#endif
+	if(nand_size >= 512*1024*1024) {
+		pdata = omap_nand_init(mityarm335x_nand_partitions_4k,
+				ARRAY_SIZE(mityarm335x_nand_partitions_4k), 0, 0,
+				&am335x_nand_timings);
+		pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
+	/* Everything else is a 2K page size */
+	} else {
+		pdata = omap_nand_init(mityarm335x_nand_partitions_2k,
+				ARRAY_SIZE(mityarm335x_nand_partitions_2k), 0, 0,
+				&am335x_nand_timings);
+		pdata->ecc_opt = OMAP_ECC_BCH8_CODE_HW;
+	}
+
 	if (!pdata)
 		return;
 	pdata->elm_used = true;
@@ -807,7 +804,7 @@ static void __init setup_config_peripherals(void)
 
 	if(0 != mityarm335x_nand_size()) {
 		pr_info("Configuring %dMB NAND device\n", mityarm335x_nand_size()/(1024*1024));
-		mityarm335x_nand_init();
+		mityarm335x_nand_init(mityarm335x_nand_size());
 	}
 	else
 	{

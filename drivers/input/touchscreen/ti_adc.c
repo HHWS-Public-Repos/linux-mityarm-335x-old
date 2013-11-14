@@ -24,6 +24,7 @@
 #include <linux/input/ti_tscadc.h>
 #include <linux/delay.h>
 #include <linux/device.h>
+#include <linux/pm_runtime.h>
 
 static ssize_t do_adc_sample(struct device *, struct device_attribute *,
 	char *);
@@ -114,7 +115,6 @@ static DEVICE_ATTR(ain0, S_IRUGO, do_adc_sample, NULL);
 #define MAX_12BIT				((1 << 12) - 1)
 
 struct adc {
-	struct clk *tsc_ick;
 	void __iomem *tsc_base;
 };
 
@@ -254,12 +254,8 @@ static int __devinit adc_probe(struct platform_device *pdev)
 		goto err_release_mem;
 	}
 
-	ts_dev->tsc_ick = clk_get(&pdev->dev, "adc_tsc_ick");
-	if (IS_ERR(ts_dev->tsc_ick)) {
-		dev_err(&pdev->dev, "failed to get ADC ick\n");
-		goto err_unmap_regs;
-	}
-	clk_enable(ts_dev->tsc_ick);
+	pm_runtime_enable(&pdev->dev);
+	pm_runtime_get_sync(&pdev->dev);
 
 	clk = clk_get(&pdev->dev, "adc_tsc_fck");
 	if (IS_ERR(clk)) {
@@ -271,6 +267,7 @@ static int __devinit adc_probe(struct platform_device *pdev)
 	clk_value = clock_rate / ADC_CLK;
 	if (clk_value < 7) {
 		dev_err(&pdev->dev, "clock input less than min clock requirement\n");
+		err = -EINVAL;
 		goto err_fail;
 	}
 	/* TSCADC_CLKDIV needs to be configured to the value minus 1 */
@@ -295,8 +292,7 @@ static int __devinit adc_probe(struct platform_device *pdev)
 	return 0;
 
 err_fail:
-	clk_disable(ts_dev->tsc_ick);
-	clk_put(ts_dev->tsc_ick);
+	pm_runtime_disable(&pdev->dev);
 err_unmap_regs:
 	iounmap(ts_dev->tsc_base);
 err_release_mem:
@@ -325,14 +321,47 @@ static int __devexit adc_remove(struct platform_device *pdev)
 	iounmap(ts_dev->tsc_base);
 	release_mem_region(res->start, resource_size(res));
 
-	clk_disable(ts_dev->tsc_ick);
-	clk_put(ts_dev->tsc_ick);
+	pm_runtime_disable(&pdev->dev);
 
 	kfree(ts_dev);
 
 	platform_set_drvdata(pdev, NULL);
 	return 0;
 }
+
+static int adc_suspend(struct platform_device *pdev, pm_message_t state)
+{
+	struct adc *ts_dev = platform_get_drvdata(pdev);
+	unsigned int idle;
+
+	/* module disable */
+	idle = 0;
+	idle = adc_readl(ts_dev, TSCADC_REG_CTRL);
+	idle &= ~(TSCADC_CNTRLREG_TSCSSENB);
+	adc_writel(ts_dev, TSCADC_REG_CTRL, idle);
+
+	pm_runtime_put_sync(&pdev->dev);
+
+	return 0;
+
+}
+
+static int adc_resume(struct platform_device *pdev)
+{
+	struct adc *ts_dev = platform_get_drvdata(pdev);
+	unsigned int restore;
+
+	pm_runtime_get_sync(&pdev->dev);
+
+	/* context restore */
+	adc_writel(ts_dev, TSCADC_REG_FIFO1THR, 6);
+	restore = adc_readl(ts_dev, TSCADC_REG_CTRL);
+	adc_writel(ts_dev, TSCADC_REG_CTRL,
+			(restore | TSCADC_CNTRLREG_TSCSSENB));
+
+	return 0;
+}
+
 
 static struct platform_driver adc_driver = {
 		.probe = adc_probe,
@@ -341,6 +370,8 @@ static struct platform_driver adc_driver = {
 			.name = "ain",
 			.owner = THIS_MODULE,
 		},
+	.suspend = adc_suspend,
+	.resume  = adc_resume,
 };
 
 static int __init ti_adc_init(void)

@@ -178,7 +178,11 @@ int __init am33xx_register_tsc(struct tsc_data *pdata)
 	struct platform_device *pdev;
 	struct omap_hwmod *oh;
 	char *oh_name = "adc_tsc";
+#ifdef CONFIG_TOUCHSCREEN_TI_ADC
+	char *dev_name = "ain";
+#else
 	char *dev_name = "tsc";
+#endif
 
 	oh = omap_hwmod_lookup(oh_name);
 	if (!oh) {

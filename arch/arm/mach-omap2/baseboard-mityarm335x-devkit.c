@@ -372,42 +372,19 @@ static __init void baseboard_setup_ts(void)
 }
 #else
 
-static struct resource tsc_resources[]  = {
-	[0] = {
-		.start  = AM33XX_TSC_BASE,
-		.end    = AM33XX_TSC_BASE + SZ_8K - 1,
-		.flags  = IORESOURCE_MEM,
-	},
-	[1] = {
-		.start  = AM33XX_IRQ_ADC_GEN,
-		.end    = AM33XX_IRQ_ADC_GEN,
-		.flags  = IORESOURCE_IRQ,
-	},
-};
-
 static struct tsc_data am335x_touchscreen_data  = {
 	.wires  = 4,
 	.analog_input  = 1,
 	.x_plate_resistance = 200,
 };
 
-static struct platform_device tsc_device = {
-	.name   = "tsc",
-	.id     = -1,
-	.dev    = {
-			.platform_data  = &am335x_touchscreen_data,
-	},
-	.num_resources  = ARRAY_SIZE(tsc_resources),
-	.resource       = tsc_resources,
-};
-
-
 static __init void baseboard_setup_ts(void)
 {
 	int err;
 
 	setup_pin_mux(tsc_pin_mux);
-	err = platform_device_register(&tsc_device);
+
+	err = am33xx_register_tsc(&am335x_touchscreen_data);
 	if (err)
 		pr_err("failed to register touchscreen device\n");
 }

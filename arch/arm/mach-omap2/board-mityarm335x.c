@@ -797,17 +797,19 @@ static void __init setup_config_peripherals(void)
 	if(mityarm335x_config_callback) {
 		(*mityarm335x_config_callback)(&factory_config);
 	}
-	if(0 != mityarm335x_nor_size())
-		spi1_init();
-	else
-		pr_info("No SPI NOR Flash configured\n");
+
+	// Always init the spi and nor.  This is because the mtd # of the nand
+	// device changes if the nor isn't present.  Which means nand scripts for the
+	// chips with nor will act unexpectedly on chips without nor.
+	spi1_init();
+	if(0 == mityarm335x_nor_size())
+		pr_info("No SPI NOR Flash found.\n");
 
 	if(0 != mityarm335x_nand_size()) {
 		pr_info("Configuring %dMB NAND device\n", mityarm335x_nand_size()/(1024*1024));
 		mityarm335x_nand_init(mityarm335x_nand_size());
 	}
-	else
-	{
+	else {
 		pr_info("No NAND device configured\n");
 	}
 

@@ -14,7 +14,7 @@
 
 struct isp_platform_data;
 struct snd_platform_data;
-struct tsc_data;
+struct mfd_tscadc_board;
 struct pwmss_platform_data;
 
 int omap3_init_camera(struct isp_platform_data *pdata);
@@ -29,7 +29,6 @@ extern int __init omap_init_elm(void);
 extern void __init am33xx_gpu_init(void);
 
 void am33xx_cpsw_macidfillup(char *eeprommacid0, char *eeprommacid1);
-void am33xx_cpsw_init(unsigned int gigen);
 void am33xx_d_can_init(unsigned int instance);
 
 #endif

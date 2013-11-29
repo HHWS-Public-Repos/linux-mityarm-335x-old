@@ -16,10 +16,13 @@
 #include <linux/gpio.h>
 
 /* TSc controller */
-#include <linux/input/ti_tscadc.h>
+#include <linux/input/ti_tsc.h>
+#include <linux/platform_data/ti_adc.h>
+#include <linux/mfd/ti_tscadc.h>
 #include <linux/lis3lv02d.h>
 
 #include <video/da8xx-fb.h>
+#include <plat/omap-pm.h>
 #include <plat/lcdc.h> /* uhhggg... */
 #include <plat/mmc.h>
 #include <plat/usb.h>
@@ -31,6 +34,7 @@
 #include <linux/regulator/fixed.h>
 #include <linux/regulator/machine.h>
 #include <linux/mmc/host.h>
+#include <linux/pwm/pwm.h>
 
 #include <asm/hardware/asp.h>
 
@@ -340,7 +344,7 @@ static struct lcd_ctrl_config dvi_cfg = {
 struct da8xx_lcdc_platform_data dvi_pdata = {
 	.manu_name		= "VESA",
 	.controller_data	= &dvi_cfg,
-	.type			= "800x600",
+	.type			= "1024x768",
 };
 #ifdef CONFIG_BACKLIGHT_TPS6116X
 
@@ -386,9 +390,14 @@ static void __init baseboard_setup_ts(void)
 
 static struct tsc_data am335x_touchscreen_data  = {
 	.wires  = 4,
-	.analog_input  = 1,
 	.x_plate_resistance = 200,
+	.steps_to_configure = 5,
 };
+
+static struct mfd_tscadc_board am335x_tscadc = {
+	.tsc_init = &am335x_touchscreen_data,
+};
+
 
 static void __init baseboard_setup_ts(void)
 {
@@ -396,16 +405,34 @@ static void __init baseboard_setup_ts(void)
 
 	setup_pin_mux(tsc_pin_mux);
 
-	err = am33xx_register_tsc(&am335x_touchscreen_data);
+	pr_info("IN : %s \n", __FUNCTION__);
+	err = am33xx_register_mfd_tscadc(&am335x_tscadc);
 	if (err)
 		pr_err("failed to register touchscreen device\n");
+
+	pr_info("Setup LCD touchscreen\n");
 }
 #endif /* CONFIG_TOUCHSCREEN_ADS7846 */
 
-static void __init baseboard_setup_dvi(void)
+static int __init conf_disp_pll(int rate)
 {
 	struct clk *disp_pll;
+	int ret = -EINVAL;
 
+	disp_pll = clk_get(NULL, "dpll_disp_ck");
+	if (IS_ERR(disp_pll)) {
+		pr_err("Cannot clk_get disp_pll\n");
+		goto out;
+	}
+
+	ret = clk_set_rate(disp_pll, rate);
+	clk_put(disp_pll);
+out:
+	return ret;
+}
+
+static void __init baseboard_setup_dvi(void)
+{
 	/* pinmux */
 	setup_pin_mux(lcdc_pin_mux);
 
@@ -417,17 +444,13 @@ static void __init baseboard_setup_dvi(void)
 	 */
 
 	/* configure / enable LCDC */
-	disp_pll = clk_get(NULL, "dpll_disp_ck");
-	if (IS_ERR(disp_pll)) {
-		pr_err("Connect get disp_pll\n");
+	if (conf_disp_pll(300000000)) {
+		pr_info("Failed configure display PLL, not attempting to"
+				"register LCDC\n");
 		return;
 	}
 
-	if (clk_set_rate(disp_pll, 300000000)) {
-		pr_warning("%s: Unable to initialize display PLL.\n",
-			__func__);
-		goto out;
-	}
+	dvi_pdata.get_context_loss_count = omap_pm_get_dev_context_loss_count;
 
 	if (am33xx_register_lcdc(&dvi_pdata))
 		pr_warning("%s: Unable to register LCDC device.\n",
@@ -443,18 +466,16 @@ static void __init baseboard_setup_dvi(void)
 	if (0 != gpio_request(MITY335X_DK_GPIO_BACKLIGHT, "backlight control")) {
 		pr_warning("Unable to request GPIO %d\n",
 				   MITY335X_DK_GPIO_BACKLIGHT);
-		goto out;
+		return;
 	}
 	if (0 != gpio_direction_output(MITY335X_DK_GPIO_BACKLIGHT, 1)) {
 		pr_warning("Unable to set backlight GPIO %d ON\n",
 				   MITY335X_DK_GPIO_BACKLIGHT);
-		goto out;
+		return;
 	} else {
 		pr_info("Backlight GPIO  = %d\n", MITY335X_DK_GPIO_BACKLIGHT);
 	}
 #endif /* CONFIG_BACKLIGHT_TPS6116X */
-out:
-	clk_put(disp_pll);
 }
 
 

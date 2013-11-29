@@ -29,11 +29,13 @@
 #include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/export.h>
 #include <linux/string.h>
 #include <linux/ethtool.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mfd/tps65910.h>
 #include <linux/wl12xx.h>
+#include <linux/rtc/rtc-omap.h>
 
 #include <linux/seq_file.h>
 #include <linux/debugfs.h>
@@ -46,6 +48,7 @@
 #include <asm/mach/map.h>
 #include <asm/hardware/asp.h>
 
+#include <plat/omap_device.h>
 #include <plat/irqs.h>
 #include <plat/board.h>
 #include <plat/usb.h>
@@ -728,51 +731,34 @@ static void __init mityarm335x_i2c2_init(void)
 }
 #endif
 
-static struct resource am335x_rtc_resources[] = {
-	{
-		.start		= AM33XX_RTC_BASE,
-		.end		= AM33XX_RTC_BASE + SZ_4K - 1,
-		.flags		= IORESOURCE_MEM,
-	},
-	{ /* timer irq */
-		.start		= AM33XX_IRQ_RTC_TIMER,
-		.end		= AM33XX_IRQ_RTC_TIMER,
-		.flags		= IORESOURCE_IRQ,
-	},
-	{ /* alarm irq */
-		.start		= AM33XX_IRQ_RTC_ALARM,
-		.end		= AM33XX_IRQ_RTC_ALARM,
-		.flags		= IORESOURCE_IRQ,
-	},
+static struct omap_rtc_pdata am335x_rtc_info = {
+	.pm_off		= false,
+	.wakeup_capable	= 0,
 };
 
-static struct platform_device am335x_rtc_device = {
-	.name           = "omap_rtc",
-	.id             = -1,
-	.num_resources	= ARRAY_SIZE(am335x_rtc_resources),
-	.resource	= am335x_rtc_resources,
-};
-
-static int __init am335x_rtc_init(void)
+static void __init am335x_rtc_init(void)
 {
 	void __iomem *base;
 	struct clk *clk;
+	struct omap_hwmod *oh;
+	struct platform_device *pdev;
+	char *dev_name = "am33xx-rtc";
 
 	clk = clk_get(NULL, "rtc_fck");
 	if (IS_ERR(clk)) {
 		pr_err("rtc : Failed to get RTC clock\n");
-		return -1;
+		return;
 	}
 
 	if (clk_enable(clk)) {
 		pr_err("rtc: Clock Enable Failed\n");
-		return -1;
+		return;
 	}
 
 	base = ioremap(AM33XX_RTC_BASE, SZ_4K);
 
 	if (WARN_ON(!base))
-		return -ENOMEM;
+		return;
 
 	/* Unlock the rtc's registers */
 	__raw_writel(0x83e70b13, base + 0x6c);
@@ -788,7 +774,22 @@ static int __init am335x_rtc_init(void)
 
 	iounmap(base);
 
-	return  platform_device_register(&am335x_rtc_device);
+	clk_disable(clk);
+	clk_put(clk);
+
+	if (omap_rev() >= AM335X_REV_ES2_0)
+		am335x_rtc_info.wakeup_capable = 1;
+
+	oh = omap_hwmod_lookup("rtc");
+	if (!oh) {
+		pr_err("could not look up %s\n", "rtc");
+		return;
+	}
+
+	pdev = omap_device_build(dev_name, -1, oh, &am335x_rtc_info,
+			sizeof(struct omap_rtc_pdata), NULL, 0, 0);
+	WARN(IS_ERR(pdev), "Can't build omap_device for %s:%s.\n",
+			dev_name, oh->name);
 }
 
 /* Enable clkout2 */
@@ -835,7 +836,6 @@ static struct resource am33xx_cpuidle_resources[] = {
 
 /* AM33XX devices support DDR2 power down */
 static struct am33xx_cpuidle_config am33xx_cpuidle_pdata = {
-	.ddr2_pdown	= 1,
 };
 
 static struct platform_device am33xx_cpuidle_device = {
@@ -1087,7 +1087,13 @@ static void __init mityarm335x_init(void)
 	omap_serial_init();
 	am335x_rtc_init();
 	clkout2_enable();
-	am33xx_cpsw_init(1); /* 1 == enable gigabit */
+
+#ifdef CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE
+	am33xx_cpsw_init(AM33XX_CPSW_MODE_RGMII, "0:01", "0:00");
+#else
+	am33xx_cpsw_init(AM33XX_CPSW_MODE_RGMII, "0:00", "0:01");
+#endif
+
 	mityarm335x_i2c1_init();
 
 #ifndef CONFIG_MITYARM335X_TIWI

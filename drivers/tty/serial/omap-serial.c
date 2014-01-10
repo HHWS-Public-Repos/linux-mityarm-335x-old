@@ -987,7 +987,7 @@ serial_omap_type(struct uart_port *port)
 
 static inline void wait_for_xmitr(struct uart_omap_port *up)
 {
-	unsigned int status, tmout = 10000;
+	unsigned int status, tmout = 80000;
 
 	/* Wait up to 10ms for the character(s) to be sent. */
 	do {

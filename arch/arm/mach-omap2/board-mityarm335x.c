@@ -536,25 +536,25 @@ static void read_factory_config(struct memory_accessor *a, void* context)
 
 	ret = a->read(a, (char *)&factory_config, 0, sizeof(factory_config));
 	if (ret != sizeof(struct mityarm335x_factory_config)) {
-		pr_warning("MityARM-335x: Read Factory Config Failed: %d\n",
+		pr_warning("MitySOM-335x: Read Factory Config Failed: %d\n",
 			ret);
 		goto bad_config;
 	}
 
 	if (!mityarm335x_valid_magic()) {
-		pr_warning("MityARM-335x: Factory Config Magic Wrong (%X)\n",
+		pr_warning("MitySOM-335x: Factory Config Magic Wrong (%X)\n",
 			factory_config.magic);
 		goto bad_config;
 	}
 
 	if (!mityarm335x_valid_version()) {
-		pr_warning("MityARM-335x: Factory Config Version Wrong (%X)\n",
+		pr_warning("MitySOM-335x: Factory Config Version Wrong (%X)\n",
 			factory_config.version);
 		goto bad_config;
 	}
 
 	partnum = factory_config.partnum;
-	pr_info("MityARM-335x: Part Number = %s\n", partnum);
+	pr_info("MitySOM-335x: Part Number = %s\n", partnum);
 	setup_config_peripherals();
 bad_config:
 	return;
@@ -721,19 +721,19 @@ static int mityarm335x_dbg_som_show(struct seq_file *s, void *unused)
 {
 	const char *partnum = NULL;
 	if (!mityarm335x_valid_magic()) {
-		pr_err("MityARM-335x: Factory Config Magic Wrong (%X)\n",
+		pr_err("MitySOM-335x: Factory Config Magic Wrong (%X)\n",
 			factory_config.magic);
 		return -EFAULT;
 	}
 
 	if (!mityarm335x_valid_version()) {
-		pr_err("MityARM-335x: Factory Config Version Wrong (%X)\n",
+		pr_err("MitySOM-335x: Factory Config Version Wrong (%X)\n",
 			factory_config.version);
 		return -EFAULT;
 	}
 
 	partnum = factory_config.partnum;
-	seq_printf(s, "MityARM-335x: Part Number = %s\n"
+	seq_printf(s, "MitySOM-335x: Part Number = %s\n"
 		      "            : Serial Num = %d\n"
 		      "            : Found MAC = %pM\n",
 		      partnum,
@@ -769,7 +769,7 @@ static void __init mityarm335x_dbg_init(void)
 {
 	static struct dentry *mityarm335x_dbg_board_dir;
 
-	mityarm335x_dbg_dir = debugfs_create_dir("mityarm335x", NULL);
+	mityarm335x_dbg_dir = debugfs_create_dir("mitysom335x", NULL);
 	if (!mityarm335x_dbg_dir)
 		return;
 	mityarm335x_dbg_board_dir = debugfs_create_dir("module",
@@ -845,7 +845,7 @@ static void __init mityarm335x_map_io(void)
 	omapam33xx_map_common_io();
 }
 
-MACHINE_START(MITYARM335X, "mityarm335x")
+MACHINE_START(MITYARM335X, "mitysom335x")
 	/* Maintainer: Critical Link, LLC */
 	.atag_offset	= 0x100,
 	.map_io		= mityarm335x_map_io,

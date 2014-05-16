@@ -39,7 +39,7 @@
 #include "devices.h"
 #include "mityarm335x.h"
 
-#define BASEBOARD_NAME "MityARM-335x DevKit"
+#define BASEBOARD_NAME "MitySOM-335x DevKit"
 /* Vitesse 8601 register defs we need... */
 #define VSC8601_PHY_ID   (0x00070420)
 #define VSC8601_PHY_MASK (0xFFFFFFFC)

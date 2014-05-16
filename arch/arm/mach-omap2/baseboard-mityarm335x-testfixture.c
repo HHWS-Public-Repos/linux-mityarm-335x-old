@@ -32,7 +32,7 @@
 #include "hsmmc.h"
 #include "devices.h"
 
-#define BASEBOARD_NAME "MityARM-335x TestFixture"
+#define BASEBOARD_NAME "MitySOM-335x TestFixture"
 /* Vitesse 8601 register defs */
 #define VSC8601_PHY_ID   (0x00070420)
 #define VSC8601_PHY_MASK (0xFFFFFFFC)

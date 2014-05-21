@@ -353,9 +353,21 @@ int phy_connect_direct(struct net_device *dev, struct phy_device *phydev,
 EXPORT_SYMBOL(phy_connect_direct);
 
 /**
+ * match_first - Matches first element
+ * @dev: the network device to match
+ * @data: NULL
+ * Returns true
+ */
+static int match_first(struct device *dev, void *data)
+{
+	return 1;
+}
+
+/**
  * phy_connect - connect an ethernet device to a PHY device
  * @dev: the network device to connect
- * @bus_id: the id string of the PHY device to connect
+ * @bus_id: the id string of the PHY device to connect, if null will connect to
+ * first phy on the mdio bus.
  * @handler: callback function for state change notifications
  * @flags: PHY device's dev_flags
  * @interface: PHY device's interface
@@ -376,9 +388,13 @@ struct phy_device * phy_connect(struct net_device *dev, const char *bus_id,
 	struct device *d;
 	int rc;
 
-	/* Search the list of PHY devices on the mdio bus for the
-	 * PHY with the requested name */
-	d = bus_find_device_by_name(&mdio_bus_type, NULL, bus_id);
+	if (bus_id)
+		/* Search the list of PHY devices on the mdio bus for the
+		 * PHY with the requested name */
+		d = bus_find_device_by_name(&mdio_bus_type, NULL, bus_id);
+	else
+		/* Get the first PHY from the list of PHY devices on the mdio bus */
+		d = bus_find_device(&mdio_bus_type, NULL, NULL, match_first);
 	if (!d) {
 		pr_err("PHY %s not found\n", bus_id);
 		return ERR_PTR(-ENODEV);

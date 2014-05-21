@@ -1218,7 +1218,7 @@ static struct cpsw_slave_data am33xx_cpsw_slaves[] = {
 #ifdef CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE
 		.phy_id		= "0:00",
 #else
-		.phy_id		= "0:01",
+		.phy_id		= NULL,
 #endif
 	},
 };

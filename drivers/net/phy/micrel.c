@@ -407,11 +407,15 @@ static struct phy_driver ksphy_driver[] = {
 	.resume		= genphy_resume,
 	.driver		= { .owner = THIS_MODULE, },
 }, {
+	/*
+	 * Due to a hw bug do not enable the Asym_Pause.
+	 * Otherwise if you set the bit 11 in 4h you will have to unplug
+	 * and replug the cable to make the phy work.
+	 */
 	.phy_id		= PHY_ID_KSZ9031,
 	.phy_id_mask	= 0x00fffff0,
 	.name		= "Micrel KSZ9031 Gigabit PHY",
-	.features	= (PHY_GBIT_FEATURES | SUPPORTED_Pause
-				| SUPPORTED_Asym_Pause),
+	.features	= (PHY_GBIT_FEATURES | SUPPORTED_Pause),
 	.flags		= PHY_HAS_MAGICANEG | PHY_HAS_INTERRUPT,
 	.config_init	= kszphy_config_init,
 	.config_aneg	= genphy_config_aneg,

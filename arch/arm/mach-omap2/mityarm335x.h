@@ -20,11 +20,12 @@
  *  PPPP-YX-NAR-HC[-OO]
  *
  *  PPPP	- Part number (3359, 3354, etc.)
- *  Y		- Speed Grade (E or G - 720 MHz, H - 800MHz)
+ *  Y		- Speed Grade (E or G - 720 MHz, H - 800MHz, I - 1GHz)
  *  X		- not used (fpga type)
  *  N		- NOR size (3 - 16 MB, 2 - 8MB)
- *  A		- NAND size (2 - 256 MB, 3 - 512 MB)
- *  R		- RAM size (6 - 256 MB DDR2, 7 - 256 MB DDR3, 8 - 512 MB DDR3)
+ *  A		- NAND size (2 - 256 MB, 3 - 512 MB, 4 - 1GB)
+ *  R           - RAM size (6 - 256 MB DDR2, 7 - 256 MB DDR3, 8 - 512 MB DDR3,
+ *                          9 - 512MB DDR2, A - 1024 MB DDR3)
  *  H		- RoHS (R - compliant)
  *  C		- Temperature (C - commercial, I - industrial, L - Low Temp)
  *  -OO         - Option builds. Currently the only option is -R2 for the TiWi module
@@ -32,7 +33,8 @@
 
 #define SPEED_GRADE_POSITION	 5
 #define SPEED_GRADE_720		'G'
-#define SPEED_GRADE_800		'X'
+#define SPEED_GRADE_800		'H'
+#define SPEED_GRADE_1000	'I'
 
 #define NOR_SIZE_POSITION	 8
 #define NOR_SIZE_NONE		'X'
@@ -44,6 +46,7 @@
 #define NAND_SIZE_NONE		'X'
 #define NAND_SIZE_256MB		'2'
 #define NAND_SIZE_512MB		'3'
+#define NAND_SIZE_1GB		'4'
 
 #define RAM_SIZE_POSITION	10
 #define RAM_SIZE_256MB_DDR2	'6'

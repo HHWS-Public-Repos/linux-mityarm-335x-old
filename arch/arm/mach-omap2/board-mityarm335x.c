@@ -159,6 +159,9 @@ size_t mityarm335x_nand_size(void)
 		case NAND_SIZE_512MB:
 			rv = 512*1024*1024;
 			break;
+		case NAND_SIZE_1GB:
+			rv = 1*1024*1024*1024;
+			break;
 		case NAND_SIZE_NONE:
 		default:
 			break;
@@ -367,6 +370,50 @@ static struct mtd_partition mityarm335x_nand_partitions_4k[] = {
 	},
 };
 
+static struct mtd_partition mityarm335x_nand_partitions_4k_1GB[] = {
+	/* All the partition sizes are listed in terms of NAND block size */
+	{
+		.name = "SPL",
+		.offset = 0, /* Offset = 0x0 */
+		.size = SZ_512K,
+	},
+	{
+		.name = "SPL.backup1",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x80000 */
+		.size = SZ_512K,
+	},
+	{
+		.name = "SPL.backup2",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x100000 */
+		.size = SZ_512K,
+	},
+	{
+		.name = "SPL.backup3",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x180000 */
+		.size = SZ_512K,
+	},
+	{
+		.name = "U-Boot",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x200000 */
+		.size = 4 * SZ_512K,
+	},
+	{
+		.name = "U-Boot Env",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x400000 */
+		.size = 1 * SZ_512K,
+	},
+	{
+		.name = "Kernel",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x480000 */
+		.size = 10 * SZ_512K,
+	},
+	{
+		.name = "File System",
+		.offset = MTDPART_OFS_APPEND, /* Offset = 0x980000 */
+		.size = MTDPART_SIZ_FULL,
+	},
+};
+
 /* TODO board-am335x has identical struct */
 static struct gpmc_timings am335x_nand_timings = {
 
@@ -400,8 +447,14 @@ static void mityarm335x_nand_init(size_t nand_size)
 	};
 
 	setup_pin_mux(nand_pin_mux);
+	/* if nand size >= 1GB NAND uses a 4K page size */
+	if(nand_size >= 1024*1024*1024) {
+		pdata = omap_nand_init(mityarm335x_nand_partitions_4k_1GB,
+				ARRAY_SIZE(mityarm335x_nand_partitions_4k_1GB), 0, 0,
+				&am335x_nand_timings);
+		pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
 	/* if nand size >= 512MB NAND uses a 4K page size */
-	if(nand_size >= 512*1024*1024) {
+	} else if(nand_size >= 512*1024*1024) {
 		pdata = omap_nand_init(mityarm335x_nand_partitions_4k,
 				ARRAY_SIZE(mityarm335x_nand_partitions_4k), 0, 0,
 				&am335x_nand_timings);

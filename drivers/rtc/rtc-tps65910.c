@@ -337,6 +337,8 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 	if (ret < 0)
 		return ret;
 
+	platform_set_drvdata(pdev, tps_rtc);
+
 	pmic_plat_data = dev_get_platdata(tps65910->dev);
 	tps_rtc->irq = pmic_plat_data->irq_base;
 	if (tps_rtc->irq <= 0) {
@@ -362,8 +364,6 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "RTC device register: err %d\n", ret);
 		return ret;
 	}
-
-	platform_set_drvdata(pdev, tps_rtc);
 
 	return 0;
 }

@@ -374,6 +374,27 @@ config BASEBOARD_MITYARM335X_TESTFIXTURE
 
 endchoice
 
+config MITYARM335X_TIWI
+	bool "Enable this to build kernel for MityARM-335X System on Module with TiWi"
+	depends on MACH_MITYARM335X
+	default n
+	help
+	Select this option to build the kernel with support for the on-module WL12xx
+	WiFi/BT module. This option will configure the following pins.
+	Pin  93 - gpmc_ad8.mmc1_dat0
+	Pin  95 - gpmc_ad9.mmc1_dat1
+	Pin  97 - gpmc_ad10.mmc1_dat2
+	Pin  99 - gpmc_ad11.mmc1_dat3
+	Pin 111 - gpmc_csn2.mmc1_cmd
+	Pin 113 - gpmc_csn1.mmc1_clk
+	Pin 173 - uart1_rxd.uart1_rxd
+	Pin 175 - uart1_txd.uart1_txd
+	Pin xxx - uart1_ctsn.uart1_ctsn
+	Pin xxx - uart1_rtsn.uart1_rtsn
+	Pin 101 - gpmc_ad12.gpio1_12
+	Pin 103 - gpmc_ad13.gpio1_13
+	Pin  94 - gpmc_csn3.gpio2_0
+
 config FB_MITYARM_DEVKIT_LCD
 	bool "Configure drivers for MityARM-AM335X devkit LCD adapter"
 	depends on (FB_DA8XX && BASEBOARD_MITYARM335X_DEVKIT)

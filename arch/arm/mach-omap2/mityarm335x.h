@@ -57,6 +57,7 @@
 
 #define OPTION_POSITION         14
 #define OPTION_TIWI             "-R2"
+#define OPTION_TIWI_BLE         "-BLE"
 
 struct mityarm335x_factory_config {
 	u32	magic;

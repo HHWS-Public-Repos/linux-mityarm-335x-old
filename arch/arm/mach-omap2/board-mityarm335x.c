@@ -122,7 +122,8 @@ bool mityarm335x_has_tiwi(void)
 {
 	bool rv = false;
 	if(strlen(factory_config.partnum) > OPTION_POSITION &&
-	   (0 == strncmp(&factory_config.partnum[OPTION_POSITION],OPTION_TIWI,3)))
+	   (0 == strncmp(&factory_config.partnum[OPTION_POSITION],OPTION_TIWI,3) ||
+	    0 == strncmp(&factory_config.partnum[OPTION_POSITION],OPTION_TIWI_BLE,4)))
 		rv = true;
 	return rv;
 }

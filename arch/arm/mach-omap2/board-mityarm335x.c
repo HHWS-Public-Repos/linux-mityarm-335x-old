@@ -214,7 +214,7 @@ u32 mityarm335x_speed_grade(void)
 
 
 /* Pin mux for on board nand flash */
-static struct pinmux_config nand_pin_mux[] = {
+static struct pinmux_config __initdata nand_pin_mux[] = {
 	{"gpmc_ad0.gpmc_ad0",	  AM33XX_PIN_INPUT_PULLUP},
 	{"gpmc_ad1.gpmc_ad1",	  AM33XX_PIN_INPUT_PULLUP},
 	{"gpmc_ad2.gpmc_ad2",	  AM33XX_PIN_INPUT_PULLUP},
@@ -234,7 +234,7 @@ static struct pinmux_config nand_pin_mux[] = {
 };
 
 /* Module pin mux for SPI fash */
-static struct pinmux_config spi1_pin_mux[] = {
+static struct pinmux_config __initdata spi1_pin_mux[] = {
 	{"ecap0_in_pwm0_out.spi1_sclk",	AM33XX_PULL_ENBL | AM33XX_INPUT_EN },
 	{"mcasp0_fsx.spi1_d0",		AM33XX_PULL_ENBL | AM33XX_PULL_UP |
 					AM33XX_INPUT_EN },
@@ -248,7 +248,7 @@ static struct pinmux_config spi1_pin_mux[] = {
  * Module pin mux for I2C1, shares factory config PROM, port SCLSR_EN1/
  * SDASR_EN2 (pins 11/10, ID0) of TPS65910.  Also goes to edge connector.
  */
-static struct pinmux_config i2c1_pin_mux[] = {
+static struct pinmux_config __initdata i2c1_pin_mux[] = {
 	{"mii1_crs.i2c1_sda",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
 				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{"mii1_rxerr.i2c1_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
@@ -260,7 +260,7 @@ static struct pinmux_config i2c1_pin_mux[] = {
  * Module pin mux for I2C2.  Connected to port SCL_SCK/SDA_SDI (pins 9/8, ID1)
  * of TPS65910.  Does not leave module.
  */
-static struct pinmux_config i2c2_pin_mux[] = {
+static struct pinmux_config __initdata i2c2_pin_mux[] = {
 	{"uart1_ctsn.i2c2_sda",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
 				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{"uart1_rtsn.i2c2_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
@@ -272,7 +272,7 @@ static struct pinmux_config i2c2_pin_mux[] = {
 * @pin_mux - single module pin-mux structure which defines pin-mux
 *			details for all its pins.
 */
-static void setup_pin_mux(struct pinmux_config *pin_mux)
+static void __init setup_pin_mux(struct pinmux_config *pin_mux)
 {
 	int i;
 
@@ -438,7 +438,7 @@ static struct gpmc_timings am335x_nand_timings = {
 	.wr_data_mux_bus = 0,
 };
 
-static void mityarm335x_nand_init(size_t nand_size)
+static void __init mityarm335x_nand_init(size_t nand_size)
 {
 	struct omap_nand_platform_data *pdata;
 	struct gpmc_devices_info gpmc_device[2] = {
@@ -515,7 +515,7 @@ static struct spi_board_info mityarm335x_spi1_slave_info[] = {
 };
 
 /* setup spi1 */
-static void spi1_init(void)
+static void __init spi1_init(void)
 {
 	setup_pin_mux(spi1_pin_mux);
 	spi_register_board_info(mityarm335x_spi1_slave_info,
@@ -582,7 +582,7 @@ static struct i2c_board_info __initdata mityarm335x_i2c2_boardinfo[] = {
 	},
 };
 
-static void read_factory_config(struct memory_accessor *a, void* context)
+static void __init read_factory_config(struct memory_accessor *a, void* context)
 {
 	int ret;
 	const char *partnum = NULL;
@@ -614,7 +614,7 @@ bad_config:
 }
 
 
-static struct at24_platform_data mityarm335x_fd_info = {
+static struct at24_platform_data __initdata mityarm335x_fd_info = {
 	.byte_len	= 256,
 	.page_size	= 8,
 	.flags		= AT24_FLAG_READONLY | AT24_FLAG_IRUGO,
@@ -664,7 +664,7 @@ static struct platform_device am335x_rtc_device = {
 	.resource	= am335x_rtc_resources,
 };
 
-static int am335x_rtc_init(void)
+static int __init am335x_rtc_init(void)
 {
 	void __iomem *base;
 	struct clk *clk;
@@ -703,7 +703,7 @@ static int am335x_rtc_init(void)
 }
 
 /* Enable clkout2 */
-static struct pinmux_config clkout2_pin_mux[] = {
+static struct pinmux_config __initdata clkout2_pin_mux[] = {
 	{"xdma_event_intr1.clkout2", OMAP_MUX_MODE3 | AM33XX_PIN_OUTPUT},
 	{NULL, 0},
 };

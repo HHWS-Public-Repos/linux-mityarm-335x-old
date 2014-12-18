@@ -608,6 +608,7 @@ static void __init read_factory_config(struct memory_accessor *a, void* context)
 
 	partnum = factory_config.partnum;
 	pr_info("MitySOM-335x: Part Number = %s\n", partnum);
+
 	setup_config_peripherals();
 bad_config:
 	return;
@@ -845,18 +846,19 @@ static void __init mityarm335x_dbg_init(void)
  */
 static void __init setup_config_peripherals(void)
 {
-	/* Don't initialize SPI1 interface unless we have NOR flash on-board
-	 * If baseboard needs SPI1 bus, it will initialize it in the config callback */
 	if(mityarm335x_config_callback) {
 		(*mityarm335x_config_callback)(&factory_config);
 	}
 
-	// Always init the spi and nor.  This is because the mtd # of the nand
-	// device changes if the nor isn't present.  Which means nand scripts for the
-	// chips with nor will act unexpectedly on chips without nor.
+	/*
+	 * Always init the spi and nor.  This is because the mtd # of the nand
+	 * device changes if the nor isn't present.  Which means nand scripts for the
+	 * chips with nor will act unexpectedly on chips without nor.
+	 */
 	spi1_init();
-	if(0 == mityarm335x_nor_size())
+	if(0 == mityarm335x_nor_size()) {
 		pr_info("No SPI NOR Flash found.\n");
+	}
 
 	if(0 != mityarm335x_nand_size()) {
 		pr_info("Configuring %dMB NAND device\n", mityarm335x_nand_size()/(1024*1024));

@@ -82,7 +82,7 @@ struct pinmux_config {
  *
  *****************************************************************************/
 
-static struct pinmux_config rgmii2_pin_mux[] = {
+static struct pinmux_config __initdata rgmii2_pin_mux[] = {
 	{"gpmc_a0.rgmii2_tctl",	AM33XX_PIN_OUTPUT},
 	{"gpmc_a1.rgmii2_rctl",	AM33XX_PIN_INPUT_PULLDOWN},
 	{"gpmc_a2.rgmii2_td3",	AM33XX_PIN_OUTPUT},
@@ -100,7 +100,7 @@ static struct pinmux_config rgmii2_pin_mux[] = {
 	{NULL, 0}
 };
 
-static struct pinmux_config lcdc_pin_mux[] = {
+static struct pinmux_config __initdata lcdc_pin_mux[] = {
 	{"lcd_data0.lcd_data0",		AM33XX_PIN_OUTPUT | AM33XX_PULL_DISA},
 	{"lcd_data1.lcd_data1",		AM33XX_PIN_OUTPUT | AM33XX_PULL_DISA},
 	{"lcd_data2.lcd_data2",		AM33XX_PIN_OUTPUT | AM33XX_PULL_DISA},
@@ -126,7 +126,7 @@ static struct pinmux_config lcdc_pin_mux[] = {
 	{NULL, 0}
 };
 
-static struct pinmux_config mmc0_pin_mux[] = {
+static struct pinmux_config __initdata mmc0_pin_mux[] = {
 	{"mmc0_dat3.mmc0_dat3", AM33XX_PIN_INPUT_PULLUP},
 	{"mmc0_dat2.mmc0_dat2", AM33XX_PIN_INPUT_PULLUP},
 	{"mmc0_dat1.mmc0_dat1", AM33XX_PIN_INPUT_PULLUP},
@@ -149,7 +149,7 @@ static struct pinmux_config mmc0_pin_mux[] = {
  * 22	SDIO_CMD	GPMC_CS3_N	GPMC_CSN3/MMC2_CMD
  * 30	SDIO_CLK	GPMC_CLK	GPMC_CLK/MMC2_CLK
  */
-static struct pinmux_config mmc2_pin_mux[] = {
+static struct pinmux_config __initdata mmc2_pin_mux[] = {
 	{"gpmc_ad15.mmc2_dat3", AM33XX_PIN_INPUT_PULLUP},
 	{"gpmc_ad14.mmc2_dat2", AM33XX_PIN_INPUT_PULLUP},
 	{"gpmc_ad13.mmc2_dat1", AM33XX_PIN_INPUT_PULLUP},
@@ -160,7 +160,7 @@ static struct pinmux_config mmc2_pin_mux[] = {
 };
 
 
-static struct pinmux_config can_pin_mux[] = {
+static struct pinmux_config __initdata can_pin_mux[] = {
 	{"uart1_rxd.d_can1_tx", AM33XX_PULL_ENBL},
 	{"uart1_txd.d_can1_rx", AM33XX_PIN_INPUT_PULLUP},
 	{"mii1_txd3.d_can0_tx", AM33XX_PULL_ENBL},
@@ -168,7 +168,7 @@ static struct pinmux_config can_pin_mux[] = {
 	{NULL, 0}
 };
 
-static struct pinmux_config expansion_pin_mux[] = {
+static struct pinmux_config __initdata expansion_pin_mux[] = {
 	{"uart0_ctsn.uart4_rxd", AM33XX_PIN_INPUT_PULLUP}, /* Exp0 RX */
 	{"uart0_rtsn.uart4_txd", AM33XX_PULL_ENBL}, /* Exp0 TX */
 	{"mii1_rxd3.uart3_rxd", AM33XX_PIN_INPUT_PULLUP}, /* Exp1 RX */
@@ -178,14 +178,14 @@ static struct pinmux_config expansion_pin_mux[] = {
 	{NULL, 0}
 };
 
-static struct pinmux_config usb_pin_mux[] = {
+static struct pinmux_config __initdata usb_pin_mux[] = {
 	{"usb0_drvvbus.usb0_drvvbus",	AM33XX_PIN_OUTPUT},
 	{"usb1_drvvbus.usb1_drvvbus",	AM33XX_PIN_OUTPUT},
 	{NULL, 0}
 };
 
 #if (TS_USE_SPI)
-static struct pinmux_config ts_pin_mux[] = {
+static struct pinmux_config __initdata ts_pin_mux[] = {
 	/* SPI0 CS0 taken care of by SPI pinmux setup */
 	{"xdma_event_intr1.gpio0_20", AM33XX_PIN_INPUT}, /* Pen down */
 	{"xdma_event_intr0.gpio0_19", AM33XX_PIN_INPUT}, /* 7843 busy (not used)*/
@@ -194,7 +194,7 @@ static struct pinmux_config ts_pin_mux[] = {
 #endif
 
 /* Module pin mux for mcasp1 */
-static struct pinmux_config mcasp1_pin_mux[] = {
+static struct pinmux_config __initdata mcasp1_pin_mux[] = {
 	{"mcasp0_aclkr.mcasp1_aclkx", AM33XX_PIN_INPUT_PULLDOWN},
 	{"mcasp0_fsr.mcasp1_fsx", AM33XX_PIN_INPUT_PULLDOWN},
 	{"mcasp0_axr1.mcasp1_axr0", AM33XX_PIN_OUTPUT},
@@ -205,7 +205,7 @@ static struct pinmux_config mcasp1_pin_mux[] = {
 };
 
 
-static struct pinmux_config i2c0_pin_mux[] = {
+static struct pinmux_config __initdata i2c0_pin_mux[] = {
 	{"i2c0_sda.i2c0_sda",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
 				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{"i2c0_scl.i2c0_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
@@ -213,7 +213,7 @@ static struct pinmux_config i2c0_pin_mux[] = {
 	{NULL, 0},
 };
 
-static struct pinmux_config spi0_pin_mux[] = {
+static struct pinmux_config __initdata spi0_pin_mux[] = {
 	{"spi0_cs0.spi0_cs0", AM33XX_PIN_OUTPUT_PULLUP},
 	{"spi0_cs1.spi0_cs1", AM33XX_PIN_OUTPUT_PULLUP},
 	{"spi0_sclk.spi0_sclk", AM33XX_PIN_OUTPUT_PULLUP},
@@ -223,7 +223,7 @@ static struct pinmux_config spi0_pin_mux[] = {
 };
 
 
-static struct pinmux_config tsc_pin_mux[] = {
+static struct pinmux_config __initdata tsc_pin_mux[] = {
 	{"ain0.ain0",     AM33XX_INPUT_EN},
 	{"ain1.ain1",     AM33XX_INPUT_EN},
 	{"ain2.ain2",     AM33XX_INPUT_EN},
@@ -233,7 +233,7 @@ static struct pinmux_config tsc_pin_mux[] = {
 	{NULL, 0},
 };
 
-static struct pinmux_config wl12xx_pin_mux[] = {
+static struct pinmux_config __initdata wl12xx_pin_mux[] = {
 	{"gpmc_ad10.gpio0_26",  AM33XX_PIN_INPUT}, /* WL WL IRQ */
 	{"gpmc_ad11.gpio0_27",  AM33XX_PIN_INPUT}, /* WL SPI I/O RST */
 	{"gpmc_csn1.gpio1_30",  AM33XX_PIN_INPUT_PULLUP}, /* WL IRQ */
@@ -265,12 +265,12 @@ static struct omap2_hsmmc_info mmc_info[] __initdata = {
 	{} /* Terminator */
 	};
 
-static __init void baseboard_setup_expansion(void)
+static void __init baseboard_setup_expansion(void)
 {
 	setup_pin_mux(expansion_pin_mux);
 }
 
-static __init void baseboard_setup_can(void)
+static void __init baseboard_setup_can(void)
 {
 	setup_pin_mux(can_pin_mux);
 
@@ -285,13 +285,13 @@ static struct omap_musb_board_data board_data = {
 	.instances	= 1,
 };
 
-static __init void baseboard_setup_usb(void)
+static void __init baseboard_setup_usb(void)
 {
 	setup_pin_mux(usb_pin_mux);
 	usb_musb_init(&board_data);
 }
 
-static __init void baseboard_setup_mmc(void)
+static void __init baseboard_setup_mmc(void)
 {
 	/* pin mux */
 	setup_pin_mux(mmc0_pin_mux);
@@ -365,7 +365,7 @@ static struct ads7846_platform_data ads7846_config = {
 	.gpio_pendown		= MITY335X_DK_GPIO_TS_IRQ_N,
 };
 
-static __init void baseboard_setup_ts(void)
+static void __init baseboard_setup_ts(void)
 {
 	setup_pin_mux(ts_pin_mux);
 	/* SPI hookup already done by baseboard_setup_spi0() */
@@ -378,7 +378,7 @@ static struct tsc_data am335x_touchscreen_data  = {
 	.x_plate_resistance = 200,
 };
 
-static __init void baseboard_setup_ts(void)
+static void __init baseboard_setup_ts(void)
 {
 	int err;
 
@@ -390,7 +390,7 @@ static __init void baseboard_setup_ts(void)
 }
 #endif /* CONFIG_TOUCHSCREEN_ADS7846 */
 
-static __init void baseboard_setup_dvi(void)
+static void __init baseboard_setup_dvi(void)
 {
 	struct clk *disp_pll;
 
@@ -556,7 +556,7 @@ static int am335x_vsc8601_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static __init void baseboard_setup_enet(void)
+static void __init baseboard_setup_enet(void)
 {
 	/* pinmux */
 	setup_pin_mux(rgmii2_pin_mux);
@@ -569,11 +569,7 @@ static __init void baseboard_setup_enet(void)
 				am335x_vsc8601_phy_fixup);
 }
 
-
-
-
-
-static void mmc2_wl12xx_init(void)
+static void __init mmc2_wl12xx_init(void)
 {
 	setup_pin_mux(mmc2_pin_mux);
 
@@ -617,7 +613,7 @@ static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
 	return 0;
 }
 
-static void baseboard_setup_wlan(void)
+static void __init baseboard_setup_wlan(void)
 {
 	struct device *dev;
 	struct omap_mmc_platform_data *pdata;
@@ -665,7 +661,8 @@ out:
 	return;
 
 }
-static void factory_config_callback(const struct mityarm335x_factory_config* factory_config)
+
+static void __init factory_config_callback(const struct mityarm335x_factory_config* factory_config)
 {
 	pr_info("%s: %s\n", BASEBOARD_NAME, __FUNCTION__);
 }

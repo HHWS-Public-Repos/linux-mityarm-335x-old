@@ -33,6 +33,7 @@
 #include <linux/ethtool.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mfd/tps65910.h>
+#include <linux/wl12xx.h>
 
 #include <linux/seq_file.h>
 #include <linux/debugfs.h>
@@ -260,13 +261,42 @@ static struct pinmux_config __initdata i2c1_pin_mux[] = {
 /*
  * Module pin mux for I2C2.  Connected to port SCL_SCK/SDA_SDI (pins 9/8, ID1)
  * of TPS65910.  Does not leave module.
+ * Note: Not used for TiWi Module.
  */
-static struct pinmux_config __initdata i2c2_pin_mux[] = {
+static struct pinmux_config __initdata __maybe_unused i2c2_pin_mux[] = {
 	{"uart1_ctsn.i2c2_sda",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
 				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{"uart1_rtsn.i2c2_scl",	AM33XX_SLEWCTRL_SLOW | AM33XX_PULL_ENBL |
 				AM33XX_INPUT_EN | AM33XX_PIN_OUTPUT},
 	{NULL, 0},
+};
+
+/*
+ * Module pin mux for TiWi functions. 
+ * The TiWi module sits on MMC/SDIO 1 and uses UART1 for Bluetooth.
+ * There are 3 GPIOs used:
+ *  - WL Enable
+ *  - BT Enable
+ *  - WL Interrupt 
+ *  Does not leave module.
+ */
+static struct pinmux_config __initdata __maybe_unused tiwi_pin_mux[] = {
+	{"gpmc_ad8.mmc1_dat0", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_ad9.mmc1_dat1", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_ad10.mmc1_dat2", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_ad11.mmc1_dat3", AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_csn1.mmc1_clk",   AM33XX_PIN_INPUT_PULLUP},
+	{"gpmc_csn2.mmc1_cmd",   AM33XX_PIN_INPUT_PULLUP},
+	/* UART 1 goes to the BT function on the Tiwi module */
+	{"uart1_ctsn.uart1_ctsn", AM33XX_PIN_OUTPUT},
+	{"uart1_rtsn.uart1_rtsn", AM33XX_PIN_INPUT},
+	{"uart1_rxd.uart1_rxd", AM33XX_PIN_INPUT_PULLUP},
+	{"uart1_txd.uart1_txd", AM33XX_PULL_ENBL | AM33XX_PULL_ENBL},
+	/* 3 GPIOs are needed */
+	{"gpmc_ad12.gpio1_12", AM33XX_PIN_INPUT_PULLUP},/*IRQ*/
+	{"gpmc_ad13.gpio1_13", AM33XX_PULL_ENBL | AM33XX_PIN_OUTPUT},/*WL EN*/
+	{"gpmc_csn3.gpio2_0", AM33XX_PULL_ENBL | AM33XX_PIN_OUTPUT},/*BT EN*/
+	{NULL, 0}
 };
 
 /*
@@ -280,6 +310,48 @@ static void __init setup_pin_mux(struct pinmux_config *pin_mux)
 	for (i = 0; pin_mux->string_name != NULL; pin_mux++)
 		omap_mux_init_signal(pin_mux->string_name, pin_mux->val);
 
+}
+
+#define TIWI_WLAN_IRQ_GPIO		GPIO_TO_PIN(1, 12)
+
+/**
+ * ###################################################################
+ *  Platform data Settings for all on-board peripherals
+ * ###################################################################
+ */
+
+static struct wl12xx_platform_data am335x_tiwi_data = {
+	.irq = OMAP_GPIO_IRQ(TIWI_WLAN_IRQ_GPIO),
+	.board_ref_clock = WL12XX_REFCLOCK_38_XTAL, /* 38.4Mhz */
+};
+
+static struct omap2_hsmmc_info __initdata *board_mmc_info = NULL;
+
+/**
+ * Called by baseboard to allow module to insert on-module device(s)
+ * before baseboard calls omap2_hsmmc_init()
+ * \param devinfo must be an array of omap2_hsmmc_info types sized to fit
+ * the number of SDIO busses on the module (3)
+ * \return -1 if no change made, else index of updated mmc entry
+ */
+int __init mityarm335x_som_mmc_fixup(struct omap2_hsmmc_info* devinfo)
+{
+	int rv=-1;
+#ifdef CONFIG_MITYARM335X_TIWI
+	if(0 == devinfo[1].mmc) {
+		rv = 1;
+		board_mmc_info = &devinfo[1];
+		board_mmc_info->mmc = 2;
+		board_mmc_info->name = "wl1271";
+		board_mmc_info->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD
+			| MMC_PM_KEEP_POWER;
+		board_mmc_info->nonremovable = true;
+		board_mmc_info->gpio_cd = -EINVAL;
+		board_mmc_info->gpio_wp = -EINVAL;
+		board_mmc_info->ocr_mask = MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+	}
+#endif
+	return rv;
 }
 
 /* NAND partition information */
@@ -576,13 +648,6 @@ static struct tps65910_board mityarm335x_tps65910_info = {
 	.tps65910_pmic_init_data[TPS65910_REG_VMMC]	= &am335x_dummy,
 };
 
-static struct i2c_board_info __initdata mityarm335x_i2c2_boardinfo[] = {
-	{
-		I2C_BOARD_INFO("tps65910", TPS65910_I2C_ID1),
-		.platform_data  = &mityarm335x_tps65910_info,
-	},
-};
-
 static void __init read_factory_config(struct memory_accessor *a, void* context)
 {
 	int ret;
@@ -629,17 +694,39 @@ static struct i2c_board_info __initdata mityarm335x_i2c1_boardinfo[] = {
 		I2C_BOARD_INFO("24c02", 0x50),
 		.platform_data  = &mityarm335x_fd_info,
 	},
+#ifdef CONFIG_MITYARM335X_TIWI
+	{
+		I2C_BOARD_INFO("tps65910", TPS65910_I2C_ID1),
+		.platform_data  = &mityarm335x_tps65910_info,
+	},
+#endif
 };
 
-static void __init mityarm335x_i2c_init(void)
+static void __init mityarm335x_i2c1_init(void)
 {
-	setup_pin_mux(i2c2_pin_mux);
-	omap_register_i2c_bus(3, 100, mityarm335x_i2c2_boardinfo,
-				ARRAY_SIZE(mityarm335x_i2c2_boardinfo));
+	pr_info("Configuring I2C Bus 1\n");
 	setup_pin_mux(i2c1_pin_mux);
 	omap_register_i2c_bus(2, 100, mityarm335x_i2c1_boardinfo,
 				ARRAY_SIZE(mityarm335x_i2c1_boardinfo));
 }
+
+/* TIWI module doesn't have I2C2 instead tps65910 moved to i2c1 */
+#ifndef CONFIG_MITYARM335X_TIWI
+static struct i2c_board_info __initdata mityarm335x_i2c2_boardinfo[] = {
+	{
+		I2C_BOARD_INFO("tps65910", TPS65910_I2C_ID1),
+		.platform_data  = &mityarm335x_tps65910_info,
+	},
+};
+
+static void __init mityarm335x_i2c2_init(void)
+{
+	pr_info("Configuring I2C Bus 2\n");
+	setup_pin_mux(i2c2_pin_mux);
+	omap_register_i2c_bus(3, 100, mityarm335x_i2c2_boardinfo,
+				ARRAY_SIZE(mityarm335x_i2c2_boardinfo));
+}
+#endif
 
 static struct resource am335x_rtc_resources[] = {
 	{
@@ -838,6 +925,113 @@ static void __init mityarm335x_dbg_init(void)
 
 }
 
+
+#ifdef CONFIG_MITYARM335X_TIWI
+/**
+ * ###################################################################
+ *  TiWi (WiFi/BT module) data and access/control methods
+ * ###################################################################
+  */
+
+void __init wl12xx_bluetooth_enable(void)
+{
+	if (am335x_tiwi_data.bt_enable_gpio > 0) {
+		int status;
+		pr_info("Configure Bluetooth Enable pin...\n");
+
+		status = gpio_request_one(am335x_tiwi_data.bt_enable_gpio,
+			GPIOF_OUT_INIT_LOW, "bt_en");
+
+		if (status < 0) {
+			pr_err("Failed to request gpio for bt_enable");
+			return;
+		}
+
+		status = gpio_export(am335x_tiwi_data.bt_enable_gpio, false);
+		pr_info("Exporting bt_enable: %d", status);
+
+		if (status < 0) {
+			pr_err("Failed to export gpio for bt_enable");
+			return;
+		}
+	} else {
+		pr_info("Bluetooth not Enabled!\n");
+	}
+}
+
+static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
+{
+	pr_info("wl12xx_set_power %s s=%d on=%d vdd=%d\n", dev_name(dev), slot, on, vdd);
+
+	if (on) {
+		gpio_set_value(am335x_tiwi_data.wlan_enable_gpio, 1);
+		mdelay(70);
+	}
+	else {
+		gpio_set_value(am335x_tiwi_data.wlan_enable_gpio, 0);
+	}
+
+	return 0;
+}
+
+static void __init init_wlan(void)
+{
+	setup_pin_mux(tiwi_pin_mux);
+
+	/* Register WLAN and BT enable pins based on the evm board revision */
+	am335x_tiwi_data.wlan_enable_gpio = GPIO_TO_PIN(1,13);
+	am335x_tiwi_data.bt_enable_gpio = GPIO_TO_PIN(2,0);
+
+	pr_info("WLAN GPIO Info.. IRQ = %3d WL_EN = %3d BT_EN = %3d\n",
+			am335x_tiwi_data.irq,
+			am335x_tiwi_data.wlan_enable_gpio,
+			am335x_tiwi_data.bt_enable_gpio);
+
+	wl12xx_bluetooth_enable();
+
+	if (wl12xx_set_platform_data(&am335x_tiwi_data)) {
+		pr_err("error setting wl12xx data\n");
+	}
+}
+
+static void __init setup_wlan(void)
+{
+	int ret;
+	struct device *dev;
+	struct omap_mmc_platform_data *pdata;
+
+	if (!board_mmc_info) {
+		pr_err("wl12xx mmc device not instantiated\n");
+		goto out;
+	}
+
+	dev = board_mmc_info->dev;
+	if (!dev) {
+		pr_err("wl12xx mmc device initialization failed\n");
+		goto out;
+	}
+	pdata = dev->platform_data;
+	if (!pdata) {
+		pr_err("Platfrom data of wl12xx device not set\n");
+		goto out;
+	}
+
+	ret = gpio_request_one(am335x_tiwi_data.wlan_enable_gpio,
+		GPIOF_OUT_INIT_LOW, "wlan_en");
+	if (ret) {
+		pr_err("Error requesting wlan enable gpio: %d\n", ret);
+		goto out;
+	}
+
+	pdata->slots[0].set_power = wl12xx_set_power;
+
+	pr_info("setup_wlan: finished\n");
+out:
+	return;
+
+}
+#endif /* CONFIG_MITYARM335X_TIWI */
+
 /**
  * Set up peripherals that are dependent on things set in the factory configuration
  * These include:
@@ -869,6 +1063,16 @@ static void __init setup_config_peripherals(void)
 		pr_info("No NAND device configured\n");
 	}
 
+#ifdef CONFIG_MITYARM335X_TIWI
+	if(mityarm335x_has_tiwi()) {
+		init_wlan();
+		setup_wlan();
+	}
+	else {
+		pr_err("Kernel configured for TIWI, but no TIWI module found.\n");
+	}
+#endif
+
 	return;
 }
 
@@ -880,10 +1084,16 @@ static void __init mityarm335x_init(void)
 	am335x_rtc_init();
 	clkout2_enable();
 	am33xx_cpsw_init(1); /* 1 == enable gigabit */
-	mityarm335x_i2c_init();
+	mityarm335x_i2c1_init();
+
+#ifndef CONFIG_MITYARM335X_TIWI
+	mityarm335x_i2c2_init();
+#endif
+
 	omap_sdrc_init(NULL, NULL);
 	omap_board_config = mityarm335x_config;
 	omap_board_config_size = ARRAY_SIZE(mityarm335x_config);
+
 	/* Create an alias for icss clock */
 	if (clk_add_alias("pruss", NULL, "pruss_uart_gclk", NULL))
 		pr_err("failed to create an alias: pruss_uart_gclk --> pruss\n");

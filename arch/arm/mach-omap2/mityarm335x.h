@@ -9,6 +9,7 @@
  */
 
 #include <linux/types.h>
+#include "hsmmc.h"
 
 #define FACTORY_CONFIG_MAGIC    0x012C0138
 #define CONFIG_I2C_VERSION_1_1	0x00010001 /* prior to DDR3 configurations */
@@ -89,3 +90,4 @@ size_t mityarm335x_ram_size(void);
 size_t mityarm335x_nand_size(void);
 size_t mityarm335x_nor_size(void);
 u32 mityarm335x_speed_grade(void);
+int mityarm335x_som_mmc_fixup(struct omap2_hsmmc_info* devinfo);

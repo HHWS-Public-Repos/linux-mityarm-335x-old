@@ -35,7 +35,6 @@
 #include <asm/hardware/asp.h>
 
 #include "mux.h"
-#include "hsmmc.h"
 #include "devices.h"
 #include "mityarm335x.h"
 
@@ -148,8 +147,9 @@ static struct pinmux_config __initdata mmc0_pin_mux[] = {
  * 9	RESET		GPMC_AD11	GPMC_AD11/GPIO2_27
  * 22	SDIO_CMD	GPMC_CS3_N	GPMC_CSN3/MMC2_CMD
  * 30	SDIO_CLK	GPMC_CLK	GPMC_CLK/MMC2_CLK
+ * Note: Not used for TiWi Module
  */
-static struct pinmux_config __initdata mmc2_pin_mux[] = {
+static struct pinmux_config __initdata __maybe_unused mmc2_pin_mux[] = {
 	{"gpmc_ad15.mmc2_dat3", AM33XX_PIN_INPUT_PULLUP},
 	{"gpmc_ad14.mmc2_dat2", AM33XX_PIN_INPUT_PULLUP},
 	{"gpmc_ad13.mmc2_dat1", AM33XX_PIN_INPUT_PULLUP},
@@ -160,11 +160,16 @@ static struct pinmux_config __initdata mmc2_pin_mux[] = {
 };
 
 
-static struct pinmux_config __initdata can_pin_mux[] = {
-	{"uart1_rxd.d_can1_tx", AM33XX_PULL_ENBL},
-	{"uart1_txd.d_can1_rx", AM33XX_PIN_INPUT_PULLUP},
+static struct pinmux_config __initdata can0_pin_mux[] = {
 	{"mii1_txd3.d_can0_tx", AM33XX_PULL_ENBL},
 	{"mii1_txd2.d_can0_rx", AM33XX_PIN_INPUT_PULLUP},
+	{NULL, 0}
+};
+
+/* Note: Not used for TiWi module */
+static struct pinmux_config __initdata __maybe_unused can1_pin_mux[] = {
+	{"uart1_rxd.d_can1_tx", AM33XX_PULL_ENBL},
+	{"uart1_txd.d_can1_rx", AM33XX_PIN_INPUT_PULLUP},
 	{NULL, 0}
 };
 
@@ -222,7 +227,6 @@ static struct pinmux_config __initdata spi0_pin_mux[] = {
 	{NULL, 0},
 };
 
-
 static struct pinmux_config __initdata tsc_pin_mux[] = {
 	{"ain0.ain0",     AM33XX_INPUT_EN},
 	{"ain1.ain1",     AM33XX_INPUT_EN},
@@ -233,6 +237,7 @@ static struct pinmux_config __initdata tsc_pin_mux[] = {
 	{NULL, 0},
 };
 
+#ifndef CONFIG_MITYARM335X_TIWI
 static struct pinmux_config __initdata wl12xx_pin_mux[] = {
 	{"gpmc_ad10.gpio0_26",  AM33XX_PIN_INPUT}, /* WL WL IRQ */
 	{"gpmc_ad11.gpio0_27",  AM33XX_PIN_INPUT}, /* WL SPI I/O RST */
@@ -247,8 +252,40 @@ struct wl12xx_platform_data am335x_wlan_data = {
 	.irq = OMAP_GPIO_IRQ(AM335XEVM_WLAN_IRQ_GPIO),
 	.board_ref_clock = WL12XX_REFCLOCK_38_XTAL, /* 38.4Mhz */
 };
+#endif
 
-static struct omap2_hsmmc_info mmc_info[] __initdata = {
+static void __init baseboard_setup_expansion(void)
+{
+	setup_pin_mux(expansion_pin_mux);
+}
+
+static void __init baseboard_setup_can(void)
+{
+	setup_pin_mux(can0_pin_mux);
+	am33xx_d_can_init(0);
+
+#ifndef CONFIG_MITYARM335X_TIWI
+	if(!mityarm335x_has_tiwi()) {
+		setup_pin_mux(can1_pin_mux);
+		am33xx_d_can_init(1);
+	}
+#endif
+}
+
+static struct omap_musb_board_data board_data = {
+	.interface_type	= MUSB_INTERFACE_ULPI,
+	.mode           = MUSB_OTG,
+	.power		= 500,
+	.instances	= 1,
+};
+
+static void __init baseboard_setup_usb(void)
+{
+	setup_pin_mux(usb_pin_mux);
+	usb_musb_init(&board_data);
+}
+
+static struct omap2_hsmmc_info mmc_info[] = {
 	{
 		.mmc		= 1,
 		.caps		= MMC_CAP_4_BIT_DATA,
@@ -265,38 +302,13 @@ static struct omap2_hsmmc_info mmc_info[] __initdata = {
 	{} /* Terminator */
 	};
 
-static void __init baseboard_setup_expansion(void)
-{
-	setup_pin_mux(expansion_pin_mux);
-}
-
-static void __init baseboard_setup_can(void)
-{
-	setup_pin_mux(can_pin_mux);
-
-	am33xx_d_can_init(0);
-	am33xx_d_can_init(1);
-}
-
-static struct omap_musb_board_data board_data = {
-	.interface_type	= MUSB_INTERFACE_ULPI,
-	.mode           = MUSB_OTG,
-	.power		= 500,
-	.instances	= 1,
-};
-
-static void __init baseboard_setup_usb(void)
-{
-	setup_pin_mux(usb_pin_mux);
-	usb_musb_init(&board_data);
-}
-
 static void __init baseboard_setup_mmc(void)
 {
 	/* pin mux */
 	setup_pin_mux(mmc0_pin_mux);
 
 	/* configure mmc */
+	mityarm335x_som_mmc_fixup(mmc_info);
 	omap2_hsmmc_init(mmc_info);
 }
 
@@ -569,55 +581,38 @@ static void __init baseboard_setup_enet(void)
 				am335x_vsc8601_phy_fixup);
 }
 
-static void __init mmc2_wl12xx_init(void)
-{
-	setup_pin_mux(mmc2_pin_mux);
-
-	mmc_info[1].mmc = 3;
-	mmc_info[1].name = "wl1271";
-	mmc_info[1].caps = MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD
-				| MMC_PM_KEEP_POWER;
-	mmc_info[1].nonremovable = true;
-	mmc_info[1].gpio_cd = -EINVAL;
-	mmc_info[1].gpio_wp = -EINVAL;
-	mmc_info[1].ocr_mask = MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
-
-	/* mmc will be initialized when mmc0_init is called */
-	return;
-}
-
+#ifndef CONFIG_MITYARM335X_TIWI
 static void wl12xx_bluetooth_enable(void)
 {
-#if 0
-	int status = gpio_request(am335x_wlan_data.bt_enable_gpio,
-		"bt_en\n");
-	if (status < 0)
-		pr_err("Failed to request gpio for bt_enable");
+	if (am335x_wlan_data.bt_enable_gpio != -EINVAL) {
+		int status = gpio_request(am335x_wlan_data.bt_enable_gpio,
+			"bt_en\n");
+		if (status < 0)
+			pr_err("Failed to request gpio for bt_enable");
 
-	pr_info("Configure Bluetooth Enable pin...\n");
-	gpio_direction_output(am335x_wlan_data.bt_enable_gpio, 0);
-#else
-	pr_info("Bluetooth not Enabled!\n");
-#endif
+		pr_info("Configure Bluetooth Enable pin...\n");
+		gpio_direction_output(am335x_wlan_data.bt_enable_gpio, 0);
+	} else {
+		pr_info("Bluetooth not Enabled!\n");
+	}
 }
 
 static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
 {
-#if 1	 /* TJI - 5/24/12 WL enable not connected yet.. always on */
 	if (on) {
 		gpio_set_value(am335x_wlan_data.wlan_enable_gpio, 1);
 		mdelay(70);
 	} else
 		gpio_set_value(am335x_wlan_data.wlan_enable_gpio, 0);
-#endif
+
 	return 0;
 }
 
-static void __init baseboard_setup_wlan(void)
+static int __init baseboard_setup_wlan(void)
 {
-	struct device *dev;
+	struct device *dev = NULL;
 	struct omap_mmc_platform_data *pdata;
-	int ret;
+	int ret = -1;
 
 
 	/* Register WLAN and BT enable pins based on the evm board revision */
@@ -645,41 +640,87 @@ static void __init baseboard_setup_wlan(void)
 		pr_err("Platfrom data of wl12xx device not set\n");
 		goto out;
 	}
-#if 1
+
 	ret = gpio_request_one(am335x_wlan_data.wlan_enable_gpio,
 		GPIOF_OUT_INIT_LOW, "wlan_en");
 	if (ret) {
 		pr_err("Error requesting wlan enable gpio: %d\n", ret);
 		goto out;
 	}
-#endif
-	setup_pin_mux(wl12xx_pin_mux);
+
 
 	pdata->slots[0].set_power = wl12xx_set_power;
 	pr_info("baseboard_setup_wlan: finished\n");
+	ret = 0;
 out:
-	return;
+	return ret;
 
 }
 
+/**
+ * Configure the MMC2 interface for the baseboard WiFi module
+ */
+static int __init mmc2_wl12xx_init(void)
+{
+	/* Don't set up the Wifi for the expansion if the module has it */
+	if(mityarm335x_has_tiwi())
+		return 0;
+
+	pr_info("Initializing MMC2 WL12xx device\n");
+
+	setup_pin_mux(mmc2_pin_mux);
+	setup_pin_mux(wl12xx_pin_mux);
+
+	mmc_info[1].mmc = 3;
+	mmc_info[1].name = "wl1271";
+	mmc_info[1].caps = MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD
+				| MMC_PM_KEEP_POWER;
+	mmc_info[1].nonremovable = true;
+	mmc_info[1].gpio_cd = -EINVAL;
+	mmc_info[1].gpio_wp = -EINVAL;
+	mmc_info[1].ocr_mask = MMC_VDD_32_33 | MMC_VDD_33_34; /* 3V3 */
+
+	return 0;
+}
+#endif
+
 static void __init factory_config_callback(const struct mityarm335x_factory_config* factory_config)
 {
+	int ii;
+
 	pr_info("%s: %s\n", BASEBOARD_NAME, __FUNCTION__);
+
+#ifndef CONFIG_MITYARM335X_TIWI
+	mmc2_wl12xx_init();
+	/* On TiWi boards, the board file will have already called this 
+	 * method, but its ok to call it again as long as you leave mmc 2 alone
+	 */
+
+	/* mmc will be initialized when mmc0_init is called */
+	baseboard_setup_wlan();
+#endif
+
+	for(ii = 0; ii < 3; ++ii) {
+		const char *name = "no dev";
+		struct device *d  = mmc_info[ii].dev;
+		if (d) {
+			name=dev_name(d);
+		}
+		pr_debug("%d - MMC %d dev = %s\n",ii,mmc_info[ii].mmc, name);
+	}
 }
 
 static __init int baseboard_init(void)
 {
 	pr_info("%s [%s]...\n", __func__, BASEBOARD_NAME);
+
 	mityarm335x_set_config_callback(factory_config_callback);
 
 	baseboard_setup_enet();
 
-	mmc2_wl12xx_init();
-
 	baseboard_setup_mmc();
 
 	baseboard_setup_usb();
-
 
 	baseboard_setup_dvi();
 
@@ -688,8 +729,6 @@ static __init int baseboard_init(void)
 	baseboard_setup_spi0_devices();
 
 	baseboard_i2c0_init();
-
-	baseboard_setup_wlan();
 
 	baseboard_setup_expansion();
 

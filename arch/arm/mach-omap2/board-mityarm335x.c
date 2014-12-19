@@ -1069,7 +1069,11 @@ static void __init setup_config_peripherals(void)
 		setup_wlan();
 	}
 	else {
-		pr_err("Kernel configured for TIWI, but no TIWI module found.\n");
+		WARN(true, "Kernel configured for TIWI, but no TIWI module found.\n");
+	}
+#else
+	if(mityarm335x_has_tiwi()) {
+		WARN(true, "TIWI module found, but kernel not configured for TIWI.\n");
 	}
 #endif
 

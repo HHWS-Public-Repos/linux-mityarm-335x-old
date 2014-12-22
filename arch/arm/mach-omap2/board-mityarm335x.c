@@ -320,12 +320,12 @@ static void __init setup_pin_mux(struct pinmux_config *pin_mux)
  * ###################################################################
  */
 
-static struct wl12xx_platform_data am335x_tiwi_data = {
+static struct wl12xx_platform_data __maybe_unused am335x_tiwi_data = {
 	.irq = OMAP_GPIO_IRQ(TIWI_WLAN_IRQ_GPIO),
 	.board_ref_clock = WL12XX_REFCLOCK_38_XTAL, /* 38.4Mhz */
 };
 
-static struct omap2_hsmmc_info __initdata *board_mmc_info = NULL;
+static struct omap2_hsmmc_info __initdata __maybe_unused *board_mmc_info = NULL;
 
 /**
  * Called by baseboard to allow module to insert on-module device(s)

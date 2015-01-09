@@ -1032,6 +1032,13 @@ out:
 }
 #endif /* CONFIG_MITYARM335X_TIWI */
 
+static void __init sgx_init(void)
+{
+	if (omap3_has_sgx()) {
+		am33xx_gpu_init();
+	}
+}
+
 /**
  * Set up peripherals that are dependent on things set in the factory configuration
  * These include:
@@ -1099,6 +1106,8 @@ static void __init mityarm335x_init(void)
 #ifndef CONFIG_MITYARM335X_TIWI
 	mityarm335x_i2c2_init();
 #endif
+
+	sgx_init();
 
 	omap_sdrc_init(NULL, NULL);
 	omap_board_config = mityarm335x_config;

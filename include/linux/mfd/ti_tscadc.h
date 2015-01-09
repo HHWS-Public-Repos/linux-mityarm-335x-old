@@ -13,6 +13,9 @@
  * GNU General Public License for more details.
  */
 
+#ifndef __LINUX_MFD_TI_TSCADC_H
+#define __LINUX_MFD_TI_TSCADC_H
+
 #include <linux/mfd/core.h>
 
 #define TSCADC_REG_RAWIRQSTATUS		0x024
@@ -165,3 +168,5 @@ struct ti_tscadc_dev {
 	unsigned int irqstat;
 	unsigned int ctrl;
 };
+
+#endif

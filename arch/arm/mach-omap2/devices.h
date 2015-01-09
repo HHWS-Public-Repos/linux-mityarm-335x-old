@@ -12,6 +12,9 @@
 #ifndef __ARCH_ARM_MACH_OMAP_DEVICES_H
 #define __ARCH_ARM_MACH_OMAP_DEVICES_H
 
+#include <linux/mfd/ti_tscadc.h>
+#include <linux/pwm/pwm.h>
+
 struct isp_platform_data;
 struct snd_platform_data;
 struct mfd_tscadc_board;

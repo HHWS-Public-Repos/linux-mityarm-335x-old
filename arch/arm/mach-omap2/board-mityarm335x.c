@@ -209,6 +209,18 @@ u32 mityarm335x_speed_grade(void)
 	return rv;
 }
 
+/*
+* am335x_evm_get_id - returns Board Type (EVM/BB/EVM-SK ...)
+*
+* Note:
+*	returns -EINVAL if Board detection hasn't happened yet.
+*/
+int am335x_evm_get_id(void)
+{
+	return -EINVAL;
+}
+EXPORT_SYMBOL(am335x_evm_get_id);
+
 /* END --- Factory config block accessors */
 
 /**
@@ -826,6 +838,37 @@ static void __iomem * __init am33xx_get_mem_ctlr(void)
 	return am33xx_emif_base;
 }
 
+void __iomem *am33xx_get_ram_base(void)
+{
+	return am33xx_emif_base;
+}
+
+void __iomem *am33xx_gpio0_base;
+
+void __iomem *am33xx_get_gpio0_base(void)
+{
+	am33xx_gpio0_base = ioremap(AM33XX_GPIO0_BASE, SZ_4K);
+
+	return am33xx_gpio0_base;
+}
+
+static void __iomem *am33xx_i2c0_base;
+
+int am33xx_map_i2c0(void)
+{
+	am33xx_i2c0_base = ioremap(AM33XX_I2C0_BASE, SZ_4K);
+
+	if (!am33xx_i2c0_base)
+		return -ENOMEM;
+
+	return 0;
+}
+
+void __iomem *am33xx_get_i2c0_base(void)
+{
+	return am33xx_i2c0_base;
+}
+
 static struct resource am33xx_cpuidle_resources[] = {
 	{
 		.start		= AM33XX_EMIF0_BASE,
@@ -924,7 +967,6 @@ static void __init mityarm335x_dbg_init(void)
 				  &mityarm335x_dbg_som_fops);
 
 }
-
 
 #ifdef CONFIG_MITYARM335X_TIWI
 /**

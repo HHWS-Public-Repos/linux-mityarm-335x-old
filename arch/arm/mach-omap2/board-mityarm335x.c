@@ -1140,7 +1140,7 @@ static void __init mityarm335x_init(void)
 #ifdef CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE
 	am33xx_cpsw_init(AM33XX_CPSW_MODE_RGMII, "0:01", "0:00");
 #else
-	am33xx_cpsw_init(AM33XX_CPSW_MODE_RGMII, "0:00", "0:01");
+	am33xx_cpsw_init(AM33XX_CPSW_MODE_RGMII, "0:00", NULL);
 #endif
 
 	mityarm335x_i2c1_init();

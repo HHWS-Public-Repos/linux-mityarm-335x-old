@@ -1210,7 +1210,9 @@ static struct cpsw_slave_data am33xx_cpsw_slaves[] = {
 	{
 		.slave_reg_ofs  = 0x300,
 		.sliver_reg_ofs = 0xdc0,
-		.phy_id		= "0:01",
+		// Set phy_id to NULL to allow auto discover of phy addr. See
+		// commit f2b0516441657c057a4db51ad4445844fabf984e
+		.phy_id		= NULL,
 		.dual_emac_reserved_vlan = CPSW_PORT_VLAN_SLAVE_1,
 	},
 };

@@ -594,6 +594,8 @@ static void __init baseboard_setup_enet(void)
 	/* pinmux */
 	setup_pin_mux(rgmii2_pin_mux);
 
+	am33xx_cpsw_init(AM33XX_CPSW_MODE_RGMII, "0:00", NULL);
+
 	/* network configuration done in SOM code */
 	/* PHY address setup? */
 	/* Register PHY fixup to adjust rx clock skew */

@@ -541,6 +541,8 @@ static void mityarm335x_test_communications(void)
 	setup_pin_mux(enet_pin_mux);
 	setup_pin_mux(uart_pin_mux);
 
+	am33xx_cpsw_init(AM33XX_CPSW_MODE_RGMII, "0:01", "0:00");
+
 	/* Register PHY for enet */
 	phy_register_fixup_for_uid(VSC8601_PHY_ID,
 				VSC8601_PHY_MASK,

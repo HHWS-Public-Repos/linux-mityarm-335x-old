@@ -20,12 +20,12 @@
 #define DAUG_BOARD_I2C_ADDR	0x51
 #define LCD_BOARD_I2C_ADDR	0x52
 
-#define LOW_COST_EVM		0
-#define GEN_PURP_EVM		1
-#define IND_AUT_MTR_EVM		2
-#define IP_PHN_EVM		3
-#define BEAGLE_BONE_OLD		4
-#define BEAGLE_BONE_A3		5
+#define GEN_PURP_EVM		0
+#define IND_AUT_MTR_EVM		1
+#define BEAGLE_BONE_OLD		2
+#define BEAGLE_BONE_A3		3
+#define EVM_SK			4
+#define GEN_PURP_DDR3_EVM	5
 
 /* REVIST : check posibility of PROFILE_(x) syntax usage */
 #define PROFILE_NONE	-1	/* Few EVM doesn't have profiles */
@@ -39,6 +39,11 @@
 #define PROFILE_7		(0x1 << 7)
 #define PROFILE_ALL		0xFF
 
-void am33xx_evmid_fillup(unsigned int evmid);
+#ifndef __ASSEMBLER__
+void am335x_evm_set_id(unsigned int evmid);
+int am335x_evm_get_id(void);
 
+void am33xx_core_vg_scale_i2c_seq_fillup(char *sleep_seq, size_t ssz,
+					 char *wake_seq, size_t wsz);
+#endif
 #endif

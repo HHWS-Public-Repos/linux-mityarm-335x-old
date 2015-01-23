@@ -932,6 +932,7 @@ static int omap_correct_data(struct mtd_info *mtd, u_char *dat,
 			if (eccflag == 1)
 				count  = omap_elm_decode_bch_error(OMAP_BCH8_ECC,
 						calc_ecc, err_loc);
+
 			/* Uncorrectable error reported */
 			if (count < 0)
 				return count;
@@ -1330,6 +1331,7 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 
 			omap_oobinfo.oobfree->offset = offset +
 				omap_oobinfo.eccbytes;
+
 			omap_oobinfo.oobfree->length = info->mtd.oobsize -
 						offset - omap_oobinfo.eccbytes;
 		} else {

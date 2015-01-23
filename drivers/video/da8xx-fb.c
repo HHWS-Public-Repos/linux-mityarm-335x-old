@@ -34,8 +34,10 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 #include <linux/pm_runtime.h>
+#include <linux/lcm.h>
 #include <video/da8xx-fb.h>
 #include <asm/mach-types.h>
+#include <asm/div64.h>
 
 #define DRIVER_NAME "da8xx_lcdc"
 
@@ -150,6 +152,20 @@ static inline void lcdc_write(unsigned int val, unsigned int addr)
 	writel(val, da8xx_fb_reg_base + (addr));
 }
 
+struct da8xx_panel {
+	const char	name[25];	/* Full name <vendor>_<model> */
+	unsigned short	width;
+	unsigned short	height;
+	int		hfp;		/* Horizontal front porch */
+	int		hbp;		/* Horizontal back porch */
+	int		hsw;		/* Horizontal Sync Pulse Width */
+	int		vfp;		/* Vertical front porch */
+	int		vbp;		/* Vertical back porch */
+	int		vsw;		/* Vertical Sync Pulse Width */
+	unsigned int	pxl_clk;	/* Pixel clock */
+	unsigned char	invert_pxl_clk;	/* Invert Pixel clock */
+};
+
 struct da8xx_fb_par {
 	struct device *dev;
 	resource_size_t p_palette_base;
@@ -168,6 +184,7 @@ struct da8xx_fb_par {
 	wait_queue_head_t	vsync_wait;
 	int			vsync_flag;
 	int			vsync_timeout;
+	int			context_loss_cnt;
 	spinlock_t		lock_for_chan_update;
 
 	/*
@@ -180,6 +197,8 @@ struct da8xx_fb_par {
 	unsigned int		lcd_fck_rate;
 #endif
 	void (*panel_power_ctrl)(int);
+	struct da8xx_panel	*lcdc_info;
+	struct lcd_ctrl_config	*lcd_cfg;
 };
 
 /* Variable Screen Information */
@@ -191,7 +210,6 @@ static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
 	.activate = 0,
 	.height = -1,
 	.width = -1,
-	.pixclock = 33333,/*Pico Sec*/
 	.accel_flags = 0,
 	.left_margin = LEFT_MARGIN,
 	.right_margin = RIGHT_MARGIN,
@@ -210,20 +228,6 @@ static struct fb_fix_screeninfo da8xx_fb_fix __devinitdata = {
 	.ypanstep = 1,
 	.ywrapstep = 0,
 	.accel = FB_ACCEL_NONE
-};
-
-struct da8xx_panel {
-	const char	name[25];	/* Full name <vendor>_<model> */
-	unsigned short	width;
-	unsigned short	height;
-	int		hfp;		/* Horizontal front porch */
-	int		hbp;		/* Horizontal back porch */
-	int		hsw;		/* Horizontal Sync Pulse Width */
-	int		vfp;		/* Vertical front porch */
-	int		vbp;		/* Vertical back porch */
-	int		vsw;		/* Vertical Sync Pulse Width */
-	unsigned int	pxl_clk;	/* Pixel clock */
-	unsigned char	invert_pxl_clk;	/* Invert Pixel clock */
 };
 
 static vsync_callback_t vsync_cb_handler;
@@ -272,7 +276,21 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.pxl_clk = 30000000,
 		.invert_pxl_clk = 0,
 	},
+	/* Newhaven Display */
 	[3] = {
+		.name = "NHD-4.3-ATXI#-T-1",
+		.width = 480,
+		.height = 272,
+		.hfp = 8,
+		.hbp = 43,
+		.hsw = 4,
+		.vfp = 4,
+		.vbp = 12,
+		.vsw = 10,
+		.pxl_clk = 9000000,
+		.invert_pxl_clk = 0,
+	},
+	[4] = {
 		.name = "800x600",
 		.width = 800,
 		.height = 600,
@@ -285,7 +303,7 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.pxl_clk = 30000000,
 		.invert_pxl_clk = 0,
 	},
-	[4] = {
+	[5] = {
 		.name = "1280x768",
 		.width = 1280,
 		.height = 768,
@@ -298,7 +316,7 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.pxl_clk = 68250000,
 		.invert_pxl_clk = 0,
 	},
-	[5] = {
+	[6] = {
 		.name = "1024x768",
 		.width = 1024,
 		.height = 768,
@@ -311,7 +329,7 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.pxl_clk = 65000000,
 		.invert_pxl_clk = 0,
 	},
-	[6] = {
+	[7] = {
 		.name = "640x480",
 		.width = 640,
 		.height = 480,
@@ -325,6 +343,11 @@ static struct da8xx_panel known_lcd_panels[] = {
 		.invert_pxl_clk = 0,
 	},
 };
+
+static inline bool is_raster_enabled(void)
+{
+	return !!(lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE);
+}
 
 /* Enable the Raster Engine of the LCD Controller */
 static inline void lcd_enable_raster(void)
@@ -734,9 +757,6 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
 
 static void lcd_reset(struct da8xx_fb_par *par)
 {
-	/* Disable the Raster if previously Enabled */
-	lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
-
 	/* DMA has to be disabled */
 	lcdc_write(0, LCD_DMA_CTRL_REG);
 	lcdc_write(0, LCD_RASTER_CTRL_REG);
@@ -771,8 +791,6 @@ static int lcd_init(struct da8xx_fb_par *par, struct lcd_ctrl_config *cfg,
 {
 	u32 bpp;
 	int ret = 0;
-
-	lcd_reset(par);
 
 	/* Calculate the divider */
 	lcd_calc_clk_divider(par);
@@ -976,6 +994,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
 			struct fb_info *info)
 {
 	int err = 0;
+	struct da8xx_fb_par *par = info->par;
+	int bpp = var->bits_per_pixel >> 3;
+	unsigned long line_size = var->xres_virtual * bpp;
 
 	switch (var->bits_per_pixel) {
 	case 1:
@@ -1035,6 +1056,21 @@ static int fb_check_var(struct fb_var_screeninfo *var,
 	var->green.msb_right = 0;
 	var->blue.msb_right = 0;
 	var->transp.msb_right = 0;
+
+	if (line_size * var->yres_virtual > par->vram_size)
+		var->yres_virtual = par->vram_size / line_size;
+
+	if (var->yres > var->yres_virtual)
+		var->yres = var->yres_virtual;
+
+	if (var->xres > var->xres_virtual)
+		var->xres = var->xres_virtual;
+
+	if (var->xres + var->xoffset > var->xres_virtual)
+		var->xoffset = var->xres_virtual - var->xres;
+	if (var->yres + var->yoffset > var->yres_virtual)
+		var->yoffset = var->yres_virtual - var->yres;
+
 	return err;
 }
 
@@ -1201,6 +1237,9 @@ static int cfb_blank(int blank, struct fb_info *info)
 
 		lcd_enable_raster();
 		break;
+	case FB_BLANK_NORMAL:
+	case FB_BLANK_VSYNC_SUSPEND:
+	case FB_BLANK_HSYNC_SUSPEND:
 	case FB_BLANK_POWERDOWN:
 		if (par->panel_power_ctrl)
 			par->panel_power_ctrl(0);
@@ -1266,9 +1305,60 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
 	return ret;
 }
 
+static int da8xxfb_set_par(struct fb_info *info)
+{
+	struct da8xx_fb_par *par = info->par;
+	struct lcd_ctrl_config *lcd_cfg = par->lcd_cfg;
+	struct da8xx_panel *lcdc_info = par->lcdc_info;
+	unsigned long long pxl_clk = 1000000000000ULL;
+	bool raster;
+	int ret;
+
+	raster = is_raster_enabled();
+
+	lcdc_info->hfp = info->var.right_margin;
+	lcdc_info->hbp = info->var.left_margin;
+	lcdc_info->vfp = info->var.lower_margin;
+	lcdc_info->vbp = info->var.upper_margin;
+	lcdc_info->hsw = info->var.hsync_len;
+	lcdc_info->vsw = info->var.vsync_len;
+	lcdc_info->width = info->var.xres;
+	lcdc_info->height = info->var.yres;
+
+	do_div(pxl_clk, info->var.pixclock);
+	par->pxl_clk = pxl_clk;
+
+	lcd_cfg->bpp = info->var.bits_per_pixel;
+
+	if (raster)
+		lcd_disable_raster(WAIT_FOR_FRAME_DONE);
+	else
+		lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
+
+	info->fix.visual = (lcd_cfg->bpp <= 8) ?
+				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+	info->fix.line_length = (lcdc_info->width * lcd_cfg->bpp) / 8;
+
+	par->dma_start = par->vram_phys;
+	par->dma_end   = par->dma_start + lcdc_info->height *
+				info->fix.line_length - 1;
+
+	ret = lcd_init(par, lcd_cfg, lcdc_info);
+	if (ret < 0) {
+		dev_err(par->dev, "lcd init failed\n");
+		return ret;
+	}
+
+	if (raster)
+		lcd_enable_raster();
+
+	return 0;
+}
+
 static struct fb_ops da8xx_fb_ops = {
 	.owner = THIS_MODULE,
 	.fb_check_var = fb_check_var,
+	.fb_set_par = da8xxfb_set_par,
 	.fb_setcolreg = fb_setcolreg,
 	.fb_pan_display = da8xx_pan_display,
 	.fb_ioctl = fb_ioctl,
@@ -1277,6 +1367,22 @@ static struct fb_ops da8xx_fb_ops = {
 	.fb_imageblit = cfb_imageblit,
 	.fb_blank = cfb_blank,
 };
+
+/* Calculate and return pixel clock period in pico seconds */
+static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
+{
+	unsigned int lcd_clk, div;
+	unsigned int configured_pix_clk;
+	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
+
+	lcd_clk = clk_get_rate(par->lcdc_clk);
+	div = lcd_clk / par->pxl_clk;
+	configured_pix_clk = (lcd_clk / div);
+
+	do_div(pix_clk_period_picosec, configured_pix_clk);
+
+	return pix_clk_period_picosec;
+}
 
 static int __devinit fb_probe(struct platform_device *device)
 {
@@ -1289,6 +1395,7 @@ static int __devinit fb_probe(struct platform_device *device)
 	struct da8xx_fb_par *par;
 	resource_size_t len;
 	int ret, i;
+	unsigned long ulcm;
 	char *opt, *options = NULL;
 #ifdef CONFIG_FB_MITYARM_DEVKIT_LCD
 	char mode[64] = "1024x768";
@@ -1419,15 +1526,12 @@ static int __devinit fb_probe(struct platform_device *device)
 		par->panel_power_ctrl(1);
 	}
 
-	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
-		dev_err(&device->dev, "lcd_init failed\n");
-		ret = -EFAULT;
-		goto err_release_fb;
-	}
+	lcd_reset(par);
 
 	/* allocate frame buffer */
 	par->vram_size = lcdc_info->width * lcdc_info->height * lcd_cfg->bpp;
-	par->vram_size = PAGE_ALIGN(par->vram_size/8);
+	ulcm = lcm((lcdc_info->width * lcd_cfg->bpp)/8, PAGE_SIZE);
+	par->vram_size = roundup(par->vram_size/8, ulcm);
 	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
 
 	par->vram_virt = dma_alloc_coherent(NULL,
@@ -1485,6 +1589,7 @@ static int __devinit fb_probe(struct platform_device *device)
 
 	da8xx_fb_var.hsync_len = lcdc_info->hsw;
 	da8xx_fb_var.vsync_len = lcdc_info->vsw;
+	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
 
 	da8xx_fb_var.right_margin = lcdc_info->hfp;
 	da8xx_fb_var.left_margin  = lcdc_info->hbp;
@@ -1504,6 +1609,9 @@ static int __devinit fb_probe(struct platform_device *device)
 	if (ret)
 		goto err_release_pl_mem;
 	da8xx_fb_info->cmap.len = par->palette_sz;
+
+	par->lcdc_info = lcdc_info;
+	par->lcd_cfg = lcd_cfg;
 
 	/* initialize var_screeninfo */
 	da8xx_fb_var.activate = FB_ACTIVATE_FORCE;
@@ -1641,6 +1749,8 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
 {
 	struct fb_info *info = platform_get_drvdata(dev);
 	struct da8xx_fb_par *par = info->par;
+	struct da8xx_lcdc_platform_data *fb_pdata =
+				dev->dev.platform_data;
 
 	console_lock();
 	if (par->panel_power_ctrl)
@@ -1648,6 +1758,10 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
 
 	fb_set_suspend(info, 1);
 	lcd_disable_raster(WAIT_FOR_FRAME_DONE);
+
+	if (fb_pdata->get_context_loss_count)
+		par->context_loss_cnt =
+			fb_pdata->get_context_loss_count(&dev->dev);
 	lcd_context_save();
 
 	pm_runtime_put(&dev->dev);
@@ -1659,13 +1773,30 @@ static int fb_resume(struct platform_device *dev)
 {
 	struct fb_info *info = platform_get_drvdata(dev);
 	struct da8xx_fb_par *par = info->par;
+	struct da8xx_lcdc_platform_data *fb_pdata = dev->dev.platform_data;
+	int loss_cnt;
 
 	console_lock();
 
 	pm_runtime_get_sync(&dev->dev);
 
+	if (fb_pdata->get_context_loss_count) {
+		loss_cnt =
+			fb_pdata->get_context_loss_count(&dev->dev);
+		if (loss_cnt < 0) {
+			dev_err(&dev->dev,
+				"%s failed, context loss count  = %d\n",
+				__func__, loss_cnt);
+		} else if (par->context_loss_cnt == loss_cnt) {
+			goto skip_context_restore;
+		}
+	}
+
+	/* Sleep is required inorder to avoid underflow error */
 	msleep(1);
 	lcd_context_restore();
+
+skip_context_restore:
 	lcd_enable_raster();
 
 	if (par->panel_power_ctrl)

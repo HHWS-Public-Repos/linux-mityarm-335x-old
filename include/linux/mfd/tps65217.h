@@ -213,11 +213,17 @@ enum tps65217_regulator_id {
 /**
  * struct tps65217_board - packages regulator init data
  * @tps65217_regulator_data: regulator initialization values
+ * @status_off: Set the PMIC to shutdown on PWR_EN toggle
  *
  * Board data may be used to initialize regulator.
  */
 struct tps65217_board {
 	struct regulator_init_data *tps65217_init_data;
+	bool status_off;
+};
+
+struct tps65217_rdelay {
+	int ramp_delay;
 };
 
 /**
@@ -227,6 +233,7 @@ struct tps65217_board {
  * @max_uV:		minimum micro volts
  * @vsel_to_uv:		Function pointer to get voltage from selector
  * @uv_to_vsel:		Function pointer to get selector from voltage
+ * @delay:		Set voltage delay in us
  * @table:		Table for non-uniform voltage step-size
  * @table_len:		Length of the voltage table
  * @enable_mask:	Regulator enable mask bits
@@ -241,6 +248,7 @@ struct tps_info {
 	int max_uV;
 	int (*vsel_to_uv)(unsigned int vsel);
 	int (*uv_to_vsel)(int uV, unsigned int *vsel);
+	int delay;
 	const int *table;
 	unsigned int table_len;
 	unsigned int enable_mask;

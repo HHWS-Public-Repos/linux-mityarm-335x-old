@@ -394,8 +394,13 @@ static struct tsc_data am335x_touchscreen_data  = {
 	.steps_to_configure = 5,
 };
 
+static struct adc_data am335x_adc_data = {
+	.adc_channels = 4,
+};
+
 static struct mfd_tscadc_board am335x_tscadc = {
 	.tsc_init = &am335x_touchscreen_data,
+	.adc_init = &am335x_adc_data,
 };
 
 

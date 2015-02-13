@@ -231,16 +231,6 @@ static struct pinmux_config __initdata spi0_pin_mux[] = {
 	{NULL, 0},
 };
 
-static struct pinmux_config __initdata tsc_pin_mux[] = {
-	{"ain0.ain0",     AM33XX_INPUT_EN},
-	{"ain1.ain1",     AM33XX_INPUT_EN},
-	{"ain2.ain2",     AM33XX_INPUT_EN},
-	{"ain3.ain3",     AM33XX_INPUT_EN},
-	{"vrefp.vrefp",   AM33XX_INPUT_EN},
-	{"vrefn.vrefn",   AM33XX_INPUT_EN},
-	{NULL, 0},
-};
-
 #ifndef CONFIG_MITYARM335X_TIWI
 static struct pinmux_config __initdata wl12xx_pin_mux[] = {
 	{"gpmc_ad10.gpio0_26",  AM33XX_PIN_INPUT}, /* WL WL IRQ */
@@ -408,7 +398,7 @@ static void __init baseboard_setup_ts(void)
 {
 	int err;
 
-	setup_pin_mux(tsc_pin_mux);
+	/* Removed Pin Mux -- Analog pins don't require it */
 
 	pr_info("IN : %s \n", __FUNCTION__);
 	err = am33xx_register_mfd_tscadc(&am335x_tscadc);

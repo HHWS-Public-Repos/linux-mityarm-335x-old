@@ -77,6 +77,10 @@ struct pinmux_config {
 		omap_mux_init_signal(pin_mux[i].muxname, pin_mux[i].val); \
 }
 
+#ifndef CONFIG_MITYARM335X_TIWI
+static int mmc2_wl12xx_init(void);
+#endif
+
 /******************************************************************************
  *
  *                                N O T E
@@ -298,6 +302,11 @@ static struct omap2_hsmmc_info mmc_info[] = {
 
 static void __init baseboard_setup_mmc(void)
 {
+
+#ifndef CONFIG_MITYARM335X_TIWI
+	mmc2_wl12xx_init();
+#endif
+
 	/* pin mux */
 	setup_pin_mux(mmc0_pin_mux);
 
@@ -709,12 +718,7 @@ static void __init factory_config_callback(const struct mityarm335x_factory_conf
 	pr_info("%s: %s\n", BASEBOARD_NAME, __FUNCTION__);
 
 #ifndef CONFIG_MITYARM335X_TIWI
-	mmc2_wl12xx_init();
-	/* On TiWi boards, the board file will have already called this 
-	 * method, but its ok to call it again as long as you leave mmc 2 alone
-	 */
-
-	/* mmc will be initialized when mmc0_init is called */
+	/* mmc will be initialized when baseboard_setup_mmc is called */
 	baseboard_setup_wlan();
 #endif
 

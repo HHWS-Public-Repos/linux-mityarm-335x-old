@@ -383,7 +383,8 @@ static int __devexit tps65910_rtc_remove(struct platform_device *pdev)
 	return 0;
 }
 
-#ifdef CONFIG_PM_SLEEP
+/* Disable sleep support as it causes kernel panic during suspend */
+#ifdef CONFIG_PM_SLEEP_DISABLED
 
 static int tps65910_rtc_suspend(struct device *dev)
 {

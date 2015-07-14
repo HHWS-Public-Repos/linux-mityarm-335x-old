@@ -417,6 +417,9 @@ static int __init omap_rtc_probe(struct platform_device *pdev)
 	pm_runtime_enable(&pdev->dev);
 	pm_runtime_get_sync(&pdev->dev);
 
+	if (pdata->wakeup_capable)
+		device_init_wakeup(&pdev->dev, 1);
+
 	rtc = rtc_device_register(pdev->name, &pdev->dev,
 			&omap_rtc_ops, THIS_MODULE);
 	if (IS_ERR(rtc)) {
@@ -489,9 +492,6 @@ static int __init omap_rtc_probe(struct platform_device *pdev)
 
 	if (reg != new_ctrl)
 		rtc_write(new_ctrl, OMAP_RTC_CTRL_REG);
-
-	if (pdata->wakeup_capable)
-		device_init_wakeup(&pdev->dev, 1);
 
 	return 0;
 

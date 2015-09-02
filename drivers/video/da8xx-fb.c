@@ -1368,22 +1368,6 @@ static struct fb_ops da8xx_fb_ops = {
 	.fb_blank = cfb_blank,
 };
 
-/* Calculate and return pixel clock period in pico seconds */
-static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
-{
-	unsigned int lcd_clk, div;
-	unsigned int configured_pix_clk;
-	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
-
-	lcd_clk = clk_get_rate(par->lcdc_clk);
-	div = lcd_clk / par->pxl_clk;
-	configured_pix_clk = (lcd_clk / div);
-
-	do_div(pix_clk_period_picosec, configured_pix_clk);
-
-	return pix_clk_period_picosec;
-}
-
 static int __devinit fb_probe(struct platform_device *device)
 {
 	struct da8xx_lcdc_platform_data *fb_pdata =
@@ -1403,6 +1387,7 @@ static int __devinit fb_probe(struct platform_device *device)
 	char mode[64] = "";
 #endif // CONFIG_FB_MITYARM_DEVKIT_LCD
 	int bpp = 0;
+	unsigned long long pxl_clk = 1000000000000ULL;
 
 	/* TJI Add bpp from command line */
 #ifndef MODULE
@@ -1589,7 +1574,8 @@ static int __devinit fb_probe(struct platform_device *device)
 
 	da8xx_fb_var.hsync_len = lcdc_info->hsw;
 	da8xx_fb_var.vsync_len = lcdc_info->vsw;
-	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+	do_div(pxl_clk, lcdc_info->pxl_clk);
+	da8xx_fb_var.pixclock = pxl_clk;
 
 	da8xx_fb_var.right_margin = lcdc_info->hfp;
 	da8xx_fb_var.left_margin  = lcdc_info->hbp;

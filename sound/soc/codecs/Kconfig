@@ -1006,7 +1006,7 @@ config SND_SOC_TLV320AIC23_SPI
 	select SND_SOC_TLV320AIC23
 
 config SND_SOC_TLV320AIC26
-	tristate
+	tristate "TI TLV320AIC26 Codec support"
 	depends on SPI
 
 config SND_SOC_TLV320AIC31XX

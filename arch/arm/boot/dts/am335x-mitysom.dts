@@ -83,15 +83,25 @@
 
 	/* JJC - Updated for MitySOM-335x Dev Kit */
 	sound {
-		compatible = "ti,da830-evm-audio";
-		ti,model = "AM335x-MitySOM-335x";
-		ti,audio-codec = <&tlv320aic26>;
-		ti,mcasp-controller = <&mcasp1>;
-		ti,codec-clock-rate = <12000000>;
-		ti,audio-routing =
-			"Headphone Jack",       "HPL",
-			"Headphone Jack",       "HPR",
-			"Mic",               	"MICIN";
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "MitySOM-335x";
+		simple-audio-card,format = "left_j";
+		/* SND_SOC_DAIFMT_CBM_CFM */
+		simple-audio-card,bitclock-master = <&tlv320aic26_codec>;
+		simple-audio-card,frame-master = <&tlv320aic26_codec>;
+		/* SND_SOC_DAIFMT_NB_IF */
+		simple-audio-card,frame-inversion;
+
+		simple-audio-card,cpu {
+			sound-dai = <&mcasp1>;
+			system-clock-frequency = <24576000>;
+		};
+
+
+		tlv320aic26_codec: simple-audio-card,codec {
+			sound-dai = <&tlv320aic26>;
+			system-clock-frequency = <24576000>;
+		};
 	};
 
 
@@ -572,6 +582,7 @@
 	ti,pindir-d0-out-d1-in = <1>;
 
 	tlv320aic26: tlv320aic26@1 {
+		#sound-dai-cells = <0>;
 		compatible = "ti,tlv320aic26";
 		reg = <0x1>;
 		status = "okay";
@@ -690,6 +701,7 @@
 
 /* JJC - Updated for MitySOM-335x Dev Kit */
 &mcasp1 {
+	#sound-dai-cells = <0>;
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&am335x_evm_audio_pins>;
 	pinctrl-1 = <&am335x_evm_audio_pins_sleep>;

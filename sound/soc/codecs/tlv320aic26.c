@@ -117,11 +117,12 @@ static int aic26_hw_params(struct snd_pcm_substream *substream,
 	snd_soc_component_write(component, AIC26_REG_PLL_PROG2, reg);
 
 	/* Audio Control 3 (master mode, fsref rate) */
+	reg = 0;
 	if (aic26->master)
-		reg = 0x0800;
+		reg |= 0x0800;
 	if (fsref == 48000)
-		reg = 0x2000;
-	snd_soc_component_update_bits(component, AIC26_REG_AUDIO_CTRL3, 0xf800, reg);
+		reg |= 0x2000;
+	snd_soc_component_update_bits(component, AIC26_REG_AUDIO_CTRL3, 0x2800, reg);
 
 	/* Audio Control 1 (FSref divisor) */
 	reg = wlen | aic26->datfm | (divisor << 3) | divisor;
@@ -146,7 +147,7 @@ static int aic26_mute(struct snd_soc_dai *dai, int mute)
 		reg = 0x8080;
 	else
 		reg = 0;
-	snd_soc_component_update_bits(component, AIC26_REG_DAC_GAIN, 0x8000, reg);
+	snd_soc_component_update_bits(component, AIC26_REG_DAC_GAIN, 0x8080, reg);
 
 	return 0;
 }
@@ -281,7 +282,7 @@ static ssize_t aic26_keyclick_set(struct device *dev,
 	struct aic26 *aic26 = dev_get_drvdata(dev);
 
 	snd_soc_component_update_bits(aic26->component, AIC26_REG_AUDIO_CTRL2,
-			    0x8000, 0x800);
+			    0x8000, 0x8000);
 
 	return count;
 }

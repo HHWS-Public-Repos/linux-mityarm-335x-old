@@ -85,12 +85,12 @@
 	sound {
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "MitySOM-335x";
-		simple-audio-card,format = "left_j";
+		simple-audio-card,format = "dsp_a";
 		/* SND_SOC_DAIFMT_CBM_CFM */
 		simple-audio-card,bitclock-master = <&tlv320aic26_codec>;
 		simple-audio-card,frame-master = <&tlv320aic26_codec>;
-		/* SND_SOC_DAIFMT_NB_IF */
-		simple-audio-card,frame-inversion;
+		/* SND_SOC_DAIFMT_IB_NF */
+		simple-audio-card,bitclock-inversion;
 
 		simple-audio-card,cpu {
 			sound-dai = <&mcasp1>;

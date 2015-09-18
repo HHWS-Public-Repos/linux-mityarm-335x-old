@@ -368,11 +368,24 @@ static int aic26_spi_probe(struct spi_device *spi)
 	return ret;
 }
 
+static const struct spi_device_id tlv320aic26_id_table[] = {
+	{ "tlv320aic26" },
+	{},
+};
+MODULE_DEVICE_TABLE(spi, tlv320aic26_id_table);
+
+static const struct of_device_id tlv320aic26_of_match[] = {
+	{ .compatible = "ti,tlv320aic26", },
+	{},
+};
+MODULE_DEVICE_TABLE(of, tlv320aic26_of_match);
+
 static struct spi_driver aic26_spi = {
 	.driver = {
 		.name = "tlv320aic26-codec",
 	},
 	.probe = aic26_spi_probe,
+	.id_table = tlv320aic26_id_table,
 };
 
 module_spi_driver(aic26_spi);

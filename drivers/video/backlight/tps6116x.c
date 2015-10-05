@@ -269,7 +269,7 @@ static int __devinit tps6116x_probe(struct platform_device *pdev)
 		dev_err(dev, "backlight registration failed\n");
 		goto fail3;
 	}
-	platform_set_drvdata(pdev, hw->bl);
+	platform_set_drvdata(pdev, hw);
 	update_status(hw->bl);
 	
 	dev_info(dev, "registered backlight controller\n");

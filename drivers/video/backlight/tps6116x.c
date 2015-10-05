@@ -63,6 +63,9 @@ static int __set_power(struct tps6116x *hw, bool power)
 	/* disabling is simple... choke power */
 	if (!power) {
 		error = regulator_disable(hw->regulator);
+
+		/* Pull crtl pin low incase regulator not connected */
+		gpio_set_value(hw->gpio, 0);
 		goto done;
 	}
 

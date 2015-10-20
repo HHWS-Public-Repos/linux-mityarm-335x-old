@@ -867,6 +867,10 @@ sdram_ref_ctrl:
 	str	r4, [r3, #EMIF4_0_SDRAM_REF_CTRL_SHADOW]
 pmcr:
 	ldr	r4, emif_pmcr_val
+	bic	r4, r4, #0x0700
+	orr	r4, r4, #0x0200
+	str	r4, [r3, #EMIF4_0_SDRAM_MGMT_CTRL]
+	bic	r4, r4, #0x0700
 	str	r4, [r3, #EMIF4_0_SDRAM_MGMT_CTRL]
 pmcr_shdw:
 	ldr	r4, emif_pmcr_shdw_val

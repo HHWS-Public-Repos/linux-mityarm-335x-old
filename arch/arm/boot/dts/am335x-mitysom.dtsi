@@ -771,6 +771,10 @@
 	vcc6-supply = <&vbat>;
 	vcc7-supply = <&vbat>;
 	vccio-supply = <&vbat>;
+	/* Enable 32k crystal oscillator */
+	ti,en-ck32k-xtal;
+	/* Disable pmic power when system shutsdown */
+	ti,system-power-controller;
 
 	regulators {
 		vrtc_reg: regulator@0 {

@@ -461,6 +461,7 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
 	struct tps65910_platform_data *init_data;
 	unsigned long chip_id = id->driver_data;
 	int ret;
+	int irq_ret = 0;
 
 	pmic_plat_data = dev_get_platdata(&i2c->dev);
 
@@ -501,7 +502,7 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
 	init_data->irq = pmic_plat_data->irq;
 	init_data->irq_base = pmic_plat_data->irq_base;
 
-	tps65910_irq_init(tps65910, init_data->irq, init_data);
+	irq_ret = tps65910_irq_init(tps65910, init_data->irq, init_data);
 	tps65910_ck32k_init(tps65910, pmic_plat_data);
 	tps65910_sleepinit(tps65910, pmic_plat_data);
 
@@ -516,6 +517,38 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
 			0);
 	if (ret < 0) {
 		dev_err(&i2c->dev, "disable dc/dc clock sync failed: %d\n", ret);
+	}
+
+	/* If irqs aren't enabled and sleep mode is enabled we need to clear/mask interrupt registers */
+	/* Sleep mode won't be entered if an interrupt is pending */
+	if (irq_ret  < 0 && pmic_plat_data->en_dev_slp)
+		ret = tps65910_reg_set_bits(tps65910,
+				TPS65910_INT_STS,
+				0xFF); {
+		if (ret < 0) {
+			dev_err(&i2c->dev, "clear interrupt regs failed: %d\n", ret);
+		}
+
+		ret = tps65910_reg_set_bits(tps65910,
+				TPS65910_INT_MSK,
+				0xFF);
+		if (ret < 0) {
+			dev_err(&i2c->dev, "mask interrupt regs failed: %d\n", ret);
+		}
+
+		ret = tps65910_reg_set_bits(tps65910,
+				TPS65910_INT_STS2,
+				0xFF);
+		if (ret < 0) {
+			dev_err(&i2c->dev, "clear interrupt 2 regs failed: %d\n", ret);
+		}
+
+		ret = tps65910_reg_set_bits(tps65910,
+				TPS65910_INT_MSK2,
+				0xFF);
+		if (ret < 0) {
+			dev_err(&i2c->dev, "mask interrupt 2 regs failed: %d\n", ret);
+		}
 	}
 
 	if (pmic_plat_data->pm_off && !pm_power_off) {

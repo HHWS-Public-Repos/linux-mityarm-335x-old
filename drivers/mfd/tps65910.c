@@ -505,6 +505,19 @@ static int tps65910_i2c_probe(struct i2c_client *i2c,
 	tps65910_ck32k_init(tps65910, pmic_plat_data);
 	tps65910_sleepinit(tps65910, pmic_plat_data);
 
+	/* Work around silicon erratum SWCZ010 2:
+	 * DCDC o/p voltage can go higher than programmed value when coming out
+	 * of PFM to PWM mode or using DVFS.
+	 * Disable clock synchronization to avoid this.
+	 */
+	ret = tps65910_reg_update_bits(tps65910,
+			TPS65910_DCDCCTRL,
+			DCDCCTRL_DCDCCKSYNC_MASK,
+			0);
+	if (ret < 0) {
+		dev_err(&i2c->dev, "disable dc/dc clock sync failed: %d\n", ret);
+	}
+
 	if (pmic_plat_data->pm_off && !pm_power_off) {
 		tps65910_i2c_client = i2c;
 		pm_power_off = tps65910_power_off;

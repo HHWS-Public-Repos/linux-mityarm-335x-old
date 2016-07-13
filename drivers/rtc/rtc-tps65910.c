@@ -388,6 +388,7 @@ static int __devexit tps65910_rtc_remove(struct platform_device *pdev)
 static int tps65910_rtc_suspend(struct device *dev)
 {
 	struct tps65910 *tps = dev_get_drvdata(dev->parent);
+	struct tps65910_rtc *tps_rtc = dev_get_drvdata(dev);
 	u8 alarm = TPS65910_RTC_INTERRUPTS_IT_ALARM;
 	int ret;
 
@@ -396,7 +397,7 @@ static int tps65910_rtc_suspend(struct device *dev)
 	ret = regmap_read(tps->regmap, TPS65910_RTC_INTERRUPTS,
 		&tps->rtc->irqstat);
 #else
-	ret = tps->read(tps, TPS65910_RTC_INTERRUPTS, 1, &tps->rtc->irqstat);
+	ret = tps->read(tps, TPS65910_RTC_INTERRUPTS, 1, &tps_rtc->irqstat);
 #endif
 	if (ret < 0)
 		return ret;
@@ -412,13 +413,14 @@ static int tps65910_rtc_suspend(struct device *dev)
 static int tps65910_rtc_resume(struct device *dev)
 {
 	struct tps65910 *tps = dev_get_drvdata(dev->parent);
+	struct tps65910_rtc *tps_rtc = dev_get_drvdata(dev);
 
 	/* Restore list of enabled interrupts before suspend */
 #if 0
 	return regmap_write(tps->regmap, TPS65910_RTC_INTERRUPTS,
 		tps->rtc->irqstat);
 #else
-	return tps->write(tps, TPS65910_RTC_INTERRUPTS, 1, &tps->rtc->irqstat);
+	return tps->write(tps, TPS65910_RTC_INTERRUPTS, 1, &tps_rtc->irqstat);
 #endif
 }
 

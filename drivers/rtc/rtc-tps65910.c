@@ -29,6 +29,7 @@ struct tps65910_rtc {
 	struct rtc_device	*rtc;
 	/* To store the list of enabled interrupts */
 	unsigned char irqstat;
+	int irq;
 };
 
 /* Total number of RTC registers needed to set time*/
@@ -286,7 +287,6 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 	struct tps65910_rtc *tps_rtc = NULL;
 	struct tps65910_board *pmic_plat_data;
 	int ret;
-	int irq;
 	u32 rtc_reg;
 	unsigned char tmp;
 
@@ -338,14 +338,14 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 		return ret;
 
 	pmic_plat_data = dev_get_platdata(tps65910->dev);
-	irq = pmic_plat_data->irq_base;
-	if (irq <= 0) {
+	tps_rtc->irq = pmic_plat_data->irq_base;
+	if (tps_rtc->irq <= 0) {
 		dev_warn(&pdev->dev, "Wake up is not possible as irq = %d\n",
-			irq);
+			tps_rtc->irq);
 	} else {
 
-		irq += TPS65910_IRQ_RTC_ALARM;
-		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+		tps_rtc->irq += TPS65910_IRQ_RTC_ALARM;
+		ret = devm_request_threaded_irq(&pdev->dev, tps_rtc->irq, NULL,
 			tps65910_rtc_interrupt, IRQF_TRIGGER_LOW,
 			"rtc-tps65910", &pdev->dev);
 		if (ret < 0) {
@@ -392,6 +392,14 @@ static int tps65910_rtc_suspend(struct device *dev)
 	u8 alarm = TPS65910_RTC_INTERRUPTS_IT_ALARM;
 	int ret;
 
+	if (device_may_wakeup(dev)) {
+		ret = enable_irq_wake(tps_rtc->irq);
+		if (ret < 0) {
+			dev_err(dev, "Failed to enable irq wake ret: %d\n", ret);
+			return ret;
+		}
+	}
+
 	/* Store current list of enabled interrupts*/
 #if 0
 	ret = regmap_read(tps->regmap, TPS65910_RTC_INTERRUPTS,
@@ -414,6 +422,14 @@ static int tps65910_rtc_resume(struct device *dev)
 {
 	struct tps65910 *tps = dev_get_drvdata(dev->parent);
 	struct tps65910_rtc *tps_rtc = dev_get_drvdata(dev);
+	int ret;
+
+	if (device_may_wakeup(dev)) {
+		ret = disable_irq_wake(tps_rtc->irq);
+		if (ret < 0) {
+			dev_err(dev, "Failed to disable irq wake ret: %d\n", ret);
+		}
+	}
 
 	/* Restore list of enabled interrupts before suspend */
 #if 0

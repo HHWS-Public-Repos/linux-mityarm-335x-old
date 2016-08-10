@@ -339,6 +339,14 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, tps_rtc);
 
+	tps_rtc->rtc = rtc_device_register(pdev->name, &pdev->dev,
+		&tps65910_rtc_ops, THIS_MODULE);
+	if (IS_ERR(tps_rtc->rtc)) {
+		ret = PTR_ERR(tps_rtc->rtc);
+		dev_err(&pdev->dev, "RTC device register: err %d\n", ret);
+		return ret;
+	}
+
 	pmic_plat_data = dev_get_platdata(tps65910->dev);
 	tps_rtc->irq = pmic_plat_data->irq_base;
 	if (tps_rtc->irq <= 0) {
@@ -355,14 +363,6 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 			return ret;
 		}
 		device_init_wakeup(&pdev->dev, 1);
-	}
-
-	tps_rtc->rtc = rtc_device_register(pdev->name, &pdev->dev,
-		&tps65910_rtc_ops, THIS_MODULE);
-	if (IS_ERR(tps_rtc->rtc)) {
-		ret = PTR_ERR(tps_rtc->rtc);
-		dev_err(&pdev->dev, "RTC device register: err %d\n", ret);
-		return ret;
 	}
 
 	return 0;

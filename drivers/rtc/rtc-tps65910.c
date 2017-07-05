@@ -337,6 +337,11 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 	if (ret < 0)
 		return ret;
 
+	/* Init device wakeup if IRQ valid, must be set before rtc_device_register */
+	if (tps_rtc->irq > 0) {
+		device_init_wakeup(&pdev->dev, 1);
+	}
+
 	platform_set_drvdata(pdev, tps_rtc);
 
 	tps_rtc->rtc = rtc_device_register(pdev->name, &pdev->dev,
@@ -347,6 +352,7 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	/* Threaded irq must be setup after rtc_device_register to avoid NULL pointer */
 	pmic_plat_data = dev_get_platdata(tps65910->dev);
 	tps_rtc->irq = pmic_plat_data->irq_base;
 	if (tps_rtc->irq <= 0) {
@@ -362,7 +368,6 @@ static int __devinit tps65910_rtc_probe(struct platform_device *pdev)
 			dev_err(&pdev->dev, "IRQ is not free.\n");
 			return ret;
 		}
-		device_init_wakeup(&pdev->dev, 1);
 	}
 
 	return 0;

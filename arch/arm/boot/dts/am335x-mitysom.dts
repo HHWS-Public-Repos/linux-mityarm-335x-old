@@ -550,7 +550,7 @@
 &epwmss0 {
 	status = "okay";
 
-	ehrpwm0: ehrpwm@48300200 {
+	ehrpwm0: pwm@48300200 {
 		status = "okay";
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&ehrpwm0_pins_default>;

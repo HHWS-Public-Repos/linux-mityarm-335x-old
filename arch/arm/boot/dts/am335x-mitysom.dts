@@ -624,7 +624,7 @@
 	ranges = <0 0 0x08000000 0x10000000>;	/* CS0: 256 MB NAND */
 	nand@0,0 {
 		compatible = "ti,omap2-nand";
-		reg = <0 0 0>; /* CS0, offset 0 IO size ? */
+		reg = <0 0 4>; /* CS0, offset 0 IO size 4 */
 		interrupt-parent = <&intc>;
 		interrupts = <100>;
 		ready-gpio = <&gpmc 0 GPIO_ACTIVE_HIGH>; /* gpmc_wait0 */

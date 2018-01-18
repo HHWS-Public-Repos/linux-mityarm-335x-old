@@ -660,9 +660,10 @@
 		 * NAND flash this is equal to size of erase-block */
 		#address-cells = <1>;
 		#size-cells = <1>;
+		/* AMK - Updated for device tree */
 		partition@1 {
 			label = "NAND.SPL";
-			reg = <0x00000000 0x000020000>;
+			reg = <0x00000000 0x00020000>;
 		};
 		partition@2 {
 			label = "NAND.SPL.backup1";
@@ -690,7 +691,11 @@
 		};
 		partition@8 {
 			label = "NAND.file-system";
-			reg = <0x00780000 0x0F880000>;
+			reg = <0x00780000 0x0F860000>;
+		};
+		partition@9 {
+			label = "NAND.device-tree";
+			reg = <0x0FFE0000 0x00020000>;
 		};
 	};
 };

@@ -512,6 +512,7 @@
 	clock-frequency = <400000>;
 
 	tps: tps@2d {
+		compatible = "ti,tps65910";
 		reg = <0x2d>;
 	};
 

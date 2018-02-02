@@ -49,9 +49,11 @@
 		default-brightness-level = <8>;
 	};
 
-	panel {
+	/* LCD configuraton for the ThreeFive S9700RTWV35TR */
+	threefive_s9700rtwv35tr: lcd-controller@0 {
 		compatible = "ti,tilcdc,panel";
-		status = "okay";
+		status = "disabled";
+		model = "threefive,s9700rtwv35tr";
 		panel-info {
 			ac-bias           = <255>;
 			ac-bias-intrpt    = <0>;
@@ -78,6 +80,62 @@
 				hsync-active = <1>;
 				vsync-active = <1>;
 			};
+		};
+	};
+
+	nec_nl10276bc13: lcd-controller@1 {
+		compatible = "ti,tilcdc,panel";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&lcd_pins_default>;
+		pinctrl-1 = <&lcd_pins_sleep>;
+		status = "ok";
+		model = "nec,nl10276bc13";
+		panel-info {
+			ac-bias           = <255>;
+			ac-bias-intrpt    = <0>;
+			dma-burst-sz      = <16>;
+			bpp               = <32>;
+			fdd               = <0x80>;
+			sync-edge         = <0>;
+			sync-ctrl         = <1>;
+			raster-order      = <0>;
+			fifo-th           = <0>;
+		};
+		display-timings {
+			1024x768 {
+				clock-frequency = <65000000>;
+				hactive = <1024>;
+				vactive = <768>;
+				hfront-porch = <24>;
+				hback-porch = <160>;
+				hsync-len = <136>;
+				vback-porch = <29>;
+				vfront-porch = <3>;
+				vsync-len = <6>;
+				hsync-active = <1>;
+				vsync-active = <1>;
+			};
+		};
+	};
+
+	hdmi {
+		compatible = "ti,tilcdc,tfp410";
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&lcd_pins_default>;
+		pinctrl-1 = <&lcd_pins_sleep>;
+		i2c = <&i2c1>;
+		status = "disabled";
+
+		panel-info {
+			ac-bias           = <255>;
+			ac-bias-intrpt    = <0>;
+			dma-burst-sz      = <16>;
+			bpp               = <32>;
+			fdd               = <0x80>;
+			sync-edge         = <0>;
+			sync-ctrl         = <1>;
+			raster-order      = <0>;
+			fifo-th           = <0>;
 		};
 	};
 
@@ -550,12 +608,8 @@
 	status = "okay";
 };
 
-
 &lcdc {
 	status = "okay";
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&lcd_pins_default>;
-	pinctrl-1 = <&lcd_pins_sleep>;
 };
 
 &elm {

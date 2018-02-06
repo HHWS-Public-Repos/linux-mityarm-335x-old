@@ -596,11 +596,17 @@
 
 &usb0 {
 	status = "okay";
-	dr_mode = "otg";
+	/* Set device mode */
+	/* See: Documentation/devicetree/bindings/usb/am33xx-usb.txt */
+	/* Set to "otg" for OTG */
+	dr_mode = "host";
 };
 
 &usb1 {
 	status = "okay";
+	/* Set device mode */
+	/* See: Documentation/devicetree/bindings/usb/am33xx-usb.txt */
+	/* Set to "otg" for OTG */
 	dr_mode = "host";
 };
 

@@ -51,7 +51,12 @@ static int tps65910_rtc_alarm_irq_enable(struct device *dev,
 					 unsigned int enabled)
 {
 	struct tps65910 *tps = dev_get_drvdata(dev->parent);
+	struct tps65910_rtc *rtc = dev_get_drvdata(dev);
 	u8 val = 0;
+
+	/* Error if there's no IRQ to enable */
+	if (rtc->irq <= 0 && enabled)
+		return -EIO;
 
 	if (enabled)
 		val = TPS65910_RTC_INTERRUPTS_IT_ALARM;
@@ -412,18 +417,19 @@ static int tps65910_rtc_probe(struct platform_device *pdev)
 	if (irq <= 0) {
 		dev_warn(&pdev->dev, "Wake up is not possible as irq = %d\n",
 			irq);
-		return -ENXIO;
-	}
-
-	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-		tps65910_rtc_interrupt, IRQF_TRIGGER_LOW,
-		dev_name(&pdev->dev), &pdev->dev);
-	if (ret < 0) {
-		dev_err(&pdev->dev, "IRQ is not free.\n");
-		return ret;
 	}
 	tps_rtc->irq = irq;
-	device_set_wakeup_capable(&pdev->dev, 1);
+	
+	if (tps_rtc->irq > 0) {
+		ret = devm_request_threaded_irq(&pdev->dev, tps_rtc->irq, NULL,
+			tps65910_rtc_interrupt, IRQF_TRIGGER_LOW | IRQF_EARLY_RESUME,
+			dev_name(&pdev->dev), &pdev->dev);
+		if (ret < 0) {
+			dev_warn(&pdev->dev, "IRQ is not free.\n");
+		} else {
+			device_set_wakeup_capable(&pdev->dev, 1);
+		}
+	}
 
 	tps_rtc->rtc->ops = &tps65910_rtc_ops;
 	tps_rtc->rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;

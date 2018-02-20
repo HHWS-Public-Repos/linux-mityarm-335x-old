@@ -8,3 +8,4 @@
 /dts-v1/;
 
 #include "am335x-mitysom.dtsi"
+#include "am335x-mitysom-1G.dtsi"

@@ -8,3 +8,12 @@
 /dts-v1/;
 
 #include "am335x-mitysom.dtsi"
+#include "am335x-mitysom-1G.dtsi"
+#include "am335x-mitysom-NOR.dtsi"
+
+&gpmc {
+    nand@0,0 {
+        /* Remove the nand placeholder partition */
+        /delete-node/ partition@0;
+    };
+};

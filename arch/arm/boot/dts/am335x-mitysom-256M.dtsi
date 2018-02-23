@@ -92,7 +92,11 @@
 		};
 		partition@9 {
 			label = "NAND.device-tree";
-			reg = <0x07FC0000 0x00040000>;
+			reg = <0x07FC0000 0x00020000>;
+		};
+		partition@10 {
+			label = "NAND.device-tree.backup";
+			reg = <0x07FE0000 0x00020000>;
 		};
 	};
 };

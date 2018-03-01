@@ -665,18 +665,14 @@
 
 &usb0 {
 	status = "okay";
-	/* Set device mode */
-	/* See: Documentation/devicetree/bindings/usb/am33xx-usb.txt */
-	/* Set to "otg" for OTG */
-	dr_mode = "host";
+	/* Port will act as an OTG device if the baseboard supports this feature */
+	dr_mode = "otg";
 };
 
 &usb1 {
 	status = "okay";
-	/* Set device mode */
-	/* See: Documentation/devicetree/bindings/usb/am33xx-usb.txt */
-	/* Set to "otg" for OTG */
-	dr_mode = "host";
+	/* Port will act as an OTG device if the baseboard supports this feature */
+	dr_mode = "otg";
 };
 
 &cppi41dma  {

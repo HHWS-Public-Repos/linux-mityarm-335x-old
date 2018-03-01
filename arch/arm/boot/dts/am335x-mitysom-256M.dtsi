@@ -76,27 +76,23 @@
 		};
 		partition@5 {
 			label = "NAND.u-boot";
-			reg = <0x00080000 0x00200000>;
+			reg = <0x00080000 0x001E0000>;
 		};
 		partition@6 {
 			label = "NAND.u-boot-env";
-			reg = <0x00280000 0x00020000>;
+			reg = <0x00260000 0x00020000>;
 		};
 		partition@7 {
 			label = "NAND.kernel";
-			reg = <0x002A0000 0x00500000>;
+			reg = <0x00280000 0x00500000>;
 		};
 		partition@8 {
 			label = "NAND.file-system";
-			reg = <0x007A0000 0x07820000>;
+			reg = <0x00780000 0x0F840000>;
 		};
 		partition@9 {
 			label = "NAND.device-tree";
-			reg = <0x07FC0000 0x00020000>;
-		};
-		partition@10 {
-			label = "NAND.device-tree.backup";
-			reg = <0x07FE0000 0x00020000>;
+			reg = <0x0FFC0000 0x00040000>;
 		};
 	};
 };

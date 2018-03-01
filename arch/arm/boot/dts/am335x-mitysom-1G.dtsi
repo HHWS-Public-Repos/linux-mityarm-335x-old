@@ -60,19 +60,19 @@
 		};
 		partition@1 {
 			label = "NAND.SPL";
-			reg = <0x00000000 0x00040000>;
+			reg = <0x00000000 0x00080000>;
 		};
 		partition@2 {
 			label = "NAND.SPL.backup1";
-			reg = <0x00080000 0x00040000>;
+			reg = <0x00080000 0x00080000>;
 		};
 		partition@3 {
 			label = "NAND.SPL.backup2";
-			reg = <0x00100000 0x00040000>;
+			reg = <0x00100000 0x00080000>;
 		};
 		partition@4 {
 			label = "NAND.SPL.backup3";
-			reg = <0x00180000 0x00040000>;
+			reg = <0x00180000 0x00080000>;
 		};
 		partition@5 {
 			label = "NAND.u-boot";
@@ -80,7 +80,7 @@
 		};
 		partition@6 {
 			label = "NAND.u-boot-env";
-			reg = <0x00400000 0x00040000>;
+			reg = <0x00400000 0x00080000>;
 		};
 		partition@7 {
 			label = "NAND.kernel";

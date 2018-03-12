@@ -1,0 +1,325 @@
+/*
+ * Copyright (C) 2016 Critical Link LLC - http://criticallink.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+#include "am33xx.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+	model = "Critical Link MitySOM-335x";
+	compatible = "ti,am33xx", "ti,am335x-evm";
+
+	cpus {
+		cpu@0 {
+			cpu0-supply = <&vdd1_reg>;
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>; /* 256 MB */
+	};
+
+	vbat: fixedregulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vbat";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-boot-on;
+	};
+
+	vmmc_fixed: fixedregulator@1 {
+		compatible = "regulator-fixed";
+		regulator-name = "vmmc_fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+	};
+};
+
+&am33xx_pinmux {
+
+	uart0_pins: pinmux_uart0_pins {
+		pinctrl-single,pins = <
+			0x170 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart0_rxd.uart0_rxd */
+			0x174 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart0_txd.uart0_txd */
+		>;
+	};
+
+	i2c1_pins_default: pinmux_i2c1_pins {
+		pinctrl-single,pins = <
+			0x10C (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_crs.i2c1_sda */
+			0x110 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_rxerr.i2c1_scl */
+		>;
+	};
+
+	i2c1_pins_sleep: i2c1_pins_sleep {
+		pinctrl-single,pins = <
+			0x10C (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_crs.i2c1_sda */
+			0x110 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_rxerr.i2c1_scl */
+		>;
+	};
+
+	i2c2_pins_default: pinmux_i2c2_pins {
+		pinctrl-single,pins = <
+			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
+			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
+		>;
+	};
+
+	i2c2_pins_sleep: i2c2_pins_sleep {
+		pinctrl-single,pins = <
+			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
+			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
+		>;
+	};
+
+	spi1_pins: pinmux_spi1_pins {
+		pinctrl-single,pins = <
+			0x164 (PIN_INPUT_PULLUP | MUX_MODE4)  /* ecap0_in_pwm0_out.spi1_sclk */
+			0x194 (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_fsx.spi1_d0 MOSI*/
+			0x198 (PIN_INPUT_PULLDOWN | MUX_MODE3)  /* mcasp0_axr0.spi1_d1 MISO*/
+			0x19c (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_ahclkr.spi1_cs0 */
+		>;
+	};
+
+	spi1_sleep_pins: pinmux_spi1_sleep_pins {
+		pinctrl-single,pins = <
+			0x164 (PIN_INPUT_PULLUP | MUX_MODE7)  /* ecap0_in_pwm0_out.spi1_sclk */
+			0x194 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_fsx.spi1_d0 MOSI*/
+			0x198 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_axr0.spi1_d1 MISO*/
+			0x19c (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_ahclkr.spi1_cs0 */
+		>;
+	};
+
+	nandflash_pins_default: nandflash_pins_default {
+		pinctrl-single,pins = <
+			0x000 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad0.gpmc_ad0 */
+			0x004 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad1.gpmc_ad1 */
+			0x008 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad2.gpmc_ad2 */
+			0x00c (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
+			0x010 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad4.gpmc_ad4 */
+			0x014 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad5.gpmc_ad5 */
+			0x018 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad6.gpmc_ad6 */
+			0x01c (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
+			0x070 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wait0.gpmc_wait0 */
+			0x074 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wpn.gpmc_wpn */
+			0x07c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_csn0.gpmc_csn0  */
+			0x090 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_advn_ale.gpmc_advn_ale */
+			0x094 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_oen_ren.gpmc_oen_ren */
+			0x098 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_wen.gpmc_wen */
+			0x09c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_be0_cle.gpmc_be0_cle */
+		>;
+	};
+
+	nandflash_pins_sleep: nandflash_pins_sleep {
+		pinctrl-single,pins = <
+			0x0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x4 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x8 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0xc (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x10 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x14 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x18 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x1c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x70 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x74 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x7c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x90 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x94 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x98 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x9c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+		>;
+	};
+};
+
+/* Debug Console */
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
+
+	status = "okay";
+};
+
+/* EEPROM, PMIC, and Baseboard I2C */
+&i2c1 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&i2c1_pins_default>;
+	pinctrl-1 = <&i2c1_pins_sleep>;
+
+	status = "okay";
+	clock-frequency = <400000>;
+
+	/* Factory EEPROM 0x50 - 0x57 */
+	/* PMIC SmartReflex 0x12 */
+};
+
+/* PMIC I2C Only */
+&i2c2 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&i2c2_pins_default>;
+	pinctrl-1 = <&i2c2_pins_sleep>;
+
+	status = "okay";
+	clock-frequency = <400000>;
+
+	tps: tps@2d {
+		reg = <0x2d>;
+	};
+};
+
+/* PMIC TPS65910 */
+#include "tps65910.dtsi"
+&tps {
+	vcc1-supply = <&vbat>;
+	vcc2-supply = <&vbat>;
+	vcc3-supply = <&vbat>;
+	vcc4-supply = <&vbat>;
+	vcc5-supply = <&vbat>;
+	vcc6-supply = <&vbat>;
+	vcc7-supply = <&vbat>;
+	vccio-supply = <&vbat>;
+
+	regulators {
+		vrtc_reg: regulator@0 {
+			regulator-always-on;
+		};
+
+		vio_reg: regulator@1 {
+			regulator-always-on;
+		};
+
+		vdd1_reg: regulator@2 {
+			/* from board-mityarm335x.c */
+			regulator-name = "vdd_mpu";
+			regulator-min-microvolt = <600000>;
+			regulator-max-microvolt = <1500000>;
+			regulator-boot-on;
+			regulator-always-on;
+		};
+
+		vdd2_reg: regulator@3 {
+			/* from board-mityarm335x.c */
+			regulator-name = "vdd_core";
+			regulator-min-microvolt = <600000>;
+			regulator-max-microvolt = <1500000>;
+			regulator-boot-on;
+			regulator-always-on;
+		};
+
+		vdd3_reg: regulator@4 {
+			regulator-always-on;
+		};
+
+		vdig1_reg: regulator@5 {
+			regulator-always-on;
+		};
+
+		vdig2_reg: regulator@6 {
+			regulator-always-on;
+		};
+
+		vpll_reg: regulator@7 {
+			regulator-always-on;
+		};
+
+		vdac_reg: regulator@8 {
+			regulator-always-on;
+		};
+
+		vaux1_reg: regulator@9 {
+			regulator-always-on;
+		};
+
+		vaux2_reg: regulator@10 {
+			regulator-always-on;
+		};
+
+		vaux33_reg: regulator@11 {
+			regulator-always-on;
+		};
+
+		vmmc_reg: regulator@12 {
+			regulator-name = "vmmc_33";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-boot-on;
+			regulator-always-on;
+		};
+	};
+};
+
+/* USB */
+&usb {
+	status = "okay";
+
+	control@44e10620 {
+		status = "okay";
+	};
+
+	usb-phy@47401300 {
+		status = "okay";
+	};
+
+	usb-phy@47401b00 {
+		status = "okay";
+	};
+
+	usb0: usb@47401000 {
+		status = "okay";
+	};
+
+	usb1: usb@47401800 {
+		status = "okay";
+	};
+
+	dma-controller@47402000  {
+		status = "okay";
+	};
+};
+
+/* Nand */
+&elm {
+	status = "okay";
+};
+
+&gpmc {
+	status = "disabled";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&nandflash_pins_default>;
+	pinctrl-1 = <&nandflash_pins_sleep>;
+};
+
+/* SPI NOR (not on all modules) and Baseboard */
+&spi1 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&spi1_pins>;
+	pinctrl-1 = <&spi1_sleep_pins>;
+
+	status = "okay";
+	ti,pindir-d0-out-d1-in = <1>;
+};
+
+/* DMA */
+&edma {
+	ti,edma-xbar-event-map = /bits/ 16 <1 12
+					    2 13>;
+};
+
+/* SHA/MD5 accelerator */
+&sham {
+	status = "okay";
+};
+
+/* AES accelerator */
+&aes {
+	status = "okay";
+};
+
+&wkup_m3 {
+	ti,scale-data-fw = "am335x-evm-scale-data.bin";
+};

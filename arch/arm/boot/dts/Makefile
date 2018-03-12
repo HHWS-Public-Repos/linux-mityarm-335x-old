@@ -718,6 +718,8 @@ dtb-$(CONFIG_SOC_AM33XX) += \
 	am335x-shc.dtb \
 	am335x-sbc-t335.dtb \
 	am335x-sl50.dtb \
+	am335x-mitysom-devkit.dtb \
+	am335x-mitysom-maker.dtb \
 	am335x-mitysom.dtb \
 	am335x-mitysom-NOR.dtb \
 	am335x-mitysom-256M.dtb \

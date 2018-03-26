@@ -420,6 +420,8 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&cpsw_1_default>;
 	pinctrl-1 = <&cpsw_1_sleep>;
+	slave = <1>;
+	status = "okay";
 };
 
 &davinci_mdio {

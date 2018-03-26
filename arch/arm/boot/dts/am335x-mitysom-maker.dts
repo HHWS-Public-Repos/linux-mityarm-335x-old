@@ -335,6 +335,13 @@
 
 	status = "okay";
 	clock-frequency = <400000>;
+
+	eeprom: eeprom@50 {
+		compatible = "at,24c32";
+		reg = <0x50>;
+		pagesize = <32>; /* 32-byte pages */
+		size = <0x1000>; /* 32K byte */
+	};
 };
 
 &usb1 {

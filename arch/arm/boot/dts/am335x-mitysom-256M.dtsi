@@ -5,94 +5,115 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
- 
-&gpmc {
-	status = "okay";
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&nandflash_pins_default>;
-	pinctrl-1 = <&nandflash_pins_sleep>;
-	ranges = <0 0 0x08000000 0x10000000>;	/* CS0: 256 MB NAND */
-	nand@0,0 {
-		compatible = "ti,omap2-nand";
-		reg = <0 0 4>; /* CS0, offset 0 IO size 4 */
-		interrupt-parent = <&intc>;
-		interrupts = <100>;
-		ready-gpio = <&gpmc 0 GPIO_ACTIVE_HIGH>; /* gpmc_wait0 */
-		ti,nand-ecc-opt = "bch8";	/* from baseboard file */
-		ti,elm-id = <&elm>;
-		nand-bus-width = <8>;
-		gpmc,device-width = <1>;
-		gpmc,sync-clk-ps = <0>;
-		gpmc,cs-on-ns = <0>; 		/* from baseboard file */
-		gpmc,cs-rd-off-ns = <44>; 	/* from baseboard file */
-		gpmc,cs-wr-off-ns = <44>; 	/* from baseboard file */
-		gpmc,adv-on-ns = <6>; 		/* from baseboard file */
-		gpmc,adv-rd-off-ns = <34>; 	/* from baseboard file */
-		gpmc,adv-wr-off-ns = <44>; 	/* from baseboard file */
-		gpmc,we-on-ns = <0>;
-		gpmc,we-off-ns = <40>; 		/* from baseboard file */
-		gpmc,oe-on-ns = <0>;
-		gpmc,oe-off-ns = <54>; 		/* from baseboard file */
-		gpmc,access-ns = <64>; 		/* from baseboard file */
-		gpmc,rd-cycle-ns = <82>; 	/* from baseboard file */
-		gpmc,wr-cycle-ns = <82>; 	/* from baseboard file */
-		gpmc,wait-on-read = "true";
-		gpmc,wait-on-write = "true";
-		gpmc,bus-turnaround-ns = <0>;
-		gpmc,cycle2cycle-delay-ns = <0>;
-		gpmc,clk-activation-ns = <0>;
-		gpmc,wait-monitoring-ns = <0>;
-		gpmc,wr-access-ns = <40>; 	/* from baseboard file */
-		gpmc,wr-data-mux-bus-ns = <0>;
-		
-		/* MTD partition table */
-		/* All SPL-* partitions are sized to minimal length
-		 * which can be independently programmable. For
-		 * NAND flash this is equal to size of erase-block */
-		#address-cells = <1>;
-		#size-cells = <1>;
-		/* AMK - Updated for device tree */
-		/* NAND placeholder: Add to ensure consistent MTD partition numbers in non-NOR SOM variants */
-		nand_part_placeholder: partition@0 {
-			label = "NAND.placeholder";
-			reg = <0x00000000 0x00000000>;
-			read-only;
-		};
-		partition@1 {
-			label = "NAND.SPL";
-			reg = <0x00000000 0x00020000>;
-		};
-		partition@2 {
-			label = "NAND.SPL.backup1";
-			reg = <0x00020000 0x00020000>;
-		};
-		partition@3 {
-			label = "NAND.SPL.backup2";
-			reg = <0x00040000 0x00020000>;
-		};
-		partition@4 {
-			label = "NAND.SPL.backup3";
-			reg = <0x00060000 0x00020000>;
-		};
-		partition@5 {
-			label = "NAND.u-boot";
-			reg = <0x00080000 0x001E0000>;
-		};
-		partition@6 {
-			label = "NAND.u-boot-env";
-			reg = <0x00260000 0x00020000>;
-		};
-		partition@7 {
-			label = "NAND.kernel";
-			reg = <0x00280000 0x00500000>;
-		};
-		partition@8 {
-			label = "NAND.file-system";
-			reg = <0x00780000 0x0F840000>;
-		};
-		partition@9 {
-			label = "NAND.device-tree";
-			reg = <0x0FFC0000 0x00040000>;
+
+/ {
+	__conf__ {
+		nand {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			nand256: gpmc@256 {
+				status = "okay";
+				ranges = <0 0 0x08000000 0x10000000>;	/* CS0: 256 MB NAND */
+
+				/* Fix-up address cells, See am335x-mitysom.dts /ocp/gpmc */
+				#address-cells = <2>;
+				#size-cells = <1>;
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				gpio-controller;
+				#gpio-cells = <2>;
+
+				nand@0,0 {
+					compatible = "ti,omap2-nand";
+					reg = <0 0 4>; /* CS0, offset 0 IO size 4 */
+					interrupt-parent = <&intc>;
+					interrupts = <100>;
+					/* DTC v1.4.6 errors out at ready-gpio.
+					 * It may be cell configurations related.
+					 * As long as the base file has it defined the overlays won't overwrite it.
+					 */
+					//ready-gpio = <&gpmc 0 GPIO_ACTIVE_HIGH>; /* gpmc_wait0 */
+					ti,nand-ecc-opt = "bch8";	/* from baseboard file */
+					ti,elm-id = <&elm>;
+					nand-bus-width = <8>;
+					gpmc,device-width = <1>;
+					gpmc,sync-clk-ps = <0>;
+					gpmc,cs-on-ns = <0>; 		/* from baseboard file */
+					gpmc,cs-rd-off-ns = <44>; 	/* from baseboard file */
+					gpmc,cs-wr-off-ns = <44>; 	/* from baseboard file */
+					gpmc,adv-on-ns = <6>; 		/* from baseboard file */
+					gpmc,adv-rd-off-ns = <34>; 	/* from baseboard file */
+					gpmc,adv-wr-off-ns = <44>; 	/* from baseboard file */
+					gpmc,we-on-ns = <0>;
+					gpmc,we-off-ns = <40>; 		/* from baseboard file */
+					gpmc,oe-on-ns = <0>;
+					gpmc,oe-off-ns = <54>; 		/* from baseboard file */
+					gpmc,access-ns = <64>; 		/* from baseboard file */
+					gpmc,rd-cycle-ns = <82>; 	/* from baseboard file */
+					gpmc,wr-cycle-ns = <82>; 	/* from baseboard file */
+					gpmc,wait-on-read = "true";
+					gpmc,wait-on-write = "true";
+					gpmc,bus-turnaround-ns = <0>;
+					gpmc,cycle2cycle-delay-ns = <0>;
+					gpmc,clk-activation-ns = <0>;
+					gpmc,wait-monitoring-ns = <0>;
+					gpmc,wr-access-ns = <40>; 	/* from baseboard file */
+					gpmc,wr-data-mux-bus-ns = <0>;
+
+					/* MTD partition table */
+					/* All SPL-* partitions are sized to minimal length
+					 * which can be independently programmable. For
+					 * NAND flash this is equal to size of erase-block */
+
+					#address-cells = <1>;
+					#size-cells = <1>;
+
+					/* This partition pads the /dev/mtd numbers.
+					 * It should be removed if NOR is present on the SOM
+					 */
+					partition@0 {
+						label = "NAND.placeholder";
+						reg = <0x00000000 0x00000000>;
+						read-only;
+					};
+					partition@1 {
+						label = "NAND.SPL";
+						reg = <0x00000000 0x00020000>;
+					};
+					partition@2 {
+						label = "NAND.SPL.backup1";
+						reg = <0x00020000 0x00020000>;
+					};
+					partition@3 {
+						label = "NAND.SPL.backup2";
+						reg = <0x00040000 0x00020000>;
+					};
+					partition@4 {
+						label = "NAND.SPL.backup3";
+						reg = <0x00060000 0x00020000>;
+					};
+					partition@5 {
+						label = "NAND.u-boot";
+						reg = <0x00080000 0x001E0000>;
+					};
+					partition@6 {
+						label = "NAND.u-boot-env";
+						reg = <0x00260000 0x00020000>;
+					};
+					partition@7 {
+						label = "NAND.kernel";
+						reg = <0x00280000 0x00500000>;
+					};
+					partition@8 {
+						label = "NAND.file-system";
+						reg = <0x00780000 0x0F840000>;
+					};
+					partition@9 {
+						label = "NAND.device-tree";
+						reg = <0x0FFC0000 0x00040000>;
+					};
+				};
+			};
 		};
 	};
 };

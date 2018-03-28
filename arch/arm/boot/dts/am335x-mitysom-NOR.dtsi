@@ -6,18 +6,26 @@
  * published by the Free Software Foundation.
  */
 
-&spi1 {
-	m25p64@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		reg = <0x0 0x0>;
-		compatible = "st,m25p64";
-		spi-max-frequency = <48000000>;
-		spi-cpol;
-		spi-cpha;
-		partition@0 {
-			label = "NOR User Defined";
-			reg   = <0x0 0x800000>;
+/ {
+	__conf__ {
+		nor {
+			spi@8 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				m25p64@0 {
+					#address-cells = <1>;
+					#size-cells = <1>;
+					reg = <0x0 0x0>;
+					compatible = "st,m25p64";
+					spi-max-frequency = <48000000>;
+					spi-cpol;
+					spi-cpha;
+					partition@0 {
+						label = "NOR User Defined";
+						reg   = <0x0 0x800000>;
+					};
+				};
+			};
 		};
 	};
 };

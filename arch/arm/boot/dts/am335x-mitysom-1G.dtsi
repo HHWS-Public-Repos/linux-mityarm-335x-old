@@ -105,11 +105,7 @@
 					};
 					partition@8 {
 						label = "NAND.file-system";
-						reg = <0x00980000 0x3F580000>;
-					};
-					partition@9 {
-						label = "NAND.device-tree";
-						reg = <0x3FF00000 0x00100000>;
+						reg = <0x00980000 0x3F680000>;
 					};
 				};
 			};

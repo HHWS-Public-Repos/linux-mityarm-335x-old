@@ -720,14 +720,6 @@ dtb-$(CONFIG_SOC_AM33XX) += \
 	am335x-sl50.dtb \
 	am335x-mitysom-devkit.dtb \
 	am335x-mitysom-maker.dtb \
-	am335x-mitysom.dtb \
-	am335x-mitysom-NOR.dtb \
-	am335x-mitysom-256M.dtb \
-	am335x-mitysom-256M-NOR.dtb \
-	am335x-mitysom-512M.dtb \
-	am335x-mitysom-512M-NOR.dtb \
-	am335x-mitysom-1G.dtb \
-	am335x-mitysom-1G-NOR.dtb \
 	am335x-wega-rdk.dtb \
 	am335x-osd3358-sm-red.dtb
 dtb-$(CONFIG_ARCH_OMAP4) += \

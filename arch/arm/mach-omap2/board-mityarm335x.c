@@ -250,14 +250,12 @@ static struct pinmux_config __initdata nand_pin_mux[] = {
 	{NULL, 0},
 };
 
-/* Module pin mux for SPI fash */
+/* Module pin mux for SPI flash */
 static struct pinmux_config __initdata spi1_pin_mux[] = {
-	{"ecap0_in_pwm0_out.spi1_sclk",	AM33XX_PULL_ENBL | AM33XX_INPUT_EN },
-	{"mcasp0_fsx.spi1_d0",		AM33XX_PULL_ENBL | AM33XX_PULL_UP |
-					AM33XX_INPUT_EN },
-	{"mcasp0_axr0.spi1_d1",		AM33XX_PULL_ENBL | AM33XX_INPUT_EN },
-	{"mcasp0_ahclkr.spi1_cs0",	AM33XX_PULL_ENBL | AM33XX_PULL_UP |
-					AM33XX_INPUT_EN },
+	{"ecap0_in_pwm0_out.spi1_sclk",	AM33XX_PIN_INPUT_PULLDOWN },
+	{"mcasp0_fsx.spi1_d0",		AM33XX_PIN_INPUT_PULLUP },
+	{"mcasp0_axr0.spi1_d1",		AM33XX_PIN_INPUT_PULLDOWN },
+	{"mcasp0_ahclkr.spi1_cs0",	AM33XX_PIN_INPUT_PULLUP },
 	{NULL, 0},
 };
 

@@ -252,7 +252,9 @@ static struct pinmux_config __initdata nand_pin_mux[] = {
 
 /* Module pin mux for SPI flash */
 static struct pinmux_config __initdata spi1_pin_mux[] = {
-	{"ecap0_in_pwm0_out.spi1_sclk",	AM33XX_PIN_INPUT_PULLDOWN },
+	// spi clk needs to be an input. Pull should be up for spi modes 2 and 3
+	// https://e2e.ti.com/support/arm/sitara_arm/f/791/p/649334/2395792#2395792
+	{"ecap0_in_pwm0_out.spi1_sclk",	AM33XX_PIN_INPUT_PULLUP },
 	{"mcasp0_fsx.spi1_d0",		AM33XX_PIN_INPUT_PULLUP },
 	{"mcasp0_axr0.spi1_d1",		AM33XX_PIN_INPUT_PULLDOWN },
 	{"mcasp0_ahclkr.spi1_cs0",	AM33XX_PIN_INPUT_PULLUP },

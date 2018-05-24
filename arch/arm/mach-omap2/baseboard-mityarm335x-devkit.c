@@ -229,7 +229,9 @@ static struct pinmux_config __initdata i2c0_pin_mux[] = {
 static struct pinmux_config __initdata spi0_pin_mux[] = {
 	{"spi0_cs0.spi0_cs0", AM33XX_PIN_OUTPUT_PULLUP},
 	{"spi0_cs1.spi0_cs1", AM33XX_PIN_OUTPUT_PULLUP},
-	{"spi0_sclk.spi0_sclk", AM33XX_PIN_OUTPUT_PULLUP},
+	// spi clk needs to be an input. Pull should be down for spi modes 0 and 1
+	// https://e2e.ti.com/support/arm/sitara_arm/f/791/p/649334/2395792#2395792
+	{"spi0_sclk.spi0_sclk", AM33XX_PIN_INPUT_PULLDOWN},
 	{"spi0_d0.spi0_d0", AM33XX_PIN_OUTPUT},
 	{"spi0_d1.spi0_d1", AM33XX_PIN_INPUT_PULLDOWN},
 	{NULL, 0},

@@ -14,6 +14,9 @@
 #include <linux/mtd/nand.h>
 #include <linux/mtd/partitions.h>
 
+/* ADC controller */
+#include <linux/platform_data/ti_adc.h>
+
 #include <video/da8xx-fb.h>
 #include <plat/lcdc.h>
 #include <plat/mmc.h>
@@ -336,43 +339,13 @@ static struct omap_nand_platform_data board_nand_data = {
 
 /* ADC; analog inputs */
 
-/*
- * Pin mux for analog inputs; the driver is a modified version
- * of the touch screen...
- */
-static struct pinmux_config adc_pin_mux[] = {
-	{"ain0.ain0",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain1.ain1",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain2.ain2",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain3.ain3",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain4.ain4",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain5.ain5",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain6.ain6",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain7.ain7",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"vrefp.vrefp",         OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"vrefn.vrefn",         OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{NULL, 0},
+
+static struct adc_data am335x_adc_data = {
+	.adc_channels = 8,
 };
 
-static struct resource adc_resources[]  = {
-	[0] = {
-		.start  = AM33XX_TSC_BASE,
-		.end    = AM33XX_TSC_BASE + SZ_8K - 1,
-		.flags  = IORESOURCE_MEM,
-	},
-	[1] = {
-		.start  = AM33XX_IRQ_ADC_GEN,
-		.end    = AM33XX_IRQ_ADC_GEN,
-		.flags  = IORESOURCE_IRQ,
-	},
-};
-
-static struct platform_device adc_device = {
-	.name   = "ain",
-	.id     = -1,
-	.dev    = {},
-	.num_resources  = ARRAY_SIZE(adc_resources),
-	.resource       = adc_resources,
+static struct mfd_tscadc_board am335x_tscadc = {
+	.adc_init = &am335x_adc_data,
 };
 
 static struct omap2_hsmmc_info mmc_info[] __initdata = {
@@ -396,8 +369,8 @@ static void adc_init(void)
 {
 	int err;
 
-	setup_pin_mux(adc_pin_mux);
-	err = platform_device_register(&adc_device);
+	/* Removed Pin Mux -- Analog pins don't require it */
+	err =  am33xx_register_mfd_tscadc(&am335x_tscadc);
 	if (err)
 		pr_err("failed to register adc device\n");
 }

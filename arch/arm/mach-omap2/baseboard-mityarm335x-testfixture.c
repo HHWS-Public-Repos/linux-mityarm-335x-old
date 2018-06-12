@@ -217,7 +217,7 @@ static struct pinmux_config spi_pin_mux[] = {
 
 static struct omap_musb_board_data board_data = {
 	.interface_type	= MUSB_INTERFACE_ULPI,
-	.mode           = MUSB_OTG,
+	.mode           = MUSB_OTG << 4 | MUSB_OTG,
 	.power			= 500,
 	.instances		= 1,
 };

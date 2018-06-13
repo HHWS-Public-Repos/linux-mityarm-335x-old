@@ -301,18 +301,6 @@ static struct spi_board_info mityarm335x_spi1_slave_info[] = {
 	},
 };
 
-/* Second NAND chip... */
-static struct resource gpmc_nand_resource = {
-	.flags		= IORESOURCE_MEM,
-};
-
-static struct platform_device gpmc_nand_device = {
-	.name		= "omap2-nand",
-	.id		= 1,
-	.num_resources	= 1,
-	.resource	= &gpmc_nand_resource,
-};
-
 static struct gpmc_timings am335x_nand_timings = {
 
 	.sync_clk = 0,
@@ -337,7 +325,13 @@ static struct gpmc_timings am335x_nand_timings = {
 };
 
 static struct omap_nand_platform_data board_nand_data = {
+	.cs		= 3,
+	.parts		= mityarm335x_test_nand_partitions,
+	.nr_parts	= ARRAY_SIZE(mityarm335x_test_nand_partitions),
+	.devsize	= 0,
 	.gpmc_t		= &am335x_nand_timings,
+	.ecc_opt	= OMAP_ECC_BCH8_CODE_HW,
+	.elm_used	= true,
 };
 
 /* ADC; analog inputs */
@@ -415,115 +409,18 @@ static void mityarm335x_loopback_test_init(void)
 	setup_pin_mux(sig_setB_loopback_pin_mux);
 }
 
-static int omap2_nand_gpmc_retime(
-	struct omap_nand_platform_data *gpmc_nand_data)
+void mityarm335x_test_nand_fixup(struct gpmc_devices_info* devinfo)
 {
-	struct gpmc_timings t;
-	int err;
+	/* If there's on-SOM nand it's already in devinfo so we take the
+	 * second index. If there's no on-SOM nand we take the first
+	 * index since devinfo is NULL-terminated.
+	 */
+	int id = devinfo[0].pdata ? 1 : 0;
 
-	if (!gpmc_nand_data->gpmc_t)
-		return 0;
-
-	memset(&t, 0, sizeof(t));
-	t.sync_clk = gpmc_nand_data->gpmc_t->sync_clk;
-	t.cs_on = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_on);
-	t.adv_on = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->adv_on);
-
-	/* Read */
-	t.adv_rd_off = gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->adv_rd_off);
-	t.oe_on  = t.adv_on;
-	t.access = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->access);
-	t.oe_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->oe_off);
-	t.cs_rd_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_rd_off);
-	t.rd_cycle  = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->rd_cycle);
-
-	/* Write */
-	t.adv_wr_off = gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->adv_wr_off);
-	t.we_on  = t.oe_on;
-	if (cpu_is_omap34xx()) {
-		t.wr_data_mux_bus =	gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->wr_data_mux_bus);
-		t.wr_access = gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->wr_access);
-	}
-	t.we_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->we_off);
-	t.cs_wr_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_wr_off);
-	t.wr_cycle  = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->wr_cycle);
-
-	/* Configure GPMC */
-	if (gpmc_nand_data->devsize == NAND_BUSWIDTH_16)
-		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_DEV_SIZE, 1);
-	else
-		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_DEV_SIZE, 0);
-	gpmc_cs_configure(gpmc_nand_data->cs,
-			GPMC_CONFIG_DEV_TYPE, GPMC_DEVICETYPE_NAND);
-	err = gpmc_cs_set_timings(gpmc_nand_data->cs, &t);
-	if (err)
-		return err;
-
-	return 0;
-}
-
-static void mityarm335x_test_nand_init(void)
-{
-	struct omap_nand_platform_data *gpmc_nand_data;
-	int cs = 3;
-	int err = 0;
-	struct device *dev;
-
-	/* Establish NAND flash on chip select 3 */
 	setup_pin_mux(nand_pin_mux);
 
-	board_nand_data.cs		= cs;
-	board_nand_data.parts		= mityarm335x_test_nand_partitions;
-	board_nand_data.nr_parts	=
-		ARRAY_SIZE(mityarm335x_test_nand_partitions);
-	board_nand_data.devsize		= 0;
-
-	board_nand_data.ecc_opt = OMAP_ECC_HAMMING_CODE_DEFAULT;
-	board_nand_data.gpmc_irq = OMAP_GPMC_IRQ_BASE + cs;
-
-	board_nand_data.ecc_opt		= OMAP_ECC_BCH8_CODE_HW;
-	board_nand_data.xfer_type	= NAND_OMAP_PREFETCH_POLLED;
-
-	gpmc_nand_data = &board_nand_data;
-	err = 0;
-	dev = &gpmc_nand_device.dev;
-
-	gpmc_nand_device.dev.platform_data = gpmc_nand_data;
-
-	err = gpmc_cs_request(gpmc_nand_data->cs, NAND_IO_SIZE,
-				&gpmc_nand_data->phys_base);
-	if (err < 0) {
-		dev_err(dev, "Cannot request GPMC CS\n");
-		return;
-	}
-
-	 /* Set timings in GPMC */
-	err = omap2_nand_gpmc_retime(gpmc_nand_data);
-	if (err < 0) {
-		dev_err(dev, "Unable to set gpmc timings: %d\n", err);
-		return;
-	}
-
-	/* Enable RD PIN Monitoring Reg */
-	if (gpmc_nand_data->dev_ready)
-		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_RDY_BSY, 1);
-
-	err = platform_device_register(&gpmc_nand_device);
-	if (err < 0) {
-		dev_err(dev, "Unable to register NAND device\n");
-		goto out_free_cs;
-	}
-
-	return;
-
-out_free_cs:
-	gpmc_cs_free(gpmc_nand_data->cs);
-
-	return;
+	devinfo[id].pdata = &board_nand_data;
+	devinfo[id].flag = GPMC_DEVICE_NAND;
 }
 
 static void mityarm335x_test_nor_init(void)
@@ -573,7 +470,6 @@ static void mityarm335x_test_mmc(void)
 static __init void baseboard_setup(void)
 {
 	mityarm335x_loopback_test_init();
-//	mityarm335x_test_nand_init();
 	mityarm335x_test_nor_init();
 	mityarm335x_test_communications();
 	mityarm335x_test_usb();

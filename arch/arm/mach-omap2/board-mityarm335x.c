@@ -62,6 +62,7 @@
 #include "mux.h"
 #include "devices.h"
 #include "mityarm335x.h"
+#include "mityarm335x-testfixture.h"
 
 /* Convert GPIO signal to GPIO pin number */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
@@ -529,37 +530,44 @@ static struct gpmc_timings am335x_nand_timings = {
 static void __init mityarm335x_nand_init(size_t nand_size)
 {
 	struct omap_nand_platform_data *pdata;
-	struct gpmc_devices_info gpmc_device[2] = {
+	struct gpmc_devices_info gpmc_device[3] = {
+		{ NULL, 0 },
 		{ NULL, 0 },
 		{ NULL, 0 },
 	};
 
-	setup_pin_mux(nand_pin_mux);
-	/* if nand size >= 1GB NAND uses a 4K page size */
-	if(nand_size >= 1024*1024*1024) {
-		pdata = omap_nand_init(mityarm335x_nand_partitions_4k_1GB,
-				ARRAY_SIZE(mityarm335x_nand_partitions_4k_1GB), 0, 0,
-				&am335x_nand_timings);
-		pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
-	/* if nand size >= 512MB NAND uses a 4K page size */
-	} else if(nand_size >= 512*1024*1024) {
-		pdata = omap_nand_init(mityarm335x_nand_partitions_4k,
-				ARRAY_SIZE(mityarm335x_nand_partitions_4k), 0, 0,
-				&am335x_nand_timings);
-		pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
-	/* Everything else is a 2K page size */
-	} else {
-		pdata = omap_nand_init(mityarm335x_nand_partitions_2k,
-				ARRAY_SIZE(mityarm335x_nand_partitions_2k), 0, 0,
-				&am335x_nand_timings);
-		pdata->ecc_opt = OMAP_ECC_BCH8_CODE_HW;
+	if (nand_size > 0) {
+		setup_pin_mux(nand_pin_mux);
+		/* if nand size >= 1GB NAND uses a 4K page size */
+		if(nand_size >= 1024*1024*1024) {
+			pdata = omap_nand_init(mityarm335x_nand_partitions_4k_1GB,
+					ARRAY_SIZE(mityarm335x_nand_partitions_4k_1GB), 0, 0,
+					&am335x_nand_timings);
+			pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
+		/* if nand size >= 512MB NAND uses a 4K page size */
+		} else if(nand_size >= 512*1024*1024) {
+			pdata = omap_nand_init(mityarm335x_nand_partitions_4k,
+					ARRAY_SIZE(mityarm335x_nand_partitions_4k), 0, 0,
+					&am335x_nand_timings);
+			pdata->ecc_opt = OMAP_ECC_BCH16_CODE_HW;
+		/* Everything else is a 2K page size */
+		} else {
+			pdata = omap_nand_init(mityarm335x_nand_partitions_2k,
+					ARRAY_SIZE(mityarm335x_nand_partitions_2k), 0, 0,
+					&am335x_nand_timings);
+			pdata->ecc_opt = OMAP_ECC_BCH8_CODE_HW;
+		}
+
+		if (!pdata)
+			return;
+		pdata->elm_used = true;
+		gpmc_device[0].pdata = pdata;
+		gpmc_device[0].flag = GPMC_DEVICE_NAND;
 	}
 
-	if (!pdata)
-		return;
-	pdata->elm_used = true;
-	gpmc_device[0].pdata = pdata;
-	gpmc_device[0].flag = GPMC_DEVICE_NAND;
+#ifdef CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE
+	mityarm335x_test_nand_fixup(gpmc_device);
+#endif
 
 	omap_init_gpmc(gpmc_device, sizeof(gpmc_device));
 	omap_init_elm();
@@ -1106,11 +1114,16 @@ static void __init setup_config_peripherals(void)
 
 	if(0 != mityarm335x_nand_size()) {
 		pr_info("Configuring %dMB NAND device\n", mityarm335x_nand_size()/(1024*1024));
-		mityarm335x_nand_init(mityarm335x_nand_size());
 	}
 	else {
 		pr_info("No NAND device configured\n");
 	}
+
+	/*
+	 * Always call this because it calls a fixup to init the test fixture
+	 * nand if we're building for the test fixture.
+	 */
+	mityarm335x_nand_init(mityarm335x_nand_size());
 
 #ifdef CONFIG_MITYARM335X_TIWI
 	if(mityarm335x_has_tiwi()) {

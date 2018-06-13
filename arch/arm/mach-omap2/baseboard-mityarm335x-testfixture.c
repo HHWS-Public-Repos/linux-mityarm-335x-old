@@ -573,7 +573,7 @@ static void mityarm335x_test_mmc(void)
 static __init void baseboard_setup(void)
 {
 	mityarm335x_loopback_test_init();
-	mityarm335x_test_nand_init();
+//	mityarm335x_test_nand_init();
 	mityarm335x_test_nor_init();
 	mityarm335x_test_communications();
 	mityarm335x_test_usb();

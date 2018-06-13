@@ -285,7 +285,6 @@ static const struct flash_platform_data mityarm335x_spi_flash_test = {
 
 static const struct omap2_mcspi_device_config spi1_ctlr_data_test = {
 	.turbo_mode = 0,
-	.single_channel = 0,
 	.d0_is_mosi = 1,
 };
 

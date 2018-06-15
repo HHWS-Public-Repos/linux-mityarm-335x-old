@@ -433,7 +433,7 @@ static void mityarm335x_test_analog(void)
 	adc_init();
 }
 
-static void mityarm335x_test_mmc(void)
+static void __maybe_unused mityarm335x_test_mmc(void)
 {
 	/* Set up MMC pins */
 	mmc_init();
@@ -447,7 +447,7 @@ static __init void baseboard_setup(void)
 	mityarm335x_test_communications();
 	mityarm335x_test_usb();
 	mityarm335x_test_analog();
-/* TODO: MMC Support? Enable MMC support here: */
+/* We boot initramfs so no need for mmc support right now */
 #if 0
 	mityarm335x_test_mmc();
 #endif

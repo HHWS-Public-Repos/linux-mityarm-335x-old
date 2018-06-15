@@ -62,7 +62,6 @@
 #include "mux.h"
 #include "devices.h"
 #include "mityarm335x.h"
-#include "mityarm335x-testfixture.h"
 
 /* Convert GPIO signal to GPIO pin number */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
@@ -370,6 +369,13 @@ int __init mityarm335x_som_mmc_fixup(struct omap2_hsmmc_info* devinfo)
 	return rv;
 }
 
+/**
+ * Defined by baseboard to allow it to initialize its own nand.
+ */
+void __weak mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
+{
+}
+
 /* NAND partition information */
 static struct mtd_partition mityarm335x_nand_partitions_2k[] = {
 /* All the partition sizes are listed in terms of NAND block size */
@@ -565,9 +571,7 @@ static void __init mityarm335x_nand_init(size_t nand_size)
 		gpmc_device[0].flag = GPMC_DEVICE_NAND;
 	}
 
-#ifdef CONFIG_BASEBOARD_MITYARM335X_TESTFIXTURE
-	mityarm335x_test_nand_fixup(gpmc_device);
-#endif
+	mityarm335x_baseboard_nand_fixup(gpmc_device);
 
 	omap_init_gpmc(gpmc_device, sizeof(gpmc_device));
 	omap_init_elm();
@@ -1120,8 +1124,8 @@ static void __init setup_config_peripherals(void)
 	}
 
 	/*
-	 * Always call this because it calls a fixup to init the test fixture
-	 * nand if we're building for the test fixture.
+	 * Always call this because it calls a fixup to init the baseboard's
+	 * nand if we're building for a baseboard that has one.
 	 */
 	mityarm335x_nand_init(mityarm335x_nand_size());
 

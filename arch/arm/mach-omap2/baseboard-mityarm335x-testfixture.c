@@ -32,8 +32,8 @@
 
 #include "board-flash.h"
 #include "mux.h"
-#include "hsmmc.h"
 #include "devices.h"
+#include "mityarm335x.h"
 
 #define BASEBOARD_NAME "MitySOM-335x TestFixture"
 /* Vitesse 8601 register defs */
@@ -382,7 +382,7 @@ static void mityarm335x_loopback_test_init(void)
 	setup_pin_mux(sig_setB_loopback_pin_mux);
 }
 
-void mityarm335x_test_nand_fixup(struct gpmc_devices_info* devinfo)
+void mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
 {
 	/* If there's on-SOM nand it's already in devinfo so we take the
 	 * second index. If there's no on-SOM nand we take the first

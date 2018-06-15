@@ -372,8 +372,9 @@ int __init mityarm335x_som_mmc_fixup(struct omap2_hsmmc_info* devinfo)
 /**
  * Defined by baseboard to allow it to initialize its own nand.
  */
-void __weak mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
+int __weak mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
 {
+	return 0;
 }
 
 /* NAND partition information */
@@ -535,6 +536,7 @@ static struct gpmc_timings am335x_nand_timings = {
 
 static void __init mityarm335x_nand_init(size_t nand_size)
 {
+	int pinmux_nand = 0;
 	struct omap_nand_platform_data *pdata;
 	struct gpmc_devices_info gpmc_device[3] = {
 		{ NULL, 0 },
@@ -543,7 +545,7 @@ static void __init mityarm335x_nand_init(size_t nand_size)
 	};
 
 	if (nand_size > 0) {
-		setup_pin_mux(nand_pin_mux);
+		pinmux_nand = 1;
 		/* if nand size >= 1GB NAND uses a 4K page size */
 		if(nand_size >= 1024*1024*1024) {
 			pdata = omap_nand_init(mityarm335x_nand_partitions_4k_1GB,
@@ -571,7 +573,11 @@ static void __init mityarm335x_nand_init(size_t nand_size)
 		gpmc_device[0].flag = GPMC_DEVICE_NAND;
 	}
 
-	mityarm335x_baseboard_nand_fixup(gpmc_device);
+	/* Baseboard may still want nand pinmuxed even if there's no on-SOM nand */
+	pinmux_nand |= mityarm335x_baseboard_nand_fixup(gpmc_device);
+
+	if (pinmux_nand)
+		setup_pin_mux(nand_pin_mux);
 
 	omap_init_gpmc(gpmc_device, sizeof(gpmc_device));
 	omap_init_elm();

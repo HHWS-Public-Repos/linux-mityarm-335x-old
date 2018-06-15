@@ -92,4 +92,4 @@ size_t mityarm335x_nand_size(void);
 size_t mityarm335x_nor_size(void);
 u32 mityarm335x_speed_grade(void);
 int mityarm335x_som_mmc_fixup(struct omap2_hsmmc_info* devinfo);
-void mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo);
+int mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo);

@@ -382,7 +382,7 @@ static void mityarm335x_loopback_test_init(void)
 	setup_pin_mux(sig_setB_loopback_pin_mux);
 }
 
-void mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
+int mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
 {
 	/* If there's on-SOM nand it's already in devinfo so we take the
 	 * second index. If there's no on-SOM nand we take the first
@@ -394,6 +394,9 @@ void mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
 
 	devinfo[id].pdata = &board_nand_data;
 	devinfo[id].flag = GPMC_DEVICE_NAND;
+
+	/* Tell SOM to pinmux nand */
+	return 1;
 }
 
 static void mityarm335x_test_nor_init(void)

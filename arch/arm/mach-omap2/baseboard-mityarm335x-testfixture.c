@@ -333,8 +333,8 @@ static struct omap_nand_platform_data board_nand_data = {
 	.nr_parts	= ARRAY_SIZE(mityarm335x_test_nand_partitions),
 	.devsize	= 0,
 	.gpmc_t		= &am335x_nand_timings,
-	.ecc_opt	= OMAP_ECC_BCH8_CODE_HW,
-	.elm_used	= true,
+	.ecc_opt	= OMAP_ECC_BCH8_CODE_SW,
+	.elm_used	= false,
 };
 
 /* ADC; analog inputs */

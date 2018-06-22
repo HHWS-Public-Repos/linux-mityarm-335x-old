@@ -356,12 +356,19 @@ static struct omap2_hsmmc_info mmc_info[] __initdata = {
 		.gpio_wp	= -EINVAL,
 		.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
 	},
-	{}
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
+	{} /* Terminator */
 };
 
 static void mmc_init(void)
 {
 	setup_pin_mux(mmc_pin_mux);
+	mityarm335x_som_mmc_fixup(mmc_info);
 	omap2_hsmmc_init(mmc_info);
 }
 

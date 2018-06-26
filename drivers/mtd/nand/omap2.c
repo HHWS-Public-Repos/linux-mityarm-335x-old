@@ -1275,6 +1275,11 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 	/* selsect the ecc type */
 	if (pdata->ecc_opt == OMAP_ECC_HAMMING_CODE_DEFAULT)
 		info->nand.ecc.mode = NAND_ECC_SOFT;
+	else if (pdata->ecc_opt == OMAP_ECC_BCH8_CODE_SW) {
+		info->nand.ecc.mode  = NAND_ECC_SOFT_BCH;
+		info->nand.ecc.bytes = 13;
+		info->nand.ecc.size  = 512;
+	}
 	else {
 		if (pdata->ecc_opt == OMAP_ECC_BCH4_CODE_HW) {
 			info->nand.ecc.bytes    = 4*7;
@@ -1326,7 +1331,8 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 			omap_oobinfo.oobfree->length = info->mtd.oobsize -
 				(offset + omap_oobinfo.eccbytes);
 		} else if (pdata->ecc_opt == OMAP_ECC_BCH8_CODE_HW ||
-				pdata->ecc_opt == OMAP_ECC_BCH16_CODE_HW)  {
+				pdata->ecc_opt == OMAP_ECC_BCH16_CODE_HW ||
+				pdata->ecc_opt == OMAP_ECC_BCH8_CODE_SW)  {
 			offset = BCH_ECC_POS; /* Synchronize with U-boot */
 
 			omap_oobinfo.oobfree->offset = offset +

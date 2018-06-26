@@ -104,7 +104,7 @@
 #define OMAP_BCH8_ECC_SECT_BYTES	14
 
 /* oob info generated runtime depending on ecc algorithm and layout selected */
-static struct nand_ecclayout omap_oobinfo;
+static struct nand_ecclayout omap_oobinfos[2];
 /* Define some generic bad / good block scan pattern which are used
  * while scanning a device for factory marked good / bad blocks
  */
@@ -1134,6 +1134,15 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 	struct omap_nand_platform_data	*pdata;
 	int				err;
 	int				i, offset;
+	static int id = 0;
+	static bool too_many_nands = false;
+
+	/* The size of the omap_oobinfos array limits the number of nands we
+	 * can add. If we try to add more, the last omap_oobinfos entry will
+	 * get overwritten.
+	 */
+	if (too_many_nands)
+		BUG();
 
 	pdata = pdev->dev.platform_data;
 	if (pdata == NULL) {
@@ -1322,28 +1331,28 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 
 		offset = JFFS2_CLEAN_MARKER_OFFSET;
 
-		omap_oobinfo.eccbytes = info->nand.ecc.bytes *
+		omap_oobinfos[id].eccbytes = info->nand.ecc.bytes *
 			info->mtd.writesize / info->nand.ecc.size;
 
 		if (pdata->ecc_opt == OMAP_ECC_HAMMING_CODE_HW_ROMCODE) {
-			omap_oobinfo.oobfree->offset =
-						offset + omap_oobinfo.eccbytes;
-			omap_oobinfo.oobfree->length = info->mtd.oobsize -
-				(offset + omap_oobinfo.eccbytes);
+			omap_oobinfos[id].oobfree->offset =
+						offset + omap_oobinfos[id].eccbytes;
+			omap_oobinfos[id].oobfree->length = info->mtd.oobsize -
+				(offset + omap_oobinfos[id].eccbytes);
 		} else if (pdata->ecc_opt == OMAP_ECC_BCH8_CODE_HW ||
 				pdata->ecc_opt == OMAP_ECC_BCH16_CODE_HW ||
 				pdata->ecc_opt == OMAP_ECC_BCH8_CODE_SW)  {
 			offset = BCH_ECC_POS; /* Synchronize with U-boot */
 
-			omap_oobinfo.oobfree->offset = offset +
-				omap_oobinfo.eccbytes;
+			omap_oobinfos[id].oobfree->offset = offset +
+				omap_oobinfos[id].eccbytes;
 
-			omap_oobinfo.oobfree->length = info->mtd.oobsize -
-						offset - omap_oobinfo.eccbytes;
+			omap_oobinfos[id].oobfree->length = info->mtd.oobsize -
+						offset - omap_oobinfos[id].eccbytes;
 		} else {
-			omap_oobinfo.oobfree->offset = offset;
-			omap_oobinfo.oobfree->length = info->mtd.oobsize -
-						offset - omap_oobinfo.eccbytes;
+			omap_oobinfos[id].oobfree->offset = offset;
+			omap_oobinfos[id].oobfree->length = info->mtd.oobsize -
+						offset - omap_oobinfos[id].eccbytes;
 			/*
 			offset is calculated considering the following :
 			1) 12 bytes ECC for 512 byte access and 24 bytes ECC for
@@ -1355,18 +1364,23 @@ static int __devinit omap_nand_probe(struct platform_device *pdev)
 		}
 
 		/* check if NAND OOBSIZE meets ECC scheme requirement */
-		if (info->mtd.oobsize < (omap_oobinfo.eccbytes +
+		if (info->mtd.oobsize < (omap_oobinfos[id].eccbytes +
 					BCH_ECC_POS)) {
 			pr_err("not enough OOB bytes required = %d, available=%d\n",
-					info->mtd.oobsize, omap_oobinfo.eccbytes);
+					info->mtd.oobsize, omap_oobinfos[id].eccbytes);
 			err = -EINVAL;
 			goto out_release_mem_region;
 		}
 
-		for (i = 0; i < omap_oobinfo.eccbytes; i++)
-			omap_oobinfo.eccpos[i] = i+offset;
+		for (i = 0; i < omap_oobinfos[id].eccbytes; i++)
+			omap_oobinfos[id].eccpos[i] = i+offset;
 
-		info->nand.ecc.layout = &omap_oobinfo;
+		info->nand.ecc.layout = &omap_oobinfos[id];
+
+		if (id + 1 < ARRAY_SIZE(omap_oobinfos))
+			id++;
+		else
+			too_many_nands = true;
 	}
 
 	/* second phase scan */

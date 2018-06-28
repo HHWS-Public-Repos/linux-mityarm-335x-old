@@ -20,15 +20,24 @@
 #include <plat/board.h>
 #include <plat/gpmc.h>
 
-static struct resource gpmc_nand_resource = {
-	.flags		= IORESOURCE_MEM,
+static struct resource gpmc_nand_resources[] = {
+	{ .flags		= IORESOURCE_MEM, },
+	{ .flags		= IORESOURCE_MEM, },
 };
 
-static struct platform_device gpmc_nand_device = {
-	.name		= "omap2-nand",
-	.id		= 0,
-	.num_resources	= 1,
-	.resource	= &gpmc_nand_resource,
+static struct platform_device gpmc_nand_devices[] = {
+	{
+		.name		= "omap2-nand",
+		.id		= 0,
+		.num_resources	= 1,
+		.resource	= &gpmc_nand_resources[0],
+	},
+	{
+		.name		= "omap2-nand",
+		.id		= 1,
+		.num_resources	= 1,
+		.resource	= &gpmc_nand_resources[1],
+	},
 };
 
 static int omap2_nand_gpmc_retime(struct omap_nand_platform_data *gpmc_nand_data)
@@ -85,7 +94,16 @@ int __devinit gpmc_nand_init(struct omap_nand_platform_data *gpmc_nand_data)
 {
 	int err	= 0;
 	u8 cs = 0;
-	struct device *dev = &gpmc_nand_device.dev;
+	static int id = 0;
+	struct device *dev = &gpmc_nand_devices[id].dev;
+	static bool too_many_nands = false;
+
+	/* The size of the gpmc_nand_devices array limits the number of nands we
+	 * can add. If we try to add more, the last gpmc_nand_devices entry will
+	 * get overwritten.
+	 */
+	if (too_many_nands)
+		BUG();
 
 	/* if cs not provided, find out the chip-select on which NAND exist */
 	if (gpmc_nand_data->cs > GPMC_CS_NUM)
@@ -107,7 +125,7 @@ int __devinit gpmc_nand_init(struct omap_nand_platform_data *gpmc_nand_data)
 		return -ENODEV;
 	}
 
-	gpmc_nand_device.dev.platform_data = gpmc_nand_data;
+	gpmc_nand_devices[id].dev.platform_data = gpmc_nand_data;
 	gpmc_nand_data->ctrlr_suspend	= gpmc_suspend;
 	gpmc_nand_data->ctrlr_resume	= gpmc_resume;
 
@@ -132,11 +150,16 @@ int __devinit gpmc_nand_init(struct omap_nand_platform_data *gpmc_nand_data)
 		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_RDY_BSY, 1);
 	}
 
-	err = platform_device_register(&gpmc_nand_device);
+	err = platform_device_register(&gpmc_nand_devices[id]);
 	if (err < 0) {
 		dev_err(dev, "Unable to register NAND device\n");
 		goto out_free_cs;
 	}
+
+	if (id + 1 < ARRAY_SIZE(gpmc_nand_devices))
+		id++;
+	else
+		too_many_nands = true;
 
 	return 0;
 

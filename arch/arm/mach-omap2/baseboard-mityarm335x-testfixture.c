@@ -14,6 +14,9 @@
 #include <linux/mtd/nand.h>
 #include <linux/mtd/partitions.h>
 
+/* ADC controller */
+#include <linux/platform_data/ti_adc.h>
+
 #include <video/da8xx-fb.h>
 #include <plat/lcdc.h>
 #include <plat/mmc.h>
@@ -29,8 +32,8 @@
 
 #include "board-flash.h"
 #include "mux.h"
-#include "hsmmc.h"
 #include "devices.h"
+#include "mityarm335x.h"
 
 #define BASEBOARD_NAME "MitySOM-335x TestFixture"
 /* Vitesse 8601 register defs */
@@ -217,7 +220,7 @@ static struct pinmux_config spi_pin_mux[] = {
 
 static struct omap_musb_board_data board_data = {
 	.interface_type	= MUSB_INTERFACE_ULPI,
-	.mode           = MUSB_OTG,
+	.mode           = MUSB_OTG << 4 | MUSB_OTG,
 	.power			= 500,
 	.instances		= 1,
 };
@@ -285,7 +288,6 @@ static const struct flash_platform_data mityarm335x_spi_flash_test = {
 
 static const struct omap2_mcspi_device_config spi1_ctlr_data_test = {
 	.turbo_mode = 0,
-	.single_channel = 0,
 	.d0_is_mosi = 1,
 };
 
@@ -300,18 +302,6 @@ static struct spi_board_info mityarm335x_spi1_slave_info[] = {
 		.chip_select		= 1,
 		.mode			= SPI_MODE_3,
 	},
-};
-
-/* Second NAND chip... */
-static struct resource gpmc_nand_resource = {
-	.flags		= IORESOURCE_MEM,
-};
-
-static struct platform_device gpmc_nand_device = {
-	.name		= "omap2-nand",
-	.id		= 1,
-	.num_resources	= 1,
-	.resource	= &gpmc_nand_resource,
 };
 
 static struct gpmc_timings am335x_nand_timings = {
@@ -338,48 +328,24 @@ static struct gpmc_timings am335x_nand_timings = {
 };
 
 static struct omap_nand_platform_data board_nand_data = {
+	.cs		= 3,
+	.parts		= mityarm335x_test_nand_partitions,
+	.nr_parts	= ARRAY_SIZE(mityarm335x_test_nand_partitions),
+	.devsize	= 0,
 	.gpmc_t		= &am335x_nand_timings,
+	.ecc_opt	= OMAP_ECC_BCH8_CODE_SW,
+	.elm_used	= false,
 };
 
 /* ADC; analog inputs */
 
-/*
- * Pin mux for analog inputs; the driver is a modified version
- * of the touch screen...
- */
-static struct pinmux_config adc_pin_mux[] = {
-	{"ain0.ain0",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain1.ain1",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain2.ain2",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain3.ain3",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain4.ain4",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain5.ain5",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain6.ain6",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"ain7.ain7",           OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"vrefp.vrefp",         OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{"vrefn.vrefn",         OMAP_MUX_MODE0 | AM33XX_INPUT_EN},
-	{NULL, 0},
+
+static struct adc_data am335x_adc_data = {
+	.adc_channels = 8,
 };
 
-static struct resource adc_resources[]  = {
-	[0] = {
-		.start  = AM33XX_TSC_BASE,
-		.end    = AM33XX_TSC_BASE + SZ_8K - 1,
-		.flags  = IORESOURCE_MEM,
-	},
-	[1] = {
-		.start  = AM33XX_IRQ_ADC_GEN,
-		.end    = AM33XX_IRQ_ADC_GEN,
-		.flags  = IORESOURCE_IRQ,
-	},
-};
-
-static struct platform_device adc_device = {
-	.name   = "ain",
-	.id     = -1,
-	.dev    = {},
-	.num_resources  = ARRAY_SIZE(adc_resources),
-	.resource       = adc_resources,
+static struct mfd_tscadc_board am335x_tscadc = {
+	.adc_init = &am335x_adc_data,
 };
 
 static struct omap2_hsmmc_info mmc_info[] __initdata = {
@@ -390,12 +356,19 @@ static struct omap2_hsmmc_info mmc_info[] __initdata = {
 		.gpio_wp	= -EINVAL,
 		.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
 	},
-	{}
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
+	{
+		.mmc            = 0,	/* will be set at runtime */
+	},
+	{} /* Terminator */
 };
 
 static void mmc_init(void)
 {
 	setup_pin_mux(mmc_pin_mux);
+	mityarm335x_som_mmc_fixup(mmc_info);
 	omap2_hsmmc_init(mmc_info);
 }
 
@@ -403,8 +376,8 @@ static void adc_init(void)
 {
 	int err;
 
-	setup_pin_mux(adc_pin_mux);
-	err = platform_device_register(&adc_device);
+	/* Removed Pin Mux -- Analog pins don't require it */
+	err =  am33xx_register_mfd_tscadc(&am335x_tscadc);
 	if (err)
 		pr_err("failed to register adc device\n");
 }
@@ -416,115 +389,21 @@ static void mityarm335x_loopback_test_init(void)
 	setup_pin_mux(sig_setB_loopback_pin_mux);
 }
 
-static int omap2_nand_gpmc_retime(
-	struct omap_nand_platform_data *gpmc_nand_data)
+int mityarm335x_baseboard_nand_fixup(struct gpmc_devices_info* devinfo)
 {
-	struct gpmc_timings t;
-	int err;
+	/* If there's on-SOM nand it's already in devinfo so we take the
+	 * second index. If there's no on-SOM nand we take the first
+	 * index since devinfo is NULL-terminated.
+	 */
+	int id = devinfo[0].pdata ? 1 : 0;
 
-	if (!gpmc_nand_data->gpmc_t)
-		return 0;
-
-	memset(&t, 0, sizeof(t));
-	t.sync_clk = gpmc_nand_data->gpmc_t->sync_clk;
-	t.cs_on = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_on);
-	t.adv_on = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->adv_on);
-
-	/* Read */
-	t.adv_rd_off = gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->adv_rd_off);
-	t.oe_on  = t.adv_on;
-	t.access = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->access);
-	t.oe_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->oe_off);
-	t.cs_rd_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_rd_off);
-	t.rd_cycle  = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->rd_cycle);
-
-	/* Write */
-	t.adv_wr_off = gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->adv_wr_off);
-	t.we_on  = t.oe_on;
-	if (cpu_is_omap34xx()) {
-		t.wr_data_mux_bus =	gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->wr_data_mux_bus);
-		t.wr_access = gpmc_round_ns_to_ticks(
-				gpmc_nand_data->gpmc_t->wr_access);
-	}
-	t.we_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->we_off);
-	t.cs_wr_off = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->cs_wr_off);
-	t.wr_cycle  = gpmc_round_ns_to_ticks(gpmc_nand_data->gpmc_t->wr_cycle);
-
-	/* Configure GPMC */
-	if (gpmc_nand_data->devsize == NAND_BUSWIDTH_16)
-		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_DEV_SIZE, 1);
-	else
-		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_DEV_SIZE, 0);
-	gpmc_cs_configure(gpmc_nand_data->cs,
-			GPMC_CONFIG_DEV_TYPE, GPMC_DEVICETYPE_NAND);
-	err = gpmc_cs_set_timings(gpmc_nand_data->cs, &t);
-	if (err)
-		return err;
-
-	return 0;
-}
-
-static void mityarm335x_test_nand_init(void)
-{
-	struct omap_nand_platform_data *gpmc_nand_data;
-	int cs = 3;
-	int err = 0;
-	struct device *dev;
-
-	/* Establish NAND flash on chip select 3 */
 	setup_pin_mux(nand_pin_mux);
 
-	board_nand_data.cs		= cs;
-	board_nand_data.parts		= mityarm335x_test_nand_partitions;
-	board_nand_data.nr_parts	=
-		ARRAY_SIZE(mityarm335x_test_nand_partitions);
-	board_nand_data.devsize		= 0;
+	devinfo[id].pdata = &board_nand_data;
+	devinfo[id].flag = GPMC_DEVICE_NAND;
 
-	board_nand_data.ecc_opt = OMAP_ECC_HAMMING_CODE_DEFAULT;
-	board_nand_data.gpmc_irq = OMAP_GPMC_IRQ_BASE + cs;
-
-	board_nand_data.ecc_opt		= OMAP_ECC_BCH8_CODE_HW;
-	board_nand_data.xfer_type	= NAND_OMAP_PREFETCH_POLLED;
-
-	gpmc_nand_data = &board_nand_data;
-	err = 0;
-	dev = &gpmc_nand_device.dev;
-
-	gpmc_nand_device.dev.platform_data = gpmc_nand_data;
-
-	err = gpmc_cs_request(gpmc_nand_data->cs, NAND_IO_SIZE,
-				&gpmc_nand_data->phys_base);
-	if (err < 0) {
-		dev_err(dev, "Cannot request GPMC CS\n");
-		return;
-	}
-
-	 /* Set timings in GPMC */
-	err = omap2_nand_gpmc_retime(gpmc_nand_data);
-	if (err < 0) {
-		dev_err(dev, "Unable to set gpmc timings: %d\n", err);
-		return;
-	}
-
-	/* Enable RD PIN Monitoring Reg */
-	if (gpmc_nand_data->dev_ready)
-		gpmc_cs_configure(gpmc_nand_data->cs, GPMC_CONFIG_RDY_BSY, 1);
-
-	err = platform_device_register(&gpmc_nand_device);
-	if (err < 0) {
-		dev_err(dev, "Unable to register NAND device\n");
-		goto out_free_cs;
-	}
-
-	return;
-
-out_free_cs:
-	gpmc_cs_free(gpmc_nand_data->cs);
-
-	return;
+	/* Tell SOM to pinmux nand */
+	return 1;
 }
 
 static void mityarm335x_test_nor_init(void)
@@ -564,7 +443,7 @@ static void mityarm335x_test_analog(void)
 	adc_init();
 }
 
-static void mityarm335x_test_mmc(void)
+static void __maybe_unused mityarm335x_test_mmc(void)
 {
 	/* Set up MMC pins */
 	mmc_init();
@@ -574,12 +453,11 @@ static void mityarm335x_test_mmc(void)
 static __init void baseboard_setup(void)
 {
 	mityarm335x_loopback_test_init();
-	mityarm335x_test_nand_init();
 	mityarm335x_test_nor_init();
 	mityarm335x_test_communications();
 	mityarm335x_test_usb();
 	mityarm335x_test_analog();
-/* TODO: MMC Support? Enable MMC support here: */
+/* We boot initramfs so no need for mmc support right now */
 #if 0
 	mityarm335x_test_mmc();
 #endif

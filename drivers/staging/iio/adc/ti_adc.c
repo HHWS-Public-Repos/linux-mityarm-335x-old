@@ -353,6 +353,7 @@ static int tiadc_read_raw(struct iio_dev *idev,
 	unsigned int fifo1count, readx1, stepid;
 	unsigned long timeout = jiffies + usecs_to_jiffies
 			(IDLE_TIMEOUT * adc_dev->channels);
+	bool found = false;
 
 	if (adc_dev->is_continuous_mode) {
 		pr_info("One shot mode not enabled\n");
@@ -377,8 +378,12 @@ static int tiadc_read_raw(struct iio_dev *idev,
 			if (stepid == map_val) {
 				readx1 = readx1 & TSCADC_FIFOREAD_DATA_MASK;
 				*val = readx1;
+				found = true;
 			}
 		}
+
+		if (found == false)
+			return -EAGAIN;
 		return IIO_VAL_INT;
 	}
 }

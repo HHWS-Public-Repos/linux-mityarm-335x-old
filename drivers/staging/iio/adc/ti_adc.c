@@ -22,6 +22,7 @@
 #include <linux/platform_device.h>
 #include <linux/io.h>
 #include <linux/sched.h>
+#include <linux/delay.h>
 
 #include "../iio.h"
 #include "../sysfs.h"
@@ -367,6 +368,10 @@ static int tiadc_read_raw(struct iio_dev *idev,
 			if (time_after(jiffies, timeout))
 				return -EAGAIN;
 		}
+		// A 1 us delay seems to be enough to ensure we don't read the fifo too soon
+		// after sampling is complete.  Previously channel 7 would not be written to
+		// the fifo in time causing the adc value to not be found.
+		udelay(1);
 
 		map_val = chan->channel + TOTAL_CHANNELS;
 		fifo1count = adc_readl(adc_dev, TSCADC_REG_FIFO1CNT);

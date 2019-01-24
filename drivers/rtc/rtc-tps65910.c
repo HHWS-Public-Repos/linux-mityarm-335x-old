@@ -56,7 +56,7 @@ static int tps65910_rtc_alarm_irq_enable(struct device *dev,
 
 	/* Error if there's no IRQ to enable */
 	if (rtc->irq <= 0 && enabled)
-		return -EIO;
+		return -EINVAL;
 
 	if (enabled)
 		val = TPS65910_RTC_INTERRUPTS_IT_ALARM;

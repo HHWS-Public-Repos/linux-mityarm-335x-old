@@ -38,7 +38,12 @@ struct tps65910_rtc {
 static int tps65910_rtc_alarm_irq_enable(struct device *dev, unsigned enabled)
 {
 	struct tps65910 *tps = dev_get_drvdata(dev->parent);
+	struct tps65910_rtc *rtc = dev_get_drvdata(dev);
 	u8 val = 0;
+
+	/* Error if there's no IRQ to enable */
+	if (rtc->irq <= 0 && enabled)
+		return -EINVAL;
 
 	if (enabled)
 		val = TPS65910_RTC_INTERRUPTS_IT_ALARM;

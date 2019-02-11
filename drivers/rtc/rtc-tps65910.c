@@ -417,9 +417,12 @@ static int tps65910_rtc_probe(struct platform_device *pdev)
 	if (irq <= 0) {
 		dev_warn(&pdev->dev, "Wake up is not possible as irq = %d\n",
 			irq);
+
+		/* Disable UIE since we don't have an IRQ */
+		tps_rtc->rtc->uie_unsupported = 1;
 	}
 	tps_rtc->irq = irq;
-	
+
 	if (tps_rtc->irq > 0) {
 		ret = devm_request_threaded_irq(&pdev->dev, tps_rtc->irq, NULL,
 			tps65910_rtc_interrupt, IRQF_TRIGGER_LOW | IRQF_EARLY_RESUME,

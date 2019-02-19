@@ -664,9 +664,13 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&mmc1_pins_default>;
 	pinctrl-1 = <&mmc1_pins_sleep>;
-	cd-gpios = <&gpio3 3 GPIO_ACTIVE_HIGH>;
+	/*
+	 * Uncomment cd and wp if you want to use hardware card-detect/write-protect.
+	 * Disabled by default to support boards with fullsized sd cards and microsd cards
+	 */
+	/* cd-gpios = <&gpio3 3 GPIO_ACTIVE_HIGH>; */
 	/*cd-inverted;*/
-	wp-gpios = <&gpio3 0 GPIO_ACTIVE_HIGH>;
+	/* wp-gpios = <&gpio3 0 GPIO_ACTIVE_HIGH>; */
 };
 
 &edma {

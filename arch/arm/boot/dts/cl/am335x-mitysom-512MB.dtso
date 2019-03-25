@@ -1,0 +1,126 @@
+/dts-v1/;
+/plugin/;
+
+/* Device Tree Overlay for 512MB am335x-mitysom */
+
+/ {
+	fragment@0 {
+	target-path = "/ocp";
+		__overlay__ {
+			gpmc: gpmc@50000000 {
+				pinctrl-names = "default", "sleep";
+				pinctrl-0 = <&nandflash_pins_default>;
+				pinctrl-1 = <&nandflash_pins_sleep>;
+				status = "okay";
+				/* The "phandle" property is a 32-bit value that uniquely identifies a node */
+				phandle = <1>;
+				ranges = <0x0 0x0 0x8000000 0x20000000>;
+				interrupt-controller;
+				nand@0,0 {
+					compatible = "ti,omap2-nand";
+					reg = <0 0 4>; /* CS0, offset 0 IO size 4 */
+					interrupt-parent = <0x1>;
+					interrupts = <100>;
+					ti,nand-ecc-opt = "bch16";      /* from baseboard file */
+					ready-gpio = <&gpmc 0 0>;
+					ti,elm-id = <&elm>;
+					nand-bus-width = <8>;
+					gpmc,device-width = <1>;
+					gpmc,sync-clk-ps = <0>;
+					gpmc,cs-on-ns = <0>;            /* from baseboard file */
+					gpmc,cs-rd-off-ns = <44>;       /* from baseboard file */
+					gpmc,cs-wr-off-ns = <44>;       /* from baseboard file */
+					gpmc,adv-on-ns = <6>;           /* from baseboard file */
+					gpmc,adv-rd-off-ns = <34>;      /* from baseboard file */
+					gpmc,adv-wr-off-ns = <44>;      /* from baseboard file */
+					gpmc,we-on-ns = <0>;
+					gpmc,we-off-ns = <40>;          /* from baseboard file */
+					gpmc,oe-on-ns = <0>;
+					gpmc,oe-off-ns = <54>;          /* from baseboard file */
+					gpmc,access-ns = <64>;          /* from baseboard file */
+					gpmc,rd-cycle-ns = <82>;        /* from baseboard file */
+					gpmc,wr-cycle-ns = <82>;        /* from baseboard file */
+					gpmc,wait-on-read = "true";
+					gpmc,wait-on-write = "true";
+					gpmc,bus-turnaround-ns = <0>;
+					gpmc,cycle2cycle-delay-ns = <0>;
+					gpmc,clk-activation-ns = <0>;
+					gpmc,wait-monitoring-ns = <0>;
+					gpmc,wr-access-ns = <40>;       /* from baseboard file */
+					gpmc,wr-data-mux-bus-ns = <0>;
+					/* MTD partition table */
+					/* All SPL-* partitions are sized to minimal length  */
+					/* which can be independently programmable. For  */
+					/* NAND flash this is equal to size of erase-block */
+					#address-cells = <1>;
+					#size-cells = <1>;
+					partition@8 {
+						label = "NAND.file-system";
+						reg = <0x00840000 0x1F740000>;
+					};
+					partition@7 {
+						label = "NAND.kernel";
+						reg = <0x00340000 0x00500000>;
+					};
+					partition@6 {
+						label = "NAND.u-boot-env";
+						reg = <0x00300000 0x00040000>;
+					};
+					partition@5 {
+						label = "NAND.u-boot";
+						reg = <0x00100000 0x00200000>;
+					};
+					partition@4 {
+						label = "NAND.SPL.backup3";
+						reg = <0x000C0000 0x00040000>;
+					};
+					partition@3 {
+						label = "NAND.SPL.backup2";
+						reg = <0x00080000 0x00040000>;
+					};
+					partition@2 {
+						label = "NAND.SPL.backup1";
+						reg = <0x00040000 0x00040000>;
+					};
+					partition@1 {
+						label = "NAND.SPL";
+						reg = <0x00000000 0x00040000>;
+					};
+					/* NAND placeholder: Add to ensure consistent MTD partition numbers in non-NOR SOM variants */
+					partition@0 {
+						label = "NAND.placeholder";
+						reg = <0x00000000 0x00000000>;
+						read-only;
+					};
+				};
+			};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/ocp/l4_wkup@44c00000/scm@210000/pinmux@800";
+		__overlay__{
+			nandflash_pins_default: nandflash_pins_default {
+				phandle = <2>;
+			};
+		};
+	};
+
+	fragment@2 {
+		target-path = "/ocp/l4_wkup@44c00000/scm@210000/pinmux@800";
+		__overlay__{
+			nandflash_pins_sleep: nandflash_pins_sleep{
+				phandle = <3>;
+			};
+		};
+	};
+
+	fragment@3 {
+		target-path = "/ocp";
+		__overlay__ {
+			elm: elm@48080000{
+				phandle = <4>;
+			};
+		};
+	};
+};

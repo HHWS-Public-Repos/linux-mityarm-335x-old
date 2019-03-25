@@ -1268,5 +1268,5 @@ TI_DTBOS:
 
 PHONY += TI_DTBOS
 
-subdir-y	+= $(dts-dirs)
+subdir-y	+= $(dts-dirs) cl
 subdir-		+= ti

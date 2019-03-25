@@ -477,11 +477,6 @@
 	};
 };
 
-#include "am335x-mitysom-256M.dtsi"
-#include "am335x-mitysom-512M.dtsi"
-#include "am335x-mitysom-1G.dtsi"
-#include "am335x-mitysom-NOR.dtsi"
-
 /* RS485 EXPANSION 1 */
 &uart3 {
 	pinctrl-names = "default";

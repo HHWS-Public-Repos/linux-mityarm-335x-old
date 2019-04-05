@@ -548,9 +548,6 @@
 
 &lcdc {
 	status = "okay";
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&lcd_pins_default>;
-	pinctrl-1 = <&lcd_pins_sleep>;
 };
 
 &epwmss0 {

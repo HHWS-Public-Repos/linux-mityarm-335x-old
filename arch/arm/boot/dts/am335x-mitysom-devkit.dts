@@ -542,8 +542,8 @@
 
 &usb1 {
 	status = "okay";
-	/* Port will act as an OTG device if the baseboard supports this feature */
-	dr_mode = "otg";
+	/* This port does not support OTG support. It can only act as host. See http://processors.wiki.ti.com/index.php/AM335x_USB_Driver%27s_Guide for more info */
+	dr_mode = "host";
 };
 
 &lcdc {

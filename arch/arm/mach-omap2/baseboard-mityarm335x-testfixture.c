@@ -137,14 +137,15 @@ static struct pinmux_config sig_setB_loopback_pin_mux[] = {
 	/* gpmc_a0 is output to control the USB_ID pins */
 	{"gpmc_a0.gpio1_16",			AM33XX_PIN_OUTPUT},
 
-	/* MMC pins may not be GPIO after respin... */
-	/* TODO: MMC Support? Enable MMC support by removing these: */
+	/* MMC pins are used for mmc */
+	/*
 	{"mmc0_dat0.gpio2_29",			AM33XX_PIN_OUTPUT},
 	{"mmc0_dat2.gpio2_27",			AM33XX_PIN_OUTPUT},
 	{"mmc0_cmd.gpio2_31",			AM33XX_PIN_OUTPUT},
 	{"mmc0_clk.gpio2_30",			AM33XX_PIN_INPUT},
 	{"mmc0_dat1.gpio2_28",			AM33XX_PIN_INPUT},
 	{"mmc0_dat3.gpio2_26",			AM33XX_PIN_INPUT},
+	*/
 
 	{NULL, 0}
 };
@@ -457,10 +458,7 @@ static __init void baseboard_setup(void)
 	mityarm335x_test_communications();
 	mityarm335x_test_usb();
 	mityarm335x_test_analog();
-/* We boot initramfs so no need for mmc support right now */
-#if 0
 	mityarm335x_test_mmc();
-#endif
 }
 
 static __init int baseboard_init(void)

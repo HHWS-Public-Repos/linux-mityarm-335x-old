@@ -56,11 +56,11 @@
 					#size-cells = <1>;
 					partition@8 {
 						label = "NAND.file-system";
-						reg = <0x00840000 0x1F740000>;
+						reg = <0x00D40000 0x1F240000>;
 					};
 					partition@7 {
 						label = "NAND.kernel";
-						reg = <0x00340000 0x00500000>;
+						reg = <0x00340000 0x00A00000>;
 					};
 					partition@6 {
 						label = "NAND.u-boot-env";

@@ -290,7 +290,7 @@ static struct omap2_hsmmc_info mmc_info[] = {
 		.mmc		= 1,
 		.caps		= MMC_CAP_4_BIT_DATA,
 		.gpio_cd	= -EINVAL, /* Disable card detect, this allows booting boards with microsd slots */
-		.gpio_wp	= GPIO_TO_PIN(3, 0),
+		.gpio_wp	= -EINVAL, /* Support booting boards with microsd */
 		.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
 	},
 	{

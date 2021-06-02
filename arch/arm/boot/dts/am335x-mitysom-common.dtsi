@@ -66,8 +66,8 @@
 
 	i2c2_pins_default: pinmux_i2c2_pins {
 		pinctrl-single,pins = <
-			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
-			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
+			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda SOM */
+			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl SOM */
 		>;
 	};
 
@@ -80,19 +80,19 @@
 
 	spi1_pins: pinmux_spi1_pins {
 		pinctrl-single,pins = <
-			0x164 (PIN_INPUT_PULLUP | MUX_MODE4)  /* ecap0_in_pwm0_out.spi1_sclk */
-			0x194 (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_fsx.spi1_d0 MOSI*/
-			0x198 (PIN_INPUT_PULLDOWN | MUX_MODE3)  /* mcasp0_axr0.spi1_d1 MISO*/
-			0x19c (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_ahclkr.spi1_cs0 */
+			0x164 (PIN_INPUT_PULLUP | MUX_MODE4)	/* ecap0_in_pwm0_out.spi1_sclk */
+			0x194 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_fsx.spi1_d0 MOSI*/
+			0x198 (PIN_INPUT_PULLDOWN | MUX_MODE3)	/* mcasp0_axr0.spi1_d1 MISO*/
+			0x19C (PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_ahclkr.spi1_cs0 SOM */
 		>;
 	};
 
 	spi1_sleep_pins: pinmux_spi1_sleep_pins {
 		pinctrl-single,pins = <
-			0x164 (PIN_INPUT_PULLUP | MUX_MODE7)  /* ecap0_in_pwm0_out.spi1_sclk */
-			0x194 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_fsx.spi1_d0 MOSI*/
-			0x198 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_axr0.spi1_d1 MISO*/
-			0x19c (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_ahclkr.spi1_cs0 */
+			0x164 (PIN_INPUT_PULLUP | MUX_MODE7)	/* ecap0_in_pwm0_out.spi1_sclk */
+			0x194 (PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_fsx.spi1_d0 MOSI */
+			0x198 (PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_axr0.spi1_d1 MISO */
+			0x19C (PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_ahclkr.spi1_cs0 SOM */
 		>;
 	};
 
@@ -101,38 +101,38 @@
 			0x000 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad0.gpmc_ad0 */
 			0x004 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad1.gpmc_ad1 */
 			0x008 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad2.gpmc_ad2 */
-			0x00c (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
+			0x00C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
 			0x010 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad4.gpmc_ad4 */
 			0x014 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad5.gpmc_ad5 */
 			0x018 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad6.gpmc_ad6 */
-			0x01c (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
+			0x01C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
 			0x070 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wait0.gpmc_wait0 */
 			0x074 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wpn.gpmc_wpn */
-			0x07c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_csn0.gpmc_csn0  */
-			0x090 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_advn_ale.gpmc_advn_ale */
-			0x094 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_oen_ren.gpmc_oen_ren */
-			0x098 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_wen.gpmc_wen */
-			0x09c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_be0_cle.gpmc_be0_cle */
+			0x07C (PIN_OUTPUT | MUX_MODE0)			/* gpmc_csn0.gpmc_csn0  */
+			0x090 (PIN_OUTPUT | MUX_MODE0)			/* gpmc_advn_ale.gpmc_advn_ale */
+			0x094 (PIN_OUTPUT | MUX_MODE0)			/* gpmc_oen_ren.gpmc_oen_ren */
+			0x098 (PIN_OUTPUT | MUX_MODE0)			/* gpmc_wen.gpmc_wen */
+			0x09C (PIN_OUTPUT | MUX_MODE0)			/* gpmc_be0_cle.gpmc_be0_cle */
 		>;
 	};
 
 	nandflash_pins_sleep: nandflash_pins_sleep {
 		pinctrl-single,pins = <
-			0x0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x4 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x8 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0xc (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x10 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x14 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x18 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x1c (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x70 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x74 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x7c (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x90 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x94 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x98 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x9c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x000 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x004 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x008 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x00C (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x010 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x014 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x018 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x01C (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x070 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x074 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x07C (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x090 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x094 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x098 (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x09C (PIN_INPUT_PULLDOWN | MUX_MODE7)
 		>;
 	};
 };

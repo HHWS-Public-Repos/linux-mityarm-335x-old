@@ -141,7 +141,7 @@
 	i2c0_pins: pinmux_i2c0_pins {
 		pinctrl-single,pins = <
 			0x188 (PIN_INPUT_PULLUP | MUX_MODE0)	/* i2c0_sda.i2c0_sda */
-			0x18c (PIN_INPUT_PULLUP | MUX_MODE0)	/* i2c0_scl.i2c0_scl */
+			0x18C (PIN_INPUT_PULLUP | MUX_MODE0)	/* i2c0_scl.i2c0_scl */
 		>;
 	};
 
@@ -168,8 +168,8 @@
 
 	i2c2_pins_sleep: i2c2_pins_sleep {
 		pinctrl-single,pins = <
-			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
-			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
+			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda SOM */
+			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl SOM */
 		>;
 	};
 
@@ -185,8 +185,8 @@
 	uart3_pins: pinmux_uart3_pins {
 		pinctrl-single,pins = <
 			0x134 (PIN_INPUT_PULLUP | MUX_MODE1)	/* mii1_rxd3.uart3_rxd */
-		        0x138 (PIN_OUTPUT_PULLDOWN | MUX_MODE1)	/* mii1_rxd2.uart3_txd */
-		        0x12C (PIN_OUTPUT_PULLDOWN | MUX_MODE7)   /* mii1_tx_clk.gpio3_9 */
+			0x138 (PIN_OUTPUT_PULLDOWN | MUX_MODE1)	/* mii1_rxd2.uart3_txd */
+			0x12C (PIN_OUTPUT_PULLDOWN | MUX_MODE7)   /* mii1_tx_clk.gpio3_9 */
 		>;
 	};
 
@@ -202,7 +202,7 @@
 
 	clkout2_pin: pinmux_clkout2_pin {
 		pinctrl-single,pins = <
-			0x1b4 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* xdma_event_intr1.clkout2 */
+			0x1B4 (PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* xdma_event_intr1.clkout2 */
 		>;
 	};
 
@@ -212,7 +212,7 @@
 			0x150 (PIN_INPUT_PULLUP | MUX_MODE0)	/* spi0_sclk.spi0_sclk */
 			0x154 (PIN_INPUT_PULLUP | MUX_MODE0)	/* spi0_d0.spi0_d0 MOSI*/
 			0x158 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* spi0_d1.spi0_d1 MISO */
-			0x15c (PIN_OUTPUT_PULLUP | MUX_MODE0)	/* spi0_cs0.spi0_cs0 */
+			0x15C (PIN_OUTPUT_PULLUP | MUX_MODE0)	/* spi0_cs0.spi0_cs0 */
 			0x160 (PIN_OUTPUT_PULLUP| MUX_MODE0)	/* spi0_cs1.spi0_cs1 */
 		>;
 	};
@@ -223,7 +223,7 @@
 			0x150 (PIN_INPUT_PULLUP | MUX_MODE7)	/* spi0_sclk.spi0_sclk */
 			0x154 (PIN_INPUT_PULLUP | MUX_MODE7)	/* spi0_d0.spi0_d0 MOSI */
 			0x158 (PIN_INPUT_PULLUP | MUX_MODE7)	/* spi0_d1.spi0_d1 MISO */
-			0x15c (PIN_INPUT_PULLUP | MUX_MODE7)	/* spi0_cs0.spi0_cs0 */
+			0x15C (PIN_INPUT_PULLUP | MUX_MODE7)	/* spi0_cs0.spi0_cs0 */
 			0x160 (PIN_INPUT_PULLUP | MUX_MODE7)	/* spi0_cs1.spi0_cs1 */
 		>;
 	};
@@ -232,9 +232,9 @@
 	spi1_pins: pinmux_spi1_pins {
 		pinctrl-single,pins = <
 			0x164 (PIN_INPUT_PULLUP | MUX_MODE4)  /* ecap0_in_pwm0_out.spi1_sclk */
-			0x194 (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_fsx.spi1_d0 MOSI*/
-			0x198 (PIN_INPUT_PULLDOWN | MUX_MODE3)  /* mcasp0_axr0.spi1_d1 MISO*/
-			0x19c (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_ahclkr.spi1_cs0 */
+			0x194 (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_fsx.spi1_d0 MOSI */
+			0x198 (PIN_INPUT_PULLDOWN | MUX_MODE3)  /* mcasp0_axr0.spi1_d1 MISO */
+			0x19C (PIN_INPUT_PULLUP | MUX_MODE3)  /* mcasp0_ahclkr.spi1_cs0 SOM:CS0*/
 		>;
 	};
 	/* JJC - Updated for MitySOM-335x Dev Kit */
@@ -243,28 +243,28 @@
 			0x164 (PIN_INPUT_PULLUP | MUX_MODE7)  /* ecap0_in_pwm0_out.spi1_sclk */
 			0x194 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_fsx.spi1_d0 MOSI*/
 			0x198 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_axr0.spi1_d1 MISO*/
-			0x19c (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_ahclkr.spi1_cs0 */
+			0x19C (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_ahclkr.spi1_cs0 */
 		>;
 	};
-	
+
 	/* RAD - Updated for MitySOM-335x */
 	nandflash_pins_default: nandflash_pins_default {
 		pinctrl-single,pins = <
 			0x000 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad0.gpmc_ad0 */
 			0x004 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad1.gpmc_ad1 */
 			0x008 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad2.gpmc_ad2 */
-			0x00c (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
+			0x00C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
 			0x010 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad4.gpmc_ad4 */
 			0x014 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad5.gpmc_ad5 */
 			0x018 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad6.gpmc_ad6 */
-			0x01c (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
+			0x01C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
 			0x070 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wait0.gpmc_wait0 */
 			0x074 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wpn.gpmc_wpn */
-			0x07c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_csn0.gpmc_csn0  */
+			0x07C (PIN_OUTPUT | MUX_MODE0)		/* gpmc_csn0.gpmc_csn0  */
 			0x090 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_advn_ale.gpmc_advn_ale */
 			0x094 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_oen_ren.gpmc_oen_ren */
 			0x098 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_wen.gpmc_wen */
-			0x09c (PIN_OUTPUT | MUX_MODE0)		/* gpmc_be0_cle.gpmc_be0_cle */
+			0x09C (PIN_OUTPUT | MUX_MODE0)		/* gpmc_be0_cle.gpmc_be0_cle */
 		>;
 	};
 
@@ -274,14 +274,14 @@
 			0x0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x4 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x8 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0xc (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0xC (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x10 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x14 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x18 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x1c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x1C (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x70 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x74 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x7c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x7C (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x90 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x94 (PIN_INPUT_PULLDOWN | MUX_MODE7)
 			0x98 (PIN_INPUT_PULLDOWN | MUX_MODE7)
@@ -346,7 +346,7 @@
 		pinctrl-single,pins = <
 			/* MDIO */
 			0x148 (PIN_INPUT_PULLUP | SLEWCTRL_FAST| MUX_MODE0)	/* mdio_data.mdio_data */
-			0x14c (PIN_OUTPUT_PULLUP | MUX_MODE0)	/* mdio_clk.mdio_clk */
+			0x14C (PIN_OUTPUT_PULLUP | MUX_MODE0)	/* mdio_clk.mdio_clk */
 		>;
 	};
 
@@ -355,7 +355,7 @@
 		pinctrl-single,pins = <
 			/* MDIO reset value */
 			0x148 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x14c (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			0x14C (PIN_INPUT_PULLDOWN | MUX_MODE7)
 		>;
 	};
 
@@ -389,52 +389,52 @@
 	/* RAD - Updated for MitySOM-335x Dev Kit */
 	lcd_pins_default: lcd_pins_default {
 		pinctrl-single,pins = <
-			0xa0 0x08	/* lcd_data0.lcd_data0, OUTPUT | PULL_DISA | MODE0 */
-			0xa4 0x08	/* lcd_data1.lcd_data1, OUTPUT | PULL_DISA | MODE0 */
-			0xa8 0x08	/* lcd_data2.lcd_data2, OUTPUT | PULL_DISA | MODE0 */
-			0xac 0x08	/* lcd_data3.lcd_data3, OUTPUT | PULL_DISA | MODE0 */
-			0xb0 0x08	/* lcd_data4.lcd_data4, OUTPUT | PULL_DISA | MODE0 */
-			0xb4 0x08	/* lcd_data5.lcd_data5, OUTPUT | PULL_DISA | MODE0 */
-			0xb8 0x08	/* lcd_data6.lcd_data6, OUTPUT | PULL_DISA | MODE0 */
-			0xbc 0x08	/* lcd_data7.lcd_data7, OUTPUT | PULL_DISA | MODE0 */
-			0xc0 0x08	/* lcd_data8.lcd_data8, OUTPUT | PULL_DISA | MODE0 */
-			0xc4 0x08	/* lcd_data9.lcd_data9, OUTPUT | PULL_DISA | MODE0 */
-			0xc8 0x08	/* lcd_data10.lcd_data10, OUTPUT | PULL_DISA | MODE0 */
-			0xcc 0x08	/* lcd_data11.lcd_data11, OUTPUT | PULL_DISA | MODE0 */
-			0xd0 0x08	/* lcd_data12.lcd_data12, OUTPUT | PULL_DISA | MODE0 */
-			0xd4 0x08	/* lcd_data13.lcd_data13, OUTPUT | PULL_DISA | MODE0 */
-			0xd8 0x08	/* lcd_data14.lcd_data14, OUTPUT | PULL_DISA | MODE0 */
-			0xdc 0x08	/* lcd_data15.lcd_data15, OUTPUT | PULL_DISA | MODE0 */
-			0xe0 0x00	/* lcd_vsync.lcd_vsync, OUTPUT | MODE0 */
-			0xe4 0x00	/* lcd_hsync.lcd_hsync, OUTPUT | MODE0 */
-			0xe8 0x00	/* lcd_pclk.lcd_pclk, OUTPUT | MODE0 */
-			0xec 0x00	/* lcd_ac_bias_en.lcd_ac_bias_en, OUTPUT | MODE0 */
+			0x0A0 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data0.lcd_data0 */
+			0x0A4 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data1.lcd_data1 */
+			0x0A8 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data2.lcd_data2 */
+			0x0AC (PIN_OUTPUT | MUX_MODE0)			/* lcd_data3.lcd_data3 */
+			0x0B0 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data4.lcd_data4 */
+			0x0B4 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data5.lcd_data5 */
+			0x0B8 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data6.lcd_data6 */
+			0x0BC (PIN_OUTPUT | MUX_MODE0)			/* lcd_data7.lcd_data7 */
+			0x0C0 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data8.lcd_data8 */
+			0x0C4 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data9.lcd_data9 */
+			0x0C8 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data10.lcd_data10 */
+			0x0CC (PIN_OUTPUT | MUX_MODE0)			/* lcd_data11.lcd_data11 */
+			0x0D0 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data12.lcd_data12 */
+			0x0D4 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data13.lcd_data13 */
+			0x0D8 (PIN_OUTPUT | MUX_MODE0)			/* lcd_data14.lcd_data14 */
+			0x0DC (PIN_OUTPUT | MUX_MODE0)			/* lcd_data15.lcd_data15 */
+			0x0E0 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* lcd_vsync.lcd_vsync */
+			0x0E4 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* lcd_hsync.lcd_hsync */
+			0x0E8 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* lcd_pclk.lcd_pclk */
+			0x0EC (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* lcd_ac_bias_en.lcd_ac_bias_en */
 		>;
 	};
 
 	/* RAD - Updated for MitySOM-335x Dev Kit */
 	lcd_pins_sleep: lcd_pins_sleep {
 		pinctrl-single,pins = <
-			0xa0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data0.lcd_data0 */
-			0xa4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data1.lcd_data1 */
-			0xa8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data2.lcd_data2 */
-			0xac (PULL_DISABLE | MUX_MODE7)		/* lcd_data3.lcd_data3 */
-			0xb0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data4.lcd_data4 */
-			0xb4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data5.lcd_data5 */
-			0xb8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data6.lcd_data6 */
-			0xbc (PULL_DISABLE | MUX_MODE7)		/* lcd_data7.lcd_data7 */
-			0xc0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data8.lcd_data8 */
-			0xc4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data9.lcd_data9 */
-			0xc8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data10.lcd_data10 */
-			0xcc (PULL_DISABLE | MUX_MODE7)		/* lcd_data11.lcd_data11 */
-			0xd0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data12.lcd_data12 */
-			0xd4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data13.lcd_data13 */
-			0xd8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data14.lcd_data14 */
-			0xdc (PULL_DISABLE | MUX_MODE7)		/* lcd_data15.lcd_data15 */
-			0xe0 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_vsync.lcd_vsync, OUTPUT | MODE0 */
-			0xe4 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_hsync.lcd_hsync */
-			0xe8 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_pclk.lcd_pclk */
-			0xec (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_ac_bias_en.lcd_ac_bias_en */
+			0xA0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data0.lcd_data0 */
+			0xA4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data1.lcd_data1 */
+			0xA8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data2.lcd_data2 */
+			0xAC (PULL_DISABLE | MUX_MODE7)		/* lcd_data3.lcd_data3 */
+			0xB0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data4.lcd_data4 */
+			0xB4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data5.lcd_data5 */
+			0xB8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data6.lcd_data6 */
+			0xBC (PULL_DISABLE | MUX_MODE7)		/* lcd_data7.lcd_data7 */
+			0xC0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data8.lcd_data8 */
+			0xC4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data9.lcd_data9 */
+			0xC8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data10.lcd_data10 */
+			0xCC (PULL_DISABLE | MUX_MODE7)		/* lcd_data11.lcd_data11 */
+			0xD0 (PULL_DISABLE | MUX_MODE7)		/* lcd_data12.lcd_data12 */
+			0xD4 (PULL_DISABLE | MUX_MODE7)		/* lcd_data13.lcd_data13 */
+			0xD8 (PULL_DISABLE | MUX_MODE7)		/* lcd_data14.lcd_data14 */
+			0xDC (PULL_DISABLE | MUX_MODE7)		/* lcd_data15.lcd_data15 */
+			0xE0 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_vsync.lcd_vsync */
+			0xE4 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_hsync.lcd_hsync */
+			0xE8 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_pclk.lcd_pclk */
+			0xEC (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* lcd_ac_bias_en.lcd_ac_bias_en */
 		>;
 	};
 
@@ -585,7 +585,7 @@
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&spi1_pins>;
 	pinctrl-1 = <&spi1_sleep_pins>;
-	
+
 	status = "okay";
 	ti,pindir-d0-out-d1-in = <1>;
 };
@@ -683,16 +683,16 @@
 };
 
 &dcan0 {
-	status = "okay";	
-	pinctrl-names = "default"; 
-	pinctrl-0 = <&dcan0_pins_default>; 
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&dcan0_pins_default>;
 };
 
-&dcan1 { 
-	status = "okay";	
-	pinctrl-names = "default"; 
-	pinctrl-0 = <&dcan1_pins_default>; 
-}; 
+&dcan1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&dcan1_pins_default>;
+};
 
 &rtc {
 	system-power-controller;

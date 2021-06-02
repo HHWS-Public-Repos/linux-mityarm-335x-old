@@ -45,94 +45,94 @@
 
 	uart0_pins: pinmux_uart0_pins {
 		pinctrl-single,pins = <
-			0x170 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart0_rxd.uart0_rxd */
-			0x174 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart0_txd.uart0_txd */
+			AM33XX_IOPAD(0x970, PIN_INPUT_PULLUP | MUX_MODE0)		/* uart0_rxd.uart0_rxd */
+			AM33XX_IOPAD(0x974, PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart0_txd.uart0_txd */
 		>;
 	};
 
 	i2c1_pins_default: pinmux_i2c1_pins {
 		pinctrl-single,pins = <
-			0x10C (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_crs.i2c1_sda */
-			0x110 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_rxerr.i2c1_scl */
+			AM33XX_IOPAD(0x90C, PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_crs.i2c1_sda */
+			AM33XX_IOPAD(0x910, PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_rxerr.i2c1_scl */
 		>;
 	};
 
 	i2c1_pins_sleep: i2c1_pins_sleep {
 		pinctrl-single,pins = <
-			0x10C (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_crs.i2c1_sda */
-			0x110 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_rxerr.i2c1_scl */
+			AM33XX_IOPAD(0x90C, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_crs.i2c1_sda */
+			AM33XX_IOPAD(0x910, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_rxerr.i2c1_scl */
 		>;
 	};
 
 	i2c2_pins_default: pinmux_i2c2_pins {
 		pinctrl-single,pins = <
-			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda SOM */
-			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl SOM */
+			AM33XX_IOPAD(0x978, PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda SOM */
+			AM33XX_IOPAD(0x97C, PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl SOM */
 		>;
 	};
 
 	i2c2_pins_sleep: i2c2_pins_sleep {
 		pinctrl-single,pins = <
-			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
-			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
+			AM33XX_IOPAD(0x978, PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
+			AM33XX_IOPAD(0x97C, PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
 		>;
 	};
 
 	spi1_pins: pinmux_spi1_pins {
 		pinctrl-single,pins = <
-			0x164 (PIN_INPUT_PULLUP | MUX_MODE4)	/* ecap0_in_pwm0_out.spi1_sclk */
-			0x194 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_fsx.spi1_d0 MOSI*/
-			0x198 (PIN_INPUT_PULLDOWN | MUX_MODE3)	/* mcasp0_axr0.spi1_d1 MISO*/
-			0x19C (PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_ahclkr.spi1_cs0 SOM */
+			AM33XX_IOPAD(0x964, PIN_INPUT_PULLUP | MUX_MODE4)	/* ecap0_in_pwm0_out.spi1_sclk */
+			AM33XX_IOPAD(0x994, PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_fsx.spi1_d0 MOSI*/
+			AM33XX_IOPAD(0x998, PIN_INPUT_PULLDOWN | MUX_MODE3)	/* mcasp0_axr0.spi1_d1 MISO*/
+			AM33XX_IOPAD(0x99C, PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_ahclkr.spi1_cs0 SOM */
 		>;
 	};
 
 	spi1_sleep_pins: pinmux_spi1_sleep_pins {
 		pinctrl-single,pins = <
-			0x164 (PIN_INPUT_PULLUP | MUX_MODE7)	/* ecap0_in_pwm0_out.spi1_sclk */
-			0x194 (PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_fsx.spi1_d0 MOSI */
-			0x198 (PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_axr0.spi1_d1 MISO */
-			0x19C (PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_ahclkr.spi1_cs0 SOM */
+			AM33XX_IOPAD(0x964, PIN_INPUT_PULLUP | MUX_MODE7)	/* ecap0_in_pwm0_out.spi1_sclk */
+			AM33XX_IOPAD(0x994, PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_fsx.spi1_d0 MOSI */
+			AM33XX_IOPAD(0x998, PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_axr0.spi1_d1 MISO */
+			AM33XX_IOPAD(0x99C, PIN_INPUT_PULLUP | MUX_MODE7)	/* mcasp0_ahclkr.spi1_cs0 SOM */
 		>;
 	};
 
 	nandflash_pins_default: nandflash_pins_default {
 		pinctrl-single,pins = <
-			0x000 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad0.gpmc_ad0 */
-			0x004 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad1.gpmc_ad1 */
-			0x008 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad2.gpmc_ad2 */
-			0x00C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
-			0x010 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad4.gpmc_ad4 */
-			0x014 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad5.gpmc_ad5 */
-			0x018 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad6.gpmc_ad6 */
-			0x01C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
-			0x070 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wait0.gpmc_wait0 */
-			0x074 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wpn.gpmc_wpn */
-			0x07C (PIN_OUTPUT | MUX_MODE0)			/* gpmc_csn0.gpmc_csn0  */
-			0x090 (PIN_OUTPUT | MUX_MODE0)			/* gpmc_advn_ale.gpmc_advn_ale */
-			0x094 (PIN_OUTPUT | MUX_MODE0)			/* gpmc_oen_ren.gpmc_oen_ren */
-			0x098 (PIN_OUTPUT | MUX_MODE0)			/* gpmc_wen.gpmc_wen */
-			0x09C (PIN_OUTPUT | MUX_MODE0)			/* gpmc_be0_cle.gpmc_be0_cle */
+			AM33XX_IOPAD(0x800, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad0.gpmc_ad0 */
+			AM33XX_IOPAD(0x804, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad1.gpmc_ad1 */
+			AM33XX_IOPAD(0x808, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad2.gpmc_ad2 */
+			AM33XX_IOPAD(0x80C, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
+			AM33XX_IOPAD(0x810, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad4.gpmc_ad4 */
+			AM33XX_IOPAD(0x814, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad5.gpmc_ad5 */
+			AM33XX_IOPAD(0x818, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad6.gpmc_ad6 */
+			AM33XX_IOPAD(0x81C, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
+			AM33XX_IOPAD(0x870, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wait0.gpmc_wait0 */
+			AM33XX_IOPAD(0x874, PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wpn.gpmc_wpn */
+			AM33XX_IOPAD(0x87C, PIN_OUTPUT | MUX_MODE0)			/* gpmc_csn0.gpmc_csn0  */
+			AM33XX_IOPAD(0x890, PIN_OUTPUT | MUX_MODE0)			/* gpmc_advn_ale.gpmc_advn_ale */
+			AM33XX_IOPAD(0x894, PIN_OUTPUT | MUX_MODE0)			/* gpmc_oen_ren.gpmc_oen_ren */
+			AM33XX_IOPAD(0x898, PIN_OUTPUT | MUX_MODE0)			/* gpmc_wen.gpmc_wen */
+			AM33XX_IOPAD(0x89C, PIN_OUTPUT | MUX_MODE0)			/* gpmc_be0_cle.gpmc_be0_cle */
 		>;
 	};
 
 	nandflash_pins_sleep: nandflash_pins_sleep {
 		pinctrl-single,pins = <
-			0x000 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x004 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x008 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x00C (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x010 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x014 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x018 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x01C (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x070 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x074 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x07C (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x090 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x094 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x098 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x09C (PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x800, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x804, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x808, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x80C, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x810, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x814, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x818, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x81C, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x870, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x874, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x87C, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x890, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x894, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x898, PIN_INPUT_PULLDOWN | MUX_MODE7)
+			AM33XX_IOPAD(0x89C, PIN_INPUT_PULLDOWN | MUX_MODE7)
 		>;
 	};
 };

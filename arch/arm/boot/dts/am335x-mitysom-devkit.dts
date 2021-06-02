@@ -145,42 +145,6 @@
 		>;
 	};
 
-	i2c1_pins_default: pinmux_i2c1_pins {
-		pinctrl-single,pins = <
-			0x10C (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_crs.i2c1_sda */
-			0x110 (PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_rxerr.i2c1_scl */
-		>;
-	};
-
-	i2c1_pins_sleep: i2c1_pins_sleep {
-		pinctrl-single,pins = <
-			0x10C (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_crs.i2c1_sda */
-			0x110 (PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_rxerr.i2c1_scl */
-		>;
-	};
-
-	i2c2_pins_default: pinmux_i2c2_pins {
-		pinctrl-single,pins = <
-			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda */
-			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl */
-		>;
-	};
-
-	i2c2_pins_sleep: i2c2_pins_sleep {
-		pinctrl-single,pins = <
-			0x178 (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_ctsn.i2c2_sda SOM */
-			0x17C (PIN_INPUT_PULLUP | MUX_MODE3)	/* uart1_rtsn.i2c2_scl SOM */
-		>;
-	};
-
-
-	uart0_pins: pinmux_uart0_pins {
-		pinctrl-single,pins = <
-			0x170 (PIN_INPUT_PULLUP | MUX_MODE0)	/* uart0_rxd.uart0_rxd */
-			0x174 (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* uart0_txd.uart0_txd */
-		>;
-	};
-
 	/* EXPANSION 1 */
 	uart3_pins: pinmux_uart3_pins {
 		pinctrl-single,pins = <
@@ -244,48 +208,6 @@
 			0x194 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_fsx.spi1_d0 MOSI*/
 			0x198 (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_axr0.spi1_d1 MISO*/
 			0x19C (PIN_INPUT_PULLUP | MUX_MODE7)  /* mcasp0_ahclkr.spi1_cs0 */
-		>;
-	};
-
-	/* RAD - Updated for MitySOM-335x */
-	nandflash_pins_default: nandflash_pins_default {
-		pinctrl-single,pins = <
-			0x000 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad0.gpmc_ad0 */
-			0x004 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad1.gpmc_ad1 */
-			0x008 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad2.gpmc_ad2 */
-			0x00C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad3.gpmc_ad3 */
-			0x010 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad4.gpmc_ad4 */
-			0x014 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad5.gpmc_ad5 */
-			0x018 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad6.gpmc_ad6 */
-			0x01C (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_ad7.gpmc_ad7 */
-			0x070 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wait0.gpmc_wait0 */
-			0x074 (PIN_INPUT_PULLUP | MUX_MODE0)	/* gpmc_wpn.gpmc_wpn */
-			0x07C (PIN_OUTPUT | MUX_MODE0)		/* gpmc_csn0.gpmc_csn0  */
-			0x090 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_advn_ale.gpmc_advn_ale */
-			0x094 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_oen_ren.gpmc_oen_ren */
-			0x098 (PIN_OUTPUT | MUX_MODE0)		/* gpmc_wen.gpmc_wen */
-			0x09C (PIN_OUTPUT | MUX_MODE0)		/* gpmc_be0_cle.gpmc_be0_cle */
-		>;
-	};
-
-	/* RAD - Updated for MitySOM-335x */
-	nandflash_pins_sleep: nandflash_pins_sleep {
-		pinctrl-single,pins = <
-			0x0 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x4 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x8 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0xC (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x10 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x14 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x18 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x1C (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x70 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x74 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x7C (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x90 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x94 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x98 (PIN_INPUT_PULLDOWN | MUX_MODE7)
-			0x9c (PIN_INPUT_PULLDOWN | MUX_MODE7)
 		>;
 	};
 
@@ -511,27 +433,8 @@
 };
 
 &i2c1 {
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&i2c1_pins_default>;
-	pinctrl-1 = <&i2c1_pins_sleep>;
-
-	status = "okay";
-	clock-frequency = <400000>;
-};
-
-&i2c2 {
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&i2c2_pins_default>;
-	pinctrl-1 = <&i2c2_pins_sleep>;
-
-	status = "okay";
-	clock-frequency = <400000>;
-
-	tps: tps@2d {
-		compatible = "ti,tps65910";
-		reg = <0x2d>;
-	};
-
+	/* SOM Factory EEPROM 0x50 - 0x57 */
+	/* SOM PMIC SmartReflex 0x12 */
 };
 
 &usb0 {
@@ -582,12 +485,7 @@
 };
 
 &spi1 {
-	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&spi1_pins>;
-	pinctrl-1 = <&spi1_sleep_pins>;
-
-	status = "okay";
-	ti,pindir-d0-out-d1-in = <1>;
+	/* CS0 On-SOM NOR */
 };
 
 /* JJC - Updated for MitySOM-335x Dev Kit */
@@ -665,23 +563,6 @@
 	/* wp-gpios = <&gpio3 0 GPIO_ACTIVE_HIGH>; */
 };
 
-&edma {
-	ti,edma-xbar-event-map = /bits/ 16 <1 12
-					    2 13>;
-};
-
-&sham {
-	status = "okay";
-};
-
-&aes {
-	status = "okay";
-};
-
-&wkup_m3_ipc {
-	ti,scale-data-fw = "am335x-evm-scale-data.bin";
-};
-
 &dcan0 {
 	status = "okay";
 	pinctrl-names = "default";
@@ -696,8 +577,4 @@
 
 &rtc {
 	system-power-controller;
-};
-
-&sgx {
-	status = "okay";
 };

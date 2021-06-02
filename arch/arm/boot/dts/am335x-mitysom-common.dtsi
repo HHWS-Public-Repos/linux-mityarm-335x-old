@@ -168,6 +168,7 @@
 	clock-frequency = <400000>;
 
 	tps: tps@2d {
+		compatible = "ti,tps65910";
 		reg = <0x2d>;
 	};
 };
@@ -322,4 +323,8 @@
 
 &wkup_m3 {
 	ti,scale-data-fw = "am335x-evm-scale-data.bin";
+};
+
+&sgx {
+	status = "okay";
 };

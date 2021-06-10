@@ -19,14 +19,13 @@
 		default-brightness-level = <8>;
 	};
 
-	/* TODO */
-	nec_nl10276bc13: lcd-controller@1 {
+	orient_AFY1024600A0: lcd-controller@1 {
 		compatible = "ti,tilcdc,panel";
 		pinctrl-names = "default", "sleep";
 		pinctrl-0 = <&lcd_pins_default>;
 		pinctrl-1 = <&lcd_pins_sleep>;
 		status = "ok";
-		model = "nec,nl10276bc13";
+		model = "orient,AFY1024600A0";
 		panel-info {
 			ac-bias           = <255>;
 			ac-bias-intrpt    = <0>;
@@ -39,16 +38,16 @@
 			fifo-th           = <0>;
 		};
 		display-timings {
-			1024x768 {
-				clock-frequency = <65000000>;
+			1024x600 {
+				clock-frequency = <51200000>;
 				hactive = <1024>;
-				vactive = <768>;
+				vactive = <600>;
+				hsync-len = <136>;  //DS 136+24+60==320
 				hfront-porch = <24>;
-				hback-porch = <160>;
-				hsync-len = <136>;
-				vback-porch = <29>;
+				hback-porch = <60>;
+				vsync-len = <6>; // 26+3+6=35
 				vfront-porch = <3>;
-				vsync-len = <6>;
+				vback-porch = <26>;
 				hsync-active = <1>;
 				vsync-active = <1>;
 			};
@@ -316,7 +315,15 @@
 	/* SOM PMIC SmartReflex 0x12 */
 	/* SOM Factory EEPROM 0x50 - 0x57 */
 
-	/* TSC TODO */
+	/* Orient-GT911 TSC 0x5D */
+	gt911@5d {
+		compatible = "goodix,gt911";
+		reg = <0x5d>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <0 0>;
+
+		irq-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+	};
 
 	/* MCP7940N RTC 0x6F */
 	mcp79400: mcp79400@6f {

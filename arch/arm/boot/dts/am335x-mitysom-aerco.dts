@@ -297,14 +297,32 @@
 	clock-frequency = <400000>;
 
 	/* PCAL9535A 16-bit GPIO expander 0x27 */
+	pcal9535: pcal9535@27 {
+		compatible = "nxp,pcal6535"; /* TODO Backport driver */
+		reg = <0x27>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		gpio-line-names =
+		"", "", "", "",
+		"", "", "", "",
+		"TEMP_IN", "SPARE_IN", "DIGITAL_IN_4", "DIGITAL_IN_3",
+		"DIGITAL_IN_2", "DIGITAL_IN_1", "", "";
+	};
+
 	/* MCP4728 12-bit Quad DAC 0x60 */
 };
 
 &i2c1 {
 	/* SOM PMIC SmartReflex 0x12 */
 	/* SOM Factory EEPROM 0x50 - 0x57 */
+
 	/* TSC TODO */
+
 	/* MCP7940N RTC 0x6F */
+	mcp79400: mcp79400@6f {
+		compatible = "microchip,mcp7940x";
+		reg = <0x6f>;
+	};
 };
 
 &usb1 {

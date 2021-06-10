@@ -281,7 +281,7 @@
 	status = "okay";
 };
 
-/* ESP32 */
+/* ESP32 - J17 */
 &uart2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart2_pins>;
@@ -334,14 +334,54 @@
 	};
 };
 
+/ {
+	v3_3_analog_fixed: fixedregulator@2 {
+		compatible = "regulator-fixed";
+		regulator-name = "v3.3_analog_fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+	};
+};
+
 &spi1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi1_pins>;
 	/* CS0 On-SOM NOR */
-	/* SPI1_CS0 - gpio0_5 */
-	/* SPI1_CS1 - gpio1_9 */
-	/* EXT_CS - gpio0_18 */
+
+	/* SPI1_CS0 - gpio0_5 MCP3208 */
+	mcp3208_ain@0 {
+		compatible = "microchip,mcp3208";
+		// reg = <0>;
+		spi-max-frequency = <1000000>;
+		vref-supply = <&v3_3_analog_fixed>;
+	};
+
+	/* SPI1_CS1 - gpio1_9 MCP3208 */
+	mcp3208_rtd@1 {
+		compatible = "microchip,mcp3208";
+		// reg = <0>;
+		spi-max-frequency = <1000000>;
+		vref-supply = <&v3_3_analog_fixed>;
+	};
+
+	/* EXT_CS - gpio0_18 J9 Connector */
+	ext_j9: ext_j9@2 {
+		compatible = "spidev";
+		// reg = <0x0>;
+		status = "okay";
+
+		spi-max-frequency = <2000000>;
+	};
+
 	/* 7SEG_CS - gpio0_20 */
+	tlc59281: tlc59281@3 {
+		compatible = "spidev";
+		// reg = <0x0>;
+		status = "okay";
+
+		spi-max-frequency = <2000000>;
+	};
 };
 
 &mac {

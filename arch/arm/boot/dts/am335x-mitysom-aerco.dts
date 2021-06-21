@@ -418,6 +418,17 @@
 	pinctrl-0 = <&davinci_mdio_default>;
 	pinctrl-1 = <&davinci_mdio_sleep>;
 	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <2>;
+		/* Restrict phy to 10/100 due to magnetics */
+		max-speed = <100>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <3>;
+		/* Restrict phy to 10/100 due to magnetics */
+		max-speed = <100>;
+	};
 };
 
 &cpsw_emac0 {

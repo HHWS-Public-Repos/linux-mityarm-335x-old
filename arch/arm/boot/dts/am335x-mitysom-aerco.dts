@@ -300,7 +300,7 @@
 		gpio-controller;
 		#gpio-cells = <2>;
 		gpio-line-names =
-		"", "", "", "",
+		"RELAY_0", "RELAY_1", "RELAY_2", "RELAY_3",
 		"", "", "", "",
 		"TEMP_IN", "SPARE_IN", "DIGITAL_IN_4", "DIGITAL_IN_3",
 		"DIGITAL_IN_2", "DIGITAL_IN_1", "", "";

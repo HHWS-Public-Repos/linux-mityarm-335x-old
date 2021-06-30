@@ -448,10 +448,17 @@
 /* ADC */
 &tscadc {
 	status = "okay";
+	/* XR, YD, XL, YI, GND, 3.3V/2, 3.3V/2, GND */
+	// tsc {
+	// 	ti,wires = <4>;
+	// 	ti,x-plate-resistance = <200>;
+	// 	ti,coordinate-readouts = <5>;
+	// 	ti,wire-config = <0x00 0x11 0x22 0x33>;
+	// 	ti,charge-delay = <0x400>;
+	// };
 
 	adc {
-		/* XR, YD, XL, YI, GND, 3.3V/2, 3.3V/2, GND */
-		ti,adc-channels = <0 1 2 3 5 6>;
+		ti,adc-channels = <5 6>;
 	};
 };
 

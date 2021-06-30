@@ -419,6 +419,10 @@
 	pinctrl-1 = <&davinci_mdio_sleep>;
 	status = "okay";
 
+	reset-gpios = <&gpio1 28 GPIO_ACTIVE_LOW>,
+		      <&gpio3 20 GPIO_ACTIVE_LOW>;
+	reset-delay-us = <2>;
+
 	phy0: ethernet-phy@0 {
 		reg = <2>;
 		/* Restrict phy to 10/100 due to magnetics */

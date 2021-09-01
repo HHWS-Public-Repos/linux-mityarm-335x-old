@@ -429,6 +429,7 @@
 	pinctrl-1 = <&cpsw_1_sleep>;
 	slave = <1>;
 	status = "okay";
+	// dual_emac; /* Enable for boards with two eth ports */
 };
 
 &davinci_mdio {
@@ -447,11 +448,13 @@
 &cpsw_emac0 {
 	phy_id = <&davinci_mdio>, <2>;
 	phy-mode = "rgmii";
+	dual_emac_res_vlan = <1>;
 };
 
 &cpsw_emac1 {
 	phy_id = <&davinci_mdio>, <1>;
 	phy-mode = "rgmii";
+	dual_emac_res_vlan = <2>;
 };
 
 /* ADC and Touchscreen */

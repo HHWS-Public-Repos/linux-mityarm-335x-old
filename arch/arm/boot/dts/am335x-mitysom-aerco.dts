@@ -76,7 +76,7 @@
 	};
 
 	/* MODBUS 2 */
-	uart4_pins: pinmux_uart0_pins {
+	uart4_pins: pinmux_uart4_pins {
 		pinctrl-single,pins = <
 			AM33XX_IOPAD(0x838, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* gpmc_ad14.gpio1_14 UART4_DIR */
 			AM33XX_IOPAD(0x968, PIN_INPUT_PULLUP | MUX_MODE1)	/* uart0_ctsn.uart4_rxd UART4_RXD */

@@ -306,6 +306,18 @@
 		"DIGITAL_IN_2", "DIGITAL_IN_1", "", "";
 	};
 
+	eeprom@50 {
+		compatible = "st,m24256", "st,24c256", "atmel,24c256";
+		reg = <0x50>;
+		pagesize = <64>;
+	};
+
+	eeprom@51 {
+		compatible = "st,m24256", "st,24c256", "atmel,24c256";
+		reg = <0x51>;
+		pagesize = <64>;
+	};
+
 	/* MCP4728 12-bit Quad DAC 0x60 */
 };
 

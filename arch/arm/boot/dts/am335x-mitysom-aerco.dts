@@ -392,6 +392,8 @@
 		reg = <1>;
 		spi-max-frequency = <1000000>;
 		vref-supply = <&v3_3_analog_fixed>;
+
+		/* channels = "AIN1", "AIN2", "AIN3", "AIN4"; */
 	};
 
 	/* SPI1_CS1 - gpio1_9 MCP3208 */
@@ -400,6 +402,8 @@
 		reg = <2>;
 		spi-max-frequency = <1000000>;
 		vref-supply = <&v3_3_analog_fixed>;
+
+		/* channels = "RTD_IN_HIGH", "RTD_IN_LOW", "AMBIENT"; */
 	};
 
 	/* EXT_CS - gpio0_18 J9 Connector */

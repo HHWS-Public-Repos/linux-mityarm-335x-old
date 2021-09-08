@@ -295,7 +295,7 @@
 
 	/* PCAL9535A 16-bit GPIO expander 0x27 */
 	pcal9535: pcal9535@27 {
-		compatible = "nxp,pcal6535"; /* TODO Backport driver */
+		compatible = "nxp,pcal9535";
 		reg = <0x27>;
 		gpio-controller;
 		#gpio-cells = <2>;

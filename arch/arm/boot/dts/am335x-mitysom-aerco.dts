@@ -99,7 +99,7 @@
 			AM33XX_IOPAD(0x95c, PIN_OUTPUT | MUX_MODE7)		/* spi0_cs0.gpio0_5 SPI1_CS1 external pullup */
 			AM33XX_IOPAD(0x990, PIN_OUTPUT | MUX_MODE3)		/* mcasp0_aclkx.spi1_sclk */
 			AM33XX_IOPAD(0x994, PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_fsx.spi1_d0 MOSI */
-			AM33XX_IOPAD(0x998, PIN_INPUT_PULLDOWN | MUX_MODE3)	/* mcasp0_axr0.spi1_d1 MISO */
+			AM33XX_IOPAD(0x998, PIN_INPUT | MUX_MODE3)		/* mcasp0_axr0.spi1_d1 MISO */
 			AM33XX_IOPAD(0x99C, PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_ahclkr.spi1_cs0 SOM:CS0*/
 			AM33XX_IOPAD(0x9B4, PIN_INPUT | MUX_MODE7)      	/* xdma_event_intr1.gpio0_20 7SEG_CS J16.48 external pullup */
 			AM33XX_IOPAD(0xA1C, PIN_OUTPUT | MUX_MODE7)		/* usb0_drvvbus.gpio0_18 SPI1 EXT_CS external pullup */
@@ -384,9 +384,9 @@
 	pinctrl-0 = <&spi1_pins>;
 	/* CS0 On-SOM NOR */
 
-	cs-gpios = <0>, <&gpio0 5 GPIO_ACTIVE_HIGH>, <&gpio1 9 GPIO_ACTIVE_HIGH>, <&gpio0 18 GPIO_ACTIVE_HIGH>, <&gpio0 20 GPIO_ACTIVE_HIGH>;
+	cs-gpios = <0>, <&gpio1 15 GPIO_ACTIVE_HIGH>, <&gpio0 5 GPIO_ACTIVE_HIGH>, <&gpio0 18 GPIO_ACTIVE_HIGH>, <&gpio0 20 GPIO_ACTIVE_HIGH>;
 
-	/* SPI1_CS0 - gpio0_5 MCP3208 */
+	/* SPI1_CS0 - gpio1_15 MCP3208 */
 	mcp3208_ain@0 {
 		compatible = "microchip,mcp3208";
 		reg = <1>;
@@ -396,7 +396,7 @@
 		/* channels = "AIN1", "AIN2", "AIN3", "AIN4"; */
 	};
 
-	/* SPI1_CS1 - gpio1_9 MCP3208 */
+	/* SPI1_CS1 - gpio0_5 MCP3208 */
 	mcp3208_rtd@1 {
 		compatible = "microchip,mcp3208";
 		reg = <2>;

@@ -97,9 +97,9 @@
 		pinctrl-single,pins = <
 			AM33XX_IOPAD(0x83C, PIN_INPUT | MUX_MODE7)		/* gpmc_ad15.gpio1_15 SPI1_CS0 external pullup */
 			AM33XX_IOPAD(0x95c, PIN_OUTPUT | MUX_MODE7)		/* spi0_cs0.gpio0_5 SPI1_CS1 external pullup */
-			AM33XX_IOPAD(0x990, PIN_OUTPUT | MUX_MODE3)		/* mcasp0_aclkx.spi1_sclk */
+			AM33XX_IOPAD(0x990, PIN_INPUT | MUX_MODE3)		/* mcasp0_aclkx.spi1_sclk */
 			AM33XX_IOPAD(0x994, PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_fsx.spi1_d0 MOSI */
-			AM33XX_IOPAD(0x998, PIN_INPUT | MUX_MODE3)		/* mcasp0_axr0.spi1_d1 MISO */
+			AM33XX_IOPAD(0x998, PIN_INPUT | MUX_MODE3)		/* mcasp0_axr0.spi1_d1 MISO external pullup */
 			AM33XX_IOPAD(0x99C, PIN_INPUT_PULLUP | MUX_MODE3)	/* mcasp0_ahclkr.spi1_cs0 SOM:CS0*/
 			AM33XX_IOPAD(0x9B4, PIN_INPUT | MUX_MODE7)      	/* xdma_event_intr1.gpio0_20 7SEG_CS J16.48 external pullup */
 			AM33XX_IOPAD(0xA1C, PIN_OUTPUT | MUX_MODE7)		/* usb0_drvvbus.gpio0_18 SPI1 EXT_CS external pullup */

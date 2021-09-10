@@ -384,7 +384,7 @@
 	pinctrl-0 = <&spi1_pins>;
 	/* Not supported: CS0 On-SOM NOR */
 
-	/* Note: mcspi1 only has 4 channels worth of dmas, so we have to use the SPINOR cs spot */
+	/* Note: spi1 crashes when using more than 4 channels */
 	cs-gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>, <&gpio0 5 GPIO_ACTIVE_HIGH>, <&gpio0 18 GPIO_ACTIVE_HIGH>, <&gpio0 20 GPIO_ACTIVE_HIGH>;
 
 	/* SPI1_CS0 - gpio1_15 MCP3208 */

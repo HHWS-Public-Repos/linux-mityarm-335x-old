@@ -323,17 +323,19 @@
 
 &i2c1 {
 	/* SOM PMIC SmartReflex 0x12 */
-	/* SOM Factory EEPROM 0x50 - 0x57 */
 
-	/* Orient-GT911 TSC 0x5D */
-	gt911@5d {
+	/* Orient-GT911 TSC 0x14 */
+	gt911@14 {
 		compatible = "goodix,gt911";
-		reg = <0x5d>;
+		reg = <0x14>;
 		interrupt-parent = <&gpio0>;
-		interrupts = <0 0>;
+		interrupts = <29 IRQ_TYPE_EDGE_FALLING>;
 
 		irq-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+		// touchscreen-swapped-x-y;
 	};
+
+	/* SOM Factory EEPROM 0x50 - 0x57 */
 
 	/* MCP7940N RTC 0x6F */
 	mcp79400: mcp79400@6f {

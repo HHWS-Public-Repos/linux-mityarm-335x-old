@@ -30,7 +30,7 @@
 			ac-bias           = <255>;
 			ac-bias-intrpt    = <0>;
 			dma-burst-sz      = <16>;
-			bpp               = <32>;
+			bpp               = <16>;
 			fdd               = <0x80>;
 			sync-edge         = <0>;
 			sync-ctrl         = <1>;

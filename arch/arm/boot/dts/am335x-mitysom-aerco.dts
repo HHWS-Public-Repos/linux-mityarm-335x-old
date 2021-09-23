@@ -12,7 +12,7 @@
 / {
 	model = "Critical Link MitySOM-335x Devkit";
 
-	backlight {
+	backlight: backlight {
 		compatible = "pwm-backlight";
 		pwms = <&ecap1 0 50000 0>;
 		brightness-levels = <0 51 53 56 62 75 101 152 255>;
@@ -26,6 +26,10 @@
 		pinctrl-1 = <&lcd_pins_sleep>;
 		status = "ok";
 		model = "orient,AFY1024600A0";
+
+		backlight = <&backlight>;
+		enable-gpios = <&gpio3 8 GPIO_ACTIVE_HIGH>;
+
 		panel-info {
 			ac-bias           = <255>;
 			ac-bias-intrpt    = <0>;

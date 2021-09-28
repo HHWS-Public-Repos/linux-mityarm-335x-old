@@ -28,7 +28,7 @@
 		model = "orient,AFY1024600A0";
 
 		backlight = <&backlight>;
-		enable-gpios = <&gpio3 8 GPIO_ACTIVE_HIGH>;
+		// enable-gpios = <&gpio3 8 GPIO_ACTIVE_HIGH>;
 
 		panel-info {
 			ac-bias           = <255>;
@@ -336,6 +336,8 @@
 		interrupts = <29 IRQ_TYPE_EDGE_FALLING>;
 
 		irq-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+		// Workaround: Using DISP pin to reset touchscreen
+		reset-gpios = <&gpio3 8 GPIO_ACTIVE_HIGH>;
 		// touchscreen-swapped-x-y;
 	};
 

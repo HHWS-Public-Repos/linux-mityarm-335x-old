@@ -561,7 +561,7 @@ static int __maybe_unused ecap_resume(struct device *dev)
 static SIMPLE_DEV_PM_OPS(ecap_pm_ops, ecap_suspend, ecap_resume);
 
 static const struct of_device_id ecap_of_ids[] = {
-	{ .compatible   = "ti,am33xx-ecap" },
+	{ .compatible   = "ti,am33xx-ecap-pulse" },
 	{ /* sentinel */ },
 };
 MODULE_DEVICE_TABLE(of, ecap_of_ids);

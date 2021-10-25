@@ -266,7 +266,7 @@ static irqreturn_t ecap_trigger_handler(int irq, void *private)
 	/* Read pulse counter value */
 	*state->buf = readl(state->regs + ECAP_CAP2);
 
-	dev_dbg(&idev->dev, "TIECAP: Value: %u (%x), Time: %llu (%llx)\n", *state->buf, *state->buf, pf->timestamp, pf->timestamp);
+	dev_dbg_ratelimited(&idev->dev, "TIECAP: Value: %u (%x), Time: %llu (%llx)\n", *state->buf, *state->buf, pf->timestamp, pf->timestamp);
 
 	iio_push_to_buffers_with_timestamp(idev, state->buf, pf->timestamp);
 
@@ -360,7 +360,7 @@ static irqreturn_t ecap_interrupt_handler(int irq, void *private)
 	struct ecap_state *state = iio_priv(idev);
 	u16 ints;
 
-	dev_dbg(&idev->dev, "TIECAP: Interrupt handling...\n");
+	dev_dbg_ratelimited(&idev->dev, "TIECAP: Interrupt handling...\n");
 
 	iio_trigger_poll(idev->trig);
 

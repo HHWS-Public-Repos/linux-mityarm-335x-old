@@ -344,7 +344,7 @@ static int ecap_buffer_postenable(struct iio_dev *idev)
 	writew(ecctl2, state->regs + ECAP_ECCTL2);
 	set_bit(ECAP_ENABLED, &state->flags);
 
-	//ret = iio_triggered_buffer_postenable(idev);
+	ret = iio_triggered_buffer_postenable(idev);
 
 	return ret;
 }

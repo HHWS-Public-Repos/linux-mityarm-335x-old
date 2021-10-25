@@ -69,6 +69,8 @@
 #define ECAP_PRESCALAR(flags)	(((uint8_t)(flags >> ECAP_PRESCALAR_OFFSET)) & 0x1F)
 
 
+#define dev_dbg dev_err
+
 struct ecap_context {
 	u32 cap1;
 	u32 cap2;
@@ -264,7 +266,7 @@ static irqreturn_t ecap_trigger_handler(int irq, void *private)
 	/* Read pulse counter value */
 	*state->buf = readl(state->regs + ECAP_CAP2);
 
-	dev_dbg(&idev->dev, "TIECAP: Value: %d, Time: %lld\n", *state->buf, pf->timestamp);
+	dev_dbg(&idev->dev, "TIECAP: Value: %u (%x), Time: %llu (%llx)\n", *state->buf, *state->buf, pf->timestamp, pf->timestamp);
 
 	iio_push_to_buffers_with_timestamp(idev, state->buf, pf->timestamp);
 

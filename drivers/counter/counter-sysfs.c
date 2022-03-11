@@ -74,6 +74,10 @@ int sysfs_emit_at(char *buf, int at, const char *fmt, ...)
 }
 EXPORT_SYMBOL_GPL(sysfs_emit_at);
 
+static inline struct counter_device *counter_from_dev(struct device *dev)
+{
+	return container_of(dev, struct counter_device, dev);
+}
 
 /**
  * struct counter_attribute - Counter sysfs attribute
@@ -146,7 +150,7 @@ static ssize_t counter_comp_u8_show(struct device *dev,
 				    struct device_attribute *attr, char *buf)
 {
 	const struct counter_attribute *const a = to_counter_attribute(attr);
-	struct counter_device *const counter = dev_get_drvdata(dev);
+	struct counter_device *const counter = counter_from_dev(dev);
 	int err;
 	u8 data = 0;
 
@@ -178,7 +182,7 @@ static ssize_t counter_comp_u8_store(struct device *dev,
 				     const char *buf, size_t len)
 {
 	const struct counter_attribute *const a = to_counter_attribute(attr);
-	struct counter_device *const counter = dev_get_drvdata(dev);
+	struct counter_device *const counter = counter_from_dev(dev);
 	int err;
 	bool bool_data = 0;
 	u8 data = 0;
@@ -214,7 +218,7 @@ static ssize_t counter_comp_u32_show(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
 	const struct counter_attribute *const a = to_counter_attribute(attr);
-	struct counter_device *const counter = dev_get_drvdata(dev);
+	struct counter_device *const counter = counter_from_dev(dev);
 	const struct counter_available *const avail = a->comp.priv;
 	int err;
 	u32 data = 0;
@@ -277,7 +281,7 @@ static ssize_t counter_comp_u32_store(struct device *dev,
 				      const char *buf, size_t len)
 {
 	const struct counter_attribute *const a = to_counter_attribute(attr);
-	struct counter_device *const counter = dev_get_drvdata(dev);
+	struct counter_device *const counter = counter_from_dev(dev);
 	struct counter_count *const count = a->parent;
 	struct counter_synapse *const synapse = a->comp.priv;
 	const struct counter_available *const avail = a->comp.priv;
@@ -337,7 +341,7 @@ static ssize_t counter_comp_u64_show(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
 	const struct counter_attribute *const a = to_counter_attribute(attr);
-	struct counter_device *const counter = dev_get_drvdata(dev);
+	struct counter_device *const counter = counter_from_dev(dev);
 	int err;
 	u64 data = 0;
 
@@ -365,7 +369,7 @@ static ssize_t counter_comp_u64_store(struct device *dev,
 				      const char *buf, size_t len)
 {
 	const struct counter_attribute *const a = to_counter_attribute(attr);
-	struct counter_device *const counter = dev_get_drvdata(dev);
+	struct counter_device *const counter = counter_from_dev(dev);
 	int err;
 	u64 data = 0;
 

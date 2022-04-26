@@ -245,7 +245,7 @@
 
 	gpio_pins: gpio_pins {
 		pinctrl-single,pins = <
-			AM33XX_IOPAD(0x830, PIN_INPUT | MUX_MODE7)		/* gpmc_ad12.gpio1_28 ESP32_EN external pullup */
+			AM33XX_IOPAD(0x830, PIN_INPUT | MUX_MODE7)		/* gpmc_ad12.gpio1_12 ESP32_EN external pullup */
 			AM33XX_IOPAD(0x834, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* gpmc_ad13.gpio1_13 PROXIMITY J16.49 */
 			AM33XX_IOPAD(0x944, PIN_INPUT | MUX_MODE7)		/* rmii1_refclk.gpio0_29 TS_INT external pullup */
 			AM33XX_IOPAD(0x9A0, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mcasp0_aclkr.gpio3_18 RTD_A1 */

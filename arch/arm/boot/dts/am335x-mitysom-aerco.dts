@@ -505,7 +505,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&wlan_pins_default>;
 	status = "okay";
-	bus-width = <4>;
+	vmmc-supply = <&vmmc_fixed>;
+	bus-width = <1>; // <4>;
+	broken-cd; // Tell driver to poll for device insertion
+	cap-sd-highspeed; // Try to enable 50Mhz mode
 };
 
 &rtc {

@@ -706,7 +706,7 @@ static void __init read_factory_config(struct memory_accessor *a, void* context)
 	}
 
 	partnum = factory_config.partnum;
-	pr_info("MitySOM-335x: Part Number = %s\n", partnum);
+	pr_info("MitySOM-335x: Model Number = %s\n", partnum);
 
 	setup_config_peripherals();
 bad_config:

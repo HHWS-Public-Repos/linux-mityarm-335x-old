@@ -596,7 +596,6 @@ static const struct flash_platform_data mityarm335x_spi_flash = {
 	.name      = "spi_flash",
 	.parts     = mityarm335x_spi_partitions,
 	.nr_parts  = ARRAY_SIZE(mityarm335x_spi_partitions),
-	.type      = "m25p64-nonjedec",
 };
 
 static const struct omap2_mcspi_device_config spi1_ctlr_data = {

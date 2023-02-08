@@ -720,7 +720,7 @@ dtb-$(CONFIG_SOC_AM33XX) += \
 	am335x-sl50.dtb \
 	am335x-mitysom-devkit.dtb \
 	am335x-mitysom-maker.dtb \
-	am335x-mitysom-aerco.dtb \
+	am335x-mitysom-watts.dtb \
 	am335x-wega-rdk.dtb \
 	am335x-osd3358-sm-red.dtb
 dtb-$(CONFIG_ARCH_OMAP4) += \

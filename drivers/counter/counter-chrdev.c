@@ -560,7 +560,7 @@ void counter_push_event(struct counter_device *const counter, const u8 event,
 		ev.watch.component = comp_node->component;
 		ev.status = -counter_get_data(counter, comp_node, &ev.value);
 
-		copied += kfifo_in_spinlocked_noirqsave(&counter->events, &ev,
+		copied += kfifo_in_spinlocked(&counter->events, &ev,
 							1, &counter->events_in_lock);
 	}
 

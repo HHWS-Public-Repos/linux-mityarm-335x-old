@@ -363,7 +363,7 @@
 	status = "okay";
 
 	ecap0: ecap@48300100 {
-		compatible = "ti,am33xx-ecap-pulse";
+		compatible = "ti,am62-ecap-capture";
 		status = "okay";
 		pinctrl-names = "default";
 		pinctrl-0 = <&ecap_pins>;

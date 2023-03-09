@@ -6,7 +6,6 @@
 #include <linux/cdev.h>
 #include <linux/counter.h>
 #include <linux/device.h>
-#include <linux/device/bus.h>
 #include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/gfp.h>

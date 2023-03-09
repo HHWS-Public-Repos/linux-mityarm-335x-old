@@ -97,6 +97,91 @@ struct ecap_cnt_dev {
 	} pm_ctx;
 };
 
+/* HACK Add regmap_test_bits/set_bits/clear_bits for 4.19 kernel */
+/**
+ * regmap_test_bits() - Check if all specified bits are set in a register.
+ *
+ * @map: Register map to operate on
+ * @reg: Register to read from
+ * @bits: Bits to test
+ *
+ * Returns 0 if at least one of the tested bits is not set, 1 if all tested
+ * bits are set and a negative error number if the underlying regmap_read()
+ * fails.
+ */
+int regmap_test_bits(struct regmap *map, unsigned int reg, unsigned int bits)
+{
+	unsigned int val, ret;
+
+	ret = regmap_read(map, reg, &val);
+	if (ret)
+		return ret;
+
+	return (val & bits) == bits;
+}
+static inline int regmap_set_bits(struct regmap *map,
+				  unsigned int reg, unsigned int bits)
+{
+	return regmap_update_bits_base(map, reg, bits, bits,
+				       NULL, false, false);
+}
+
+static inline int regmap_clear_bits(struct regmap *map,
+				    unsigned int reg, unsigned int bits)
+{
+	return regmap_update_bits_base(map, reg, bits, 0, NULL, false, false);
+}
+
+
+/* HACK Add dev_err_probe for 4.19 kernel */
+/**
+ * dev_err_probe - probe error check and log helper
+ * @dev: the pointer to the struct device
+ * @err: error value to test
+ * @fmt: printf-style format string
+ * @...: arguments as specified in the format string
+ *
+ * This helper implements common pattern present in probe functions for error
+ * checking: print debug or error message depending if the error value is
+ * -EPROBE_DEFER and propagate error upwards.
+ * In case of -EPROBE_DEFER it sets also defer probe reason, which can be
+ * checked later by reading devices_deferred debugfs attribute.
+ * It replaces code sequence::
+ *
+ * 	if (err != -EPROBE_DEFER)
+ * 		dev_err(dev, ...);
+ * 	else
+ * 		dev_dbg(dev, ...);
+ * 	return err;
+ *
+ * with::
+ *
+ * 	return dev_err_probe(dev, err, ...);
+ *
+ * Returns @err.
+ *
+ */
+int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
+{
+	struct va_format vaf;
+	va_list args;
+
+	va_start(args, fmt);
+	vaf.fmt = fmt;
+	vaf.va = &args;
+
+	if (err != -EPROBE_DEFER) {
+		dev_err(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+	} else {
+		// device_set_deferred_probe_reason(dev, &vaf);
+		dev_dbg(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+	}
+
+	va_end(args);
+
+	return err;
+}
+
 static u8 ecap_cnt_capture_get_evmode(struct counter_device *counter)
 {
 	struct ecap_cnt_dev *ecap_dev = counter_priv(counter);
@@ -464,6 +549,11 @@ static irqreturn_t ecap_cnt_isr(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
+static void ecap_cnt_clk_disable(void *clk)
+{
+	clk_disable_unprepare(clk);
+}
+
 static void ecap_cnt_pm_disable(void *dev)
 {
 	pm_runtime_disable(dev);
@@ -474,6 +564,7 @@ static int ecap_cnt_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct ecap_cnt_dev *ecap_dev;
 	struct counter_device *counter_dev;
+	struct resource *r;
 	void __iomem *mmio_base;
 	unsigned long clk_rate;
 	int ret;
@@ -494,9 +585,18 @@ static int ecap_cnt_probe(struct platform_device *pdev)
 
 	mutex_init(&ecap_dev->lock);
 
-	ecap_dev->clk = devm_clk_get_enabled(dev, "fck");
+	ecap_dev->clk = devm_clk_get(dev, "fck");
 	if (IS_ERR(ecap_dev->clk))
 		return dev_err_probe(dev, PTR_ERR(ecap_dev->clk), "failed to get clock\n");
+
+	ret = clk_prepare_enable(ecap_dev->clk);
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to enable clock\n");
+
+	/* Register a cleanup callback to care for disabling clock */
+	ret = devm_add_action_or_reset(dev, ecap_cnt_clk_disable, ecap_dev->clk);
+	if (ret)
+		return dev_err_probe(dev, ret, "failed to add clk disable action\n");
 
 	clk_rate = clk_get_rate(ecap_dev->clk);
 	if (!clk_rate) {
@@ -504,7 +604,8 @@ static int ecap_cnt_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	mmio_base = devm_platform_ioremap_resource(pdev, 0);
+	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	mmio_base = devm_ioremap_resource(&pdev->dev, r);
 	if (IS_ERR(mmio_base))
 		return PTR_ERR(mmio_base);
 
@@ -547,7 +648,7 @@ static int ecap_cnt_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int ecap_cnt_suspend(struct device *dev)
+static __maybe_unused int ecap_cnt_suspend(struct device *dev)
 {
 	struct counter_device *counter_dev = dev_get_drvdata(dev);
 	struct ecap_cnt_dev *ecap_dev = counter_priv(counter_dev);
@@ -571,7 +672,7 @@ static int ecap_cnt_suspend(struct device *dev)
 	return 0;
 }
 
-static int ecap_cnt_resume(struct device *dev)
+static __maybe_unused int ecap_cnt_resume(struct device *dev)
 {
 	struct counter_device *counter_dev = dev_get_drvdata(dev);
 	struct ecap_cnt_dev *ecap_dev = counter_priv(counter_dev);
@@ -589,7 +690,7 @@ static int ecap_cnt_resume(struct device *dev)
 	return 0;
 }
 
-static DEFINE_SIMPLE_DEV_PM_OPS(ecap_cnt_pm_ops, ecap_cnt_suspend, ecap_cnt_resume);
+static SIMPLE_DEV_PM_OPS(ecap_cnt_pm_ops, ecap_cnt_suspend, ecap_cnt_resume);
 
 static const struct of_device_id ecap_cnt_of_match[] = {
 	{ .compatible	= "ti,am62-ecap-capture" },
@@ -603,7 +704,7 @@ static struct platform_driver ecap_cnt_driver = {
 	.driver = {
 		.name = "ecap-capture",
 		.of_match_table = ecap_cnt_of_match,
-		.pm = pm_sleep_ptr(&ecap_cnt_pm_ops),
+		.pm = &ecap_cnt_pm_ops,
 	},
 };
 module_platform_driver(ecap_cnt_driver);
@@ -611,4 +712,3 @@ module_platform_driver(ecap_cnt_driver);
 MODULE_DESCRIPTION("ECAP Capture driver");
 MODULE_AUTHOR("Julien Panis <jpanis@baylibre.com>");
 MODULE_LICENSE("GPL");
-MODULE_IMPORT_NS(COUNTER);

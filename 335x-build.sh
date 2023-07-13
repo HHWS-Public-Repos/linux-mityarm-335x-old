@@ -1,4 +1,4 @@
-#!/bin/bash
+[#!/bin/bash
 
 # Build zImage, dtbs, and modules
 # Assumes toolchain has been preinstalled
@@ -22,3 +22,5 @@ rm -rf "$BUILDDIR/rootfs" # Clean old modules
 make -j"$(nproc)" O="$BUILDDIR" INSTALL_MOD_PATH="$BUILDDIR/rootfs" INSTALL_MOD_STRIP=1 modules_install
 rm -r "$BUILDDIR"/rootfs/lib/modules/*/{build,source} # Remove symlinks to make easier to copy to SD card
 
+
+mkimage -f fitImage.its.watts fitImage

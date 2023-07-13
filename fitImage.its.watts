@@ -1,12 +1,12 @@
 /dts-v1/;
 / {
-	description = "U-Boot fitImage for Critical Link Linux (systemd)/4.19.38-devkit+gitAUTOINC+1542924375/mitysom-335x";
+	description = "U-Boot fitImage for Critical Link Linux (systemd)";
 	#address-cells = <1>;
 
 	images {
 		kernel-1 {
 			description = "Linux kernel";
-			data = /incbin/("arch/arm/boot/zImage");
+			data = /incbin/("build-mitysom335x/arch/arm/boot/zImage");
 			type = "kernel";
 			arch = "arm";
 			os = "linux";
@@ -19,7 +19,7 @@
 		};
 		fdt-1 {
 			description = "Flattened Device Tree blob";
-			data = /incbin/("arch/arm/boot/dts/am335x-mitysom-watts-rev12.dtb");
+			data = /incbin/("build-mitysom335x/arch/arm/boot/dts/am335x-mitysom-watts-rev12.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -30,7 +30,7 @@
 		};
 		fdt-2 {
 			description = "Flattened Device Tree blob overlay";
-			data = /incbin/("arch/arm/boot/dts/cl/am335x-mitysom-256MB.dtbo");
+			data = /incbin/("build-mitysom335x/arch/arm/boot/dts/cl/am335x-mitysom-256MB.dtbo");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -41,7 +41,7 @@
 		};
 		fdt-3 {
 			description = "Flattened Device Tree blob overlay";
-			data = /incbin/("arch/arm/boot/dts/cl/am335x-mitysom-256MB-NOR.dtbo");
+			data = /incbin/("build-mitysom335x/arch/arm/boot/dts/cl/am335x-mitysom-256MB-NOR.dtbo");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -52,7 +52,7 @@
 		};
 		fdt-4 {
 			description = "Flattened Device Tree blob overlay";
-			data = /incbin/("arch/arm/boot/dts/cl/am335x-mitysom-512MB.dtbo");
+			data = /incbin/("build-mitysom335x/arch/arm/boot/dts/cl/am335x-mitysom-512MB.dtbo");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -63,7 +63,7 @@
 		};
 		fdt-5 {
 			description = "Flattened Device Tree blob overlay";
-			data = /incbin/("arch/arm/boot/dts/cl/am335x-mitysom-1GB.dtbo");
+			data = /incbin/("build-mitysom335x/arch/arm/boot/dts/cl/am335x-mitysom-1GB.dtbo");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -74,7 +74,7 @@
 		};
 		fdt-6 {
 			description = "Flattened Device Tree blob";
-			data = /incbin/("arch/arm/boot/dts/am335x-mitysom-maker.dtb");
+			data = /incbin/("build-mitysom335x/arch/arm/boot/dts/am335x-mitysom-maker.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";

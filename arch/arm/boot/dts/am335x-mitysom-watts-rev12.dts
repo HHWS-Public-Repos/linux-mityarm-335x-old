@@ -399,11 +399,6 @@
 	};
 };
 
-&epwmss1 {
-	status = "okay";
-	
-};
-
 / {
 	v3_3_analog_fixed: fixedregulator@2 {
 		compatible = "regulator-fixed";

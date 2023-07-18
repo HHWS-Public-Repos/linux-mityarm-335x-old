@@ -1,4 +1,4 @@
-[#!/bin/bash
+#!/bin/bash
 
 # Build zImage, dtbs, and modules
 # Assumes toolchain has been preinstalled

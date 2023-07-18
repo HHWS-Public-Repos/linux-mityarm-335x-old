@@ -94,11 +94,11 @@
 	};
 
 	/* MODBUS 2 */
-	uart4_pins: pinmux_uart4_pins {
+	uart5_pins: pinmux_uart5_pins {
 		pinctrl-single,pins = <
-
-			AM33XX_IOPAD(0x968, PIN_INPUT_PULLUP | MUX_MODE1)	/* uart0_ctsn.uart4_rxd UART4_RXD */
-			AM33XX_IOPAD(0x96C, PIN_OUTPUT_PULLDOWN | MUX_MODE1)	/* uart0_rtsn.uart4_txd UART4_TXD */
+			AM33XX_IOPAD(0x928, PIN_INPUT_PULLDOWN | MUX_MODE7)	/* mii1_txd0.gpio0_28 UART5_DIR */
+			AM33XX_IOPAD(0x908, PIN_INPUT_PULLUP | MUX_MODE3)	/* mii1_col..uart5_rxd UART4_RXD */
+			AM33XX_IOPAD(0x918, PIN_OUTPUT_PULLDOWN | MUX_MODE3)	/* mii1_rxdv.uart5_txd UART4_TXD */
 		>;
 	};
 
@@ -126,23 +126,9 @@
 
 	cpsw_default: cpsw_default {
 		pinctrl-single,pins = <
-			/* Slave 1 */
-			AM33XX_IOPAD(0x914, PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* mii1_txen.rgmii1_tctl */
-			AM33XX_IOPAD(0x918, PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mii1_rxdv.rgmii1_rctl */
-			AM33XX_IOPAD(0x91c, PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* mii1_txd3.rgmii1_td3 */
-			AM33XX_IOPAD(0x920, PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* mii1_txd2.rgmii1_td2 */
-			AM33XX_IOPAD(0x924, PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* mii1_txd1.rgmii1_td1 */
-			AM33XX_IOPAD(0x928, PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* mii1_txd0.rgmii1_td0 */
-			AM33XX_IOPAD(0x92c, PIN_OUTPUT_PULLDOWN | MUX_MODE2)	/* mii1_txclk.rgmii1_tclk */
-			AM33XX_IOPAD(0x930, PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mii1_rxclk.rgmii1_rclk */
-			AM33XX_IOPAD(0x934, PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mii1_rxd3.rgmii1_rd3 */
-			AM33XX_IOPAD(0x938, PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mii1_rxd2.rgmii1_rd2 */
-			AM33XX_IOPAD(0x93c, PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mii1_rxd1.rgmii1_rd1 */
-			AM33XX_IOPAD(0x940, PIN_INPUT_PULLDOWN | MUX_MODE2)	/* mii1_rxd0.rgmii1_rd0 */
-			AM33XX_IOPAD(0x908, PIN_INPUT | MUX_MODE7)		/* mii1_col.gpio3_0 MII1_PHY_INTN external pullup */
-			AM33XX_IOPAD(0x9A8, PIN_INPUT_PULLUP | MUX_MODE7) 	/* mcasp0_axr1.gpio3_20 MII1_RESETN */
+			/* Slave 1 - Removed in rev 12*/
 
-			/* Slave 2 */
+		        /* Slave 2 */
 			AM33XX_IOPAD(0x840, PIN_OUTPUT | MUX_MODE2)		/* gpmc_a0.rgmii2_tctl */
 			AM33XX_IOPAD(0x844, PIN_INPUT_PULLDOWN | MUX_MODE2)	/* gpmc_a1.rgmii2_rctl */
 			AM33XX_IOPAD(0x848, PIN_OUTPUT | MUX_MODE2)		/* gpmc_a2.rgmii2_td3  */
@@ -297,10 +283,10 @@
 };
 
 /* RS485 MODBUS 2 */
-&uart4 {
+&uart5 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&uart4_pins>;
-	rts-gpio = <&gpio1 14 GPIO_ACTIVE_HIGH>;
+	pinctrl-0 = <&uart5_pins>;
+	rts-gpio = <&gpio0 28 GPIO_ACTIVE_HIGH>;
 	rs485-rts-delay =<0 0>;
 	rs485-rts-active-high;
 	/*rs485-rx-during-tx;*/
@@ -460,7 +446,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&cpsw_default>;
 	status = "okay";
-	dual_emac;
 };
 
 &davinci_mdio {
@@ -491,11 +476,6 @@
 	dual_emac_res_vlan = <1>;
 };
 
-&cpsw_emac1 {
-	phy-handle = <&phy1>;
-	phy-mode = "rgmii";
-	dual_emac_res_vlan = <2>;
-};
 
 /* ADC */
 &tscadc {

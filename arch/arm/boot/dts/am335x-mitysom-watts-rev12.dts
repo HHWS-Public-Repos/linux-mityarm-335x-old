@@ -463,11 +463,6 @@
 		/* Restrict phy to 10/100 due to magnetics */
 		max-speed = <100>;
 	};
-	phy1: ethernet-phy@1 {
-		reg = <3>;
-		/* Restrict phy to 10/100 due to magnetics */
-		max-speed = <100>;
-	};
 };
 
 &cpsw_emac1 {

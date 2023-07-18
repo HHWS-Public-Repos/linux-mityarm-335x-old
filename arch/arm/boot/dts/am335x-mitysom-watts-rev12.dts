@@ -262,7 +262,7 @@
 			AM33XX_IOPAD(0x9AC, PIN_INPUT_PULLDOWN | MUX_MODE7) 	/* mcasp0_ahclkx.gpio3_21 RTD_A2 */
 			AM33XX_IOPAD(0x9B0, PIN_INPUT_PULLDOWN | MUX_MODE7) 	/* xdma_event_intr0.gpio0_19 7SEG_OFF J16.47 */
 			AM33XX_IOPAD(0x9E4, PIN_INPUT | MUX_MODE7)		/* emu0.gpio3_7 BUZZER J16.41 */
-			AM33XX_IOPAD(0x9E8, PIN_INPUT | MUX_MODE7)		/* emu1.gpio3_8 DISP J16.30 */
+			AM33XX_IOPAD(0x940, PIN_INPUT | MUX_MODE7)		/* mii1_rxd0.gpio2_21 DISP J16.30 */
 		>;
 	};
 };
@@ -342,7 +342,7 @@
 
 		irq-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
 		// Workaround: Using DISP pin to reset touchscreen
-		reset-gpios = <&gpio3 8 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio2 21 GPIO_ACTIVE_HIGH>;
 		// touchscreen-swapped-x-y;
 	};
 

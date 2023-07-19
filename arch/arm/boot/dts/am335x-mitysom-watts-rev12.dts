@@ -354,6 +354,19 @@
 		compatible = "microchip,mcp7940x";
 		reg = <0x6f>;
 	};
+
+	/* Display Board PCAL9535A 16-bit GPIO expander 0x20 */
+	pcal9535disp: pcal9535disp@20 {
+		compatible = "nxp,pcal9535";
+		reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		gpio-line-names =
+		"", "", "", "",
+		"", "", "", "",
+		"", "", "DEMAND", "MANAGER",
+		"CASCADE", "BAS", "onAER", "FAULT CLR";
+	};
 };
 
 &usb0 {

@@ -263,6 +263,7 @@
 			AM33XX_IOPAD(0x9B0, PIN_INPUT_PULLDOWN | MUX_MODE7) 	/* xdma_event_intr0.gpio0_19 7SEG_OFF J16.47 */
 			AM33XX_IOPAD(0x9E4, PIN_INPUT | MUX_MODE7)		/* emu0.gpio3_7 BUZZER J16.41 */
 			AM33XX_IOPAD(0x940, PIN_INPUT | MUX_MODE7)		/* mii1_rxd0.gpio2_21 DISP J16.30 */
+		        AM33XX_IOPAD(0x880, PIN_INPUT | MUX_MODE7)              /* gpmc_csn1.gpio1_30 */
 		>;
 	};
 };
@@ -311,7 +312,7 @@
 		gpio-line-names =
 		"RELAY_0", "RELAY_1", "RELAY_2", "RELAY_3",
 		"", "", "", "",
-		"TEMP_IN", "SPARE_IN", "DIGITAL_IN_4", "DIGITAL_IN_3",
+		"OVERTEMP_IN", "ENABLE/DISABLE", "DIGITAL_IN_4", "DIGITAL_IN_3",
 		"DIGITAL_IN_2", "DIGITAL_IN_1", "", "";
 	};
 

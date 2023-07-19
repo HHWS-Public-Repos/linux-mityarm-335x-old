@@ -317,6 +317,8 @@
 		"DIGITAL_IN_2", "DIGITAL_IN_1", "", "";
 	};
 
+	/* ADS1110 - 16-Bit ADC RTD_IN 0x4A */
+
 	eeprom@50 {
 		compatible = "st,m24256", "st,24c256", "atmel,24c256";
 		reg = <0x50>;
@@ -347,14 +349,6 @@
 		// touchscreen-swapped-x-y;
 	};
 
-	/* SOM Factory EEPROM 0x50 - 0x57 */
-
-	/* MCP7940N RTC 0x6F */
-	mcp79400: mcp79400@6f {
-		compatible = "microchip,mcp7940x";
-		reg = <0x6f>;
-	};
-
 	/* Display Board PCAL9535A 16-bit GPIO expander 0x20 */
 	pcal9535disp: pcal9535disp@20 {
 		compatible = "nxp,pcal9535";
@@ -366,6 +360,16 @@
 		"", "", "", "",
 		"", "", "DEMAND", "MANAGER",
 		"CASCADE", "BAS", "onAER", "FAULT CLR";
+	};
+
+	/* TLC59208 8CH LED driver 0x48 */
+
+	/* SOM Factory EEPROM 0x50 - 0x57 */
+
+	/* MCP7940N RTC 0x6F */
+	mcp79400: mcp79400@6f {
+		compatible = "microchip,mcp7940x";
+		reg = <0x6f>;
 	};
 };
 

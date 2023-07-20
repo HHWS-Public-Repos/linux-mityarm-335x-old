@@ -428,6 +428,20 @@
 &usb1 {
 	status = "okay";
 	dr_mode = "host";
+
+	/* Laird Wifi */
+	st60@2{
+		compatible = "usb1286,204e";
+		reg = <2>;
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		wifi@2 {
+			compatible = "usbif1286,204e.config1.2";
+			reg = <2 1>;
+			pmu-en-gpios = <&gpio3 13 GPIO_ACTIVE_HIGH>;
+		};
+	};
 };
 
 &lcdc {

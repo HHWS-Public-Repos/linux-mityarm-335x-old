@@ -18,8 +18,8 @@ SSH_CMD="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 set -x
 set -e
 
-rsync --backup -e "$SSH_CMD" "$BUILDDIR"/arch/arm/boot/dts/am335x-mitysom-devkit.dtb "$HOST":/run/media/mmcblk0p1/
-rsync --backup -e "$SSH_CMD" "$BUILDDIR"/arch/arm/boot/zImage "$HOST":/run/media/mmcblk0p1/
+
+rsync --backup -e "$SSH_CMD" fitImage  "$HOST":/boot/
 # To prevent the kernel modules from every push from filling up the rootfs
 #  create a main kernel version directory and symlink the build specific
 #  versions to it

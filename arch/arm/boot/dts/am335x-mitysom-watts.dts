@@ -410,7 +410,13 @@
 		"CASCADE", "BAS", "onAER", "FAULT CLR";
 	};
 
-	/* TLC59208 8CH LED driver 0x48 */
+	/* TLC59208 8CH LED driver 0x40 */
+
+	/* System Voltage Monitor 0x48 */
+	ads7828: ads7828@48 {
+		compatible = "ti,ads7282";
+		reg = <0x48>;
+	};
 
 	/* SOM Factory EEPROM 0x50 - 0x57 */
 

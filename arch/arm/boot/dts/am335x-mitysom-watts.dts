@@ -414,7 +414,7 @@
 
 	/* System Voltage Monitor 0x48 */
 	ads7828: ads7828@48 {
-		compatible = "ti,ads7282";
+		compatible = "ti,ads7828";
 		reg = <0x48>;
 	};
 

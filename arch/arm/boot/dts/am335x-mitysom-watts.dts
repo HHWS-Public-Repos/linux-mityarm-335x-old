@@ -357,6 +357,8 @@
 		compatible = "nxp,pcal9535";
 		reg = <0x27>;
 		gpio-controller;
+		interrupt-parent = <&gpio1>;
+		interrupts = <30 IRQ_TYPE_EDGE_FALLING>; /* gpio1_30 */
 		#gpio-cells = <2>;
 		gpio-line-names =
 		"RELAY_0", "RELAY_1", "RELAY_2", "RELAY_3",

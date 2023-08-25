@@ -248,7 +248,7 @@
 
 	gpio_pins: gpio_pins {
 		pinctrl-single,pins = <
-			AM33XX_IOPAD(0x880, PIN_INPUT | MUX_MODE7)              /* gpmc_csn1.gpio1_30 IO_Expand_INTn external pullup */
+			AM33XX_IOPAD(0x880, PIN_INPUT_PULLUP | MUX_MODE7)              /* gpmc_csn1.gpio1_30 IO_Expand_INTn external pullup */
 			AM33XX_IOPAD(0x914, PIN_INPUT_PULLUP | MUX_MODE7)		/* rmii1_txen.gpio3_3 CLEAR_Button  external pullup */
 			AM33XX_IOPAD(0x924, PIN_INPUT_PULLDOWN | MUX_MODE7)		/* rmii1_txd1.gpio0_21 J19.8 */
 			AM33XX_IOPAD(0x92C, PIN_INPUT_PULLDOWN | MUX_MODE7)		/* rmii1_txclk.gpio3_9 PROXIMITY */
@@ -359,12 +359,13 @@
 		gpio-controller;
 		interrupt-parent = <&gpio1>;
 		interrupts = <30 IRQ_TYPE_EDGE_FALLING>; /* gpio1_30 */
+		#interrupt-cells = <2>;
 		#gpio-cells = <2>;
 		gpio-line-names =
 		"RELAY_0", "RELAY_1", "RELAY_2", "RELAY_3",
-		"", "", "", "",
+		"P0_4", "P0_5", "P0_6", "P0_7",
 		"OVERTEMP_IN", "ENABLE/DISABLE", "DIGITAL_IN_4", "DIGITAL_IN_3",
-		"DIGITAL_IN_2", "DIGITAL_IN_1", "", "";
+		"DIGITAL_IN_2", "DIGITAL_IN_1", "P1_6", "P1_7";
 	};
 
 	/* ADS1110 - 16-Bit ADC RTD_IN 0x4A */

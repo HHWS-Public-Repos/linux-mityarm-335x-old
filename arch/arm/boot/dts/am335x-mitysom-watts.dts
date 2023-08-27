@@ -19,6 +19,23 @@
 		default-brightness-level = <8>;
 	};
 
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		volumedown {
+			label = "GPIO Key Volume Down";
+			linux,code = <114>; /* KEY_VOLUMEDOWN */
+			gpios = <&gpio3 3 GPIO_ACTIVE_HIGH>; /* CLEAR BUTTON */
+		};
+
+		volumeup {
+			label = "GPIO Key Volume UP";
+			linux,code = <115>; /* KEY_VOLUMEUP */
+			gpios = <&pcal9535 7 GPIO_ACTIVE_HIGH>; /* Extended P0_7 */
+		};
+	};
+
 	powertip_PH102600T013: lcd-controller@1 {
 		compatible = "ti,tilcdc,panel";
 		pinctrl-names = "default", "sleep";

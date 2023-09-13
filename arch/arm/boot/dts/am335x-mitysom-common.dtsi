@@ -155,6 +155,13 @@
 	clock-frequency = <400000>;
 
 	/* Factory EEPROM 0x50 - 0x57 */
+	factory-config@50 {
+		compatible = "microchip,24c32", "atmel,24c32";
+		reg = <0x50>;
+		pagesize = <32>;
+		read-only;
+	};
+
 	/* PMIC SmartReflex 0x12 */
 };
 

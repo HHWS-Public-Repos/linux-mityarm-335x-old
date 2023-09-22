@@ -12,6 +12,7 @@
 / {
 	model = "Critical Link MitySOM-335x Devkit";
 
+	/* Disable backlight driver, use GPIO Instead
 	backlight: backlight {
 		compatible = "pwm-backlight";
 		pwms = <&ehrpwm0 1 50000 0>;
@@ -19,6 +20,7 @@
 		default-brightness-level = <8>;
 	};
 
+	*/
 
 	gpio-keys {
 		compatible = "gpio-keys";
@@ -44,7 +46,7 @@
 		status = "okay";
 		model = "powertip,PH102600T013";
 
-		backlight = <&backlight>;
+		/*backlight = <&backlight>;*/
 		// enable-gpios = <&gpio3 8 GPIO_ACTIVE_HIGH>;
 
 		panel-info {
@@ -123,7 +125,7 @@
 	ehrpwm0_pins: ehrpwm0_pins {
 		pinctrl-single,pins = <
 			AM33XX_IOPAD(0x950, PIN_OUTPUT | MUX_MODE3)		/* spi0_sclk.ehrpwm0a Buzzer */
-		        AM33XX_IOPAD(0x954, PIN_OUTPUT | MUX_MODE3)		/* spi0_d0.ehrpwm0b  Backlight*/
+		        AM33XX_IOPAD(0x954, PIN_OUTPUT | MUX_MODE7)		/* spi0_d0.gpio0_3  Backlight*/
 
 		>;
 	};
@@ -290,7 +292,7 @@
 /* Name the gpios so they can be referenced by name */
 &gpio0 {
 	gpio-line-names =
-		"GPIO0_0", "GPIO0_1", "GPIO0_2", "GPIO0_3",
+		"GPIO0_0", "GPIO0_1", "GPIO0_2", "BACKLIGHT",
 		"GPIO0_4", "GPIO0_5", "BROWN_OUT", "GPIO0_7",
 		"GPIO0_8", "GPIO0_9", "GPIO0_10", "GPIO0_11",
 		"GPIO0_12", "GPIO0_13", "GPIO0_14", "GPIO0_15",
@@ -298,6 +300,11 @@
 		"GPIO0_20", "GPIO0_21", "GPIO0_22", "GPIO0_23",
 		"GPIO0_24", "GPIO0_25", "GPIO0_26", "GPIO0_27",
 		"GPIO0_28", "GPIO0_29", "GPIO0_30", "GPIO0_31";
+	gpio-3 {
+		gpio-hog;
+		gpios = <3 GPIO_ACTIVE_HIGH>;
+		output-high;
+	};
 };
 
 &gpio1 {

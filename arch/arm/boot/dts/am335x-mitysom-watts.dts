@@ -25,15 +25,33 @@
 	gpio-keys {
 		compatible = "gpio-keys";
 
-		volumedown {
-			label = "GPIO Key Volume Down";
-			linux,code = <114>; /* KEY_VOLUMEDOWN */
+		clearbutton {
+			label = "GPIO Key Clear Button";
+			linux,code = <256>; /* BTN_0 0x100 */
 			gpios = <&gpio3 3 GPIO_ACTIVE_HIGH>; /* CLEAR BUTTON */
 		};
 
-		volumeup {
-			label = "GPIO Key Volume UP";
-			linux,code = <115>; /* KEY_VOLUMEUP */
+		gpiokeyP0_4 {
+			label = "GPIO Key P0_4 on J18P1";
+			linux,code = <257>; /* BTN_1 0x101 */
+			gpios = <&pcal9535 4 GPIO_ACTIVE_HIGH>; /* Extended P0_4 */
+		};
+
+		gpiokeyP0_5 {
+			label = "GPIO Key P0_5 on J18P3";
+			linux,code = <258>; /* BTN_2 0x102 */
+			gpios = <&pcal9535 5 GPIO_ACTIVE_HIGH>; /* Extended P0_5 */
+		};
+
+		gpiokeyP0_6 {
+			label = "GPIO Key P0_6 on J18P5";
+			linux,code = <259>; /* BTN_3 0x103 */
+			gpios = <&pcal9535 6 GPIO_ACTIVE_HIGH>; /* Extended P0_6 */
+		};
+
+		gpiokeyP0_7 {
+			label = "GPIO Key P0_7 on J18P7";
+			linux,code = <260>; /* BTN_4 0x104 */
 			gpios = <&pcal9535 7 GPIO_ACTIVE_HIGH>; /* Extended P0_7 */
 		};
 	};

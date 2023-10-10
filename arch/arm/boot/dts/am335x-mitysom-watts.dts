@@ -27,32 +27,32 @@
 
 		clearbutton {
 			label = "GPIO Key Clear Button";
-			linux,code = <256>; /* BTN_0 0x100 */
-			gpios = <&gpio3 3 GPIO_ACTIVE_HIGH>; /* CLEAR BUTTON */
+			linux,code = <59>; /* KEY_F1 59 */
+			gpios = <&gpio3 3 GPIO_ACTIVE_LOW>; /* CLEAR BUTTON */
 		};
 
 		gpiokeyP0_4 {
 			label = "GPIO Key P0_4 on J18P1";
-			linux,code = <257>; /* BTN_1 0x101 */
-			gpios = <&pcal9535 4 GPIO_ACTIVE_HIGH>; /* Extended P0_4 */
+			linux,code = <60>; /* KEY_F2 60 */
+			gpios = <&pcal9535 4 GPIO_ACTIVE_LOW>; /* Extended P0_4 */
 		};
 
 		gpiokeyP0_5 {
 			label = "GPIO Key P0_5 on J18P3";
-			linux,code = <258>; /* BTN_2 0x102 */
-			gpios = <&pcal9535 5 GPIO_ACTIVE_HIGH>; /* Extended P0_5 */
+			linux,code = <61>; /* KEY_F3 61 */
+			gpios = <&pcal9535 5 GPIO_ACTIVE_LOW>; /* Extended P0_5 */
 		};
 
 		gpiokeyP0_6 {
 			label = "GPIO Key P0_6 on J18P5";
-			linux,code = <259>; /* BTN_3 0x103 */
-			gpios = <&pcal9535 6 GPIO_ACTIVE_HIGH>; /* Extended P0_6 */
+			linux,code = <62>; /* KEY_F4 62 */
+			gpios = <&pcal9535 6 GPIO_ACTIVE_LOW>; /* Extended P0_6 */
 		};
 
 		gpiokeyP0_7 {
 			label = "GPIO Key P0_7 on J18P7";
-			linux,code = <260>; /* BTN_4 0x104 */
-			gpios = <&pcal9535 7 GPIO_ACTIVE_HIGH>; /* Extended P0_7 */
+			linux,code = <63>; /* KEY_F5 63 */
+			gpios = <&pcal9535 7 GPIO_ACTIVE_LOW>; /* Extended P0_7 */
 		};
 	};
 

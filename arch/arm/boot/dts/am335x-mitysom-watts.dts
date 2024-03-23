@@ -507,6 +507,7 @@
 &epwmss0 {
 	status = "okay";
 
+	/* Buzzer ehrpwm0A */
 	ehrpwm0: pwm@48300200 {
 		status = "okay";
 	};

@@ -3,7 +3,7 @@
 # Build zImage, dtbs, and modules
 # Assumes toolchain has been preinstalled
 
-MDKDATE="2023-08-27"
+MDKDATE="2024-03-08"
 source /opt/criticallink/mitysom-335x_$MDKDATE/environment-setup-cortexa8t2hf-neon-criticallink-linux-gnueabi 
 
 set -x

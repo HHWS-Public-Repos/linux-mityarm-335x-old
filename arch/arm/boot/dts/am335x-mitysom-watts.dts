@@ -462,6 +462,8 @@
 		compatible = "microchip,mcp7940x";
 		reg = <0x6f>;
 	};
+
+	/* MCP4728 12-bit Quad DAC 0x60 */
 };
 
 &usb0 {

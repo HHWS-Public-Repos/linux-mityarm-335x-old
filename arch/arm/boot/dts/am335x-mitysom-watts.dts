@@ -435,7 +435,19 @@
 		"CASCADE", "BAS", "onAER", "FAULT CLR";
 	};
 
-	/* TLC59208 8CH LED driver 0x40 */
+	/* Backlight PWM */
+	ds1050bl: ds1050z@28 {
+		compatible = "maxim,ds1050";
+		reg = <0x28>;
+	};
+
+	/* IO PWM */
+	ds1050io: ds1050z@29 {
+		/* GPIO 2_18 Aux_PWM_Enable */
+		compatible = "maxim,ds1050";
+		reg = <0x29>;
+	};
+
 
 	/* System Voltage Monitor 0x48 */
 	ads7828: ads7828@48 {

@@ -125,8 +125,6 @@
 	ehrpwm0_pins: ehrpwm0_pins {
 		pinctrl-single,pins = <
 			AM33XX_IOPAD(0x950, PIN_OUTPUT | MUX_MODE3)		/* spi0_sclk.ehrpwm0a Buzzer */
-		        AM33XX_IOPAD(0x954, PIN_OUTPUT | MUX_MODE7)		/* spi0_d0.gpio0_3  Backlight*/
-
 		>;
 	};
 	

@@ -30,32 +30,31 @@
 			linux,code = <59>; /* KEY_F1 59 */
 			gpios = <&gpio3 3 GPIO_ACTIVE_LOW>; /* CLEAR BUTTON */
 		};
-/* Agron removed for MCB Rev 16 aka Rev A.
-		gpiokeyP0_4 {
-			label = "GPIO Key P0_4 on J18P1";
-			linux,code = <60>; /* KEY_F2 60 */
-			gpios = <&pcal9535 4 GPIO_ACTIVE_LOW>; /* Extended P0_4 */
-		};
 
-		gpiokeyP0_5 {
-			label = "GPIO Key P0_5 on J18P3";
-			linux,code = <61>; /* KEY_F3 61 */
-			gpios = <&pcal9535 5 GPIO_ACTIVE_LOW>; /* Extended P0_5 */
-		};
+    /* Agron removed for MCB Rev 16 aka Rev A. */
+    /* gpiokeyP0_4 { */
+    /*      label = "GPIO Key P0_4 on J18P1"; */
+    /*      linux,code = <60>; /\* KEY_F2 60 *\/ */
+    /*      gpios = <&pcal9535 4 GPIO_ACTIVE_LOW>; /\* Extended P0_4 *\/ */
+    /* }; */
 
-		gpiokeyP0_6 {
-			label = "GPIO Key P0_6 on J18P5";
-			linux,code = <62>; /* KEY_F4 62 */
-			gpios = <&pcal9535 6 GPIO_ACTIVE_LOW>; /* Extended P0_6 */
-		};
+    /* gpiokeyP0_5 { */
+    /*      label = "GPIO Key P0_5 on J18P3"; */
+    /*      linux,code = <61>; /\* KEY_F3 61 *\/ */
+    /*      gpios = <&pcal9535 5 GPIO_ACTIVE_LOW>; /\* Extended P0_5 *\/ */
+    /* }; */
 
-		gpiokeyP0_7 {
-			label = "GPIO Key P0_7 on J18P7";
-			linux,code = <63>; /* KEY_F5 63 */
-			gpios = <&pcal9535 7 GPIO_ACTIVE_LOW>; /* Extended P0_7 */
-		};
-		*/
-	};
+    /* gpiokeyP0_6 { */
+    /*      label = "GPIO Key P0_6 on J18P5"; */
+    /*      linux,code = <62>; /\* KEY_F4 62 *\/ */
+    /*      gpios = <&pcal9535 6 GPIO_ACTIVE_LOW>; /\* Extended P0_6 *\/ */
+    /* }; */
+
+    /* gpiokeyP0_7 { */
+    /*      label = "GPIO Key P0_7 on J18P7"; */
+    /*      linux,code = <63>; /\* KEY_F5 63 *\/ */
+    /*      gpios = <&pcal9535 7 GPIO_ACTIVE_LOW>; /\* Extended P0_7 *\/ */
+    /* }; */
 
 	powertip_PH102600T013: lcd-controller@1 {
 		compatible = "ti,tilcdc,panel";
